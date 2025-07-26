@@ -36,10 +36,10 @@
                 </svg>
               </div>
               <div>
-                <h3 class="font-semibold text-gray-900 mb-1">Telepon / WhatsApp</h3>
+                <h3 class="font-semibold text-gray-900 mb-1">WhatsApp</h3>
                 <p class="text-gray-600 mb-3">Hubungi kami langsung untuk konsultasi</p>
                 <a
-                  :href="'tel:' + pondokData.contact.phone.replace(/\D/g, '')"
+                  :href="pondokData.socialMedia.whatsapp"
                   class="inline-flex items-center text-green-700 hover:text-green-800 font-medium"
                 >
                   {{ pondokData.contact.phone }}

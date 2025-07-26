@@ -16,6 +16,7 @@ export const pondokData = {
     instagram: 'https://www.instagram.com/pptq_asyaikhoni/',
     youtube: 'https://www.youtube.com/@pptq_asyaikhoni',
     linktree: 'https://lynk.id/pptq-asyaikhoni',
+    whatsapp: 'https://wa.me/6281515788862',
   },
 
   programs: [
