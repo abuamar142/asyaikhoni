@@ -5,7 +5,7 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 
 > **بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ**  
-> *Landing page resmi untuk Pondok Pesantren Tahfidzul Qur'an Asy-Syaikhoni*
+> _Landing page resmi untuk Pondok Pesantren Tahfidzul Qur'an Asy-Syaikhoni_
 
 ## ✨ Tentang Project
 
@@ -24,28 +24,31 @@ Website landing page modern dan elegan untuk **Pondok Pesantren Tahfidzul Qur'an
 
 ## 🛠️ Tech Stack
 
-| Technology | Purpose | Version |
-|------------|---------|---------|
-| **Vue.js 3** | Frontend Framework | Latest |
-| **TypeScript** | Type Safety | Latest |
-| **Tailwind CSS v4** | Styling Framework | Latest |
-| **Vite** | Build Tool | Latest |
-| **Pinia** | State Management | Latest |
+| Technology          | Purpose            | Version |
+| ------------------- | ------------------ | ------- |
+| **Vue.js 3**        | Frontend Framework | Latest  |
+| **TypeScript**      | Type Safety        | Latest  |
+| **Tailwind CSS v4** | Styling Framework  | Latest  |
+| **Vite**            | Build Tool         | Latest  |
+| **Pinia**           | State Management   | Latest  |
 
 ## 🎨 Design System
 
 ### Warna Utama
+
 - **Hijau Tua**: `#15803d` - Warna utama yang melambangkan kesejukan dan kedamaian Islam
 - **Kuning Cerah**: `#fde047` - Warna aksen yang memberikan kesan hangat dan bersahabat
 - **Putih**: `#ffffff` - Background bersih untuk keterbacaan optimal
 
 ### Font
+
 - **Inter** - Font utama untuk UI modern
 - **Amiri** - Font Arabic untuk elemen kaligrafi
 
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Node.js (v18 atau lebih baru)
 - npm atau yarn
 
@@ -109,11 +112,11 @@ npm run type-check   # Run TypeScript check
 
 ## 📱 Responsive Breakpoints
 
-| Device | Width | Tailwind Class |
-|--------|-------|---------------|
-| Mobile | < 640px | Default |
-| Tablet | 640px - 1024px | `sm:` `md:` |
-| Desktop | > 1024px | `lg:` `xl:` `2xl:` |
+| Device  | Width          | Tailwind Class     |
+| ------- | -------------- | ------------------ |
+| Mobile  | < 640px        | Default            |
+| Tablet  | 640px - 1024px | `sm:` `md:`        |
+| Desktop | > 1024px       | `lg:` `xl:` `2xl:` |
 
 ## 🔗 Links & Kontak
 
@@ -134,6 +137,50 @@ npm run type-check   # Run TypeScript check
 ## 📝 License
 
 Project ini dilisensikan di bawah [MIT License](LICENSE).
+
+## 🚀 Deployment
+
+### Deploy ke Vercel
+
+Project ini sudah dikonfigurasi untuk deployment mudah ke Vercel:
+
+#### Metode 1: Vercel CLI
+
+```bash
+# Install Vercel CLI
+npm i -g vercel
+
+# Login ke Vercel
+vercel login
+
+# Deploy project
+vercel
+
+# Deploy production
+vercel --prod
+```
+
+#### Metode 2: GitHub Integration
+
+1. Push code ke GitHub repository
+2. Connect repository di [Vercel Dashboard](https://vercel.com)
+3. Deploy otomatis setiap push ke main branch
+
+### Deploy ke Platform Lain
+
+#### Netlify
+
+```bash
+npm run build
+# Upload folder 'dist' ke Netlify
+```
+
+#### GitHub Pages
+
+```bash
+npm run build
+# Push folder 'dist' ke gh-pages branch
+```
 
 ## 🤝 Contributing
 
@@ -158,7 +205,7 @@ Kontribusi sangat diterima! Silakan:
 
 **بَارَكَ اللهُ فِيْكُمْ**
 
-*Semoga Allah memberkahi upaya kita dalam menyebarkan ilmu Al-Qur'an*
+_Semoga Allah memberkahi upaya kita dalam menyebarkan ilmu Al-Qur'an_
 
 **⭐ Jangan lupa berikan star jika project ini bermanfaat! ⭐**
 
