@@ -42,7 +42,7 @@ export default {
       },
       fontFamily: {
         arabic: ['Amiri', 'serif'],
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       animation: {
         'fade-in': 'fadeIn 0.6s ease-in-out',
