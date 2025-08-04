@@ -16,11 +16,7 @@
                 <div
                   class="w-24 h-24 bg-green-700 rounded-full flex items-center justify-center mx-auto mb-6"
                 >
-                  <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
-                    <path
-                      d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"
-                    />
-                  </svg>
+                  <User class="w-12 h-12 text-white" />
                 </div>
                 <h3 class="text-2xl font-bold text-green-800">15+ Tahun</h3>
                 <p class="text-gray-600">Pengalaman Mendidik</p>
@@ -41,11 +37,7 @@
           <div class="absolute -top-6 -left-6 bg-white rounded-xl shadow-lg p-4 float">
             <div class="flex items-center space-x-3">
               <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                  <path
-                    d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-                  />
-                </svg>
+                <Star class="w-5 h-5 text-green-600" />
               </div>
               <div>
                 <p class="font-semibold text-green-800">Rating 5.0</p>
@@ -96,9 +88,7 @@
               <div
                 class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0"
               >
-                <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+                <CheckCircle class="w-5 h-5 text-green-600" />
               </div>
               <div>
                 <h4 class="font-semibold text-gray-900">{{ feature.title }}</h4>
@@ -113,11 +103,7 @@
           >
             <div class="flex items-start space-x-4">
               <div class="w-12 h-12 bg-green-700 rounded-lg flex items-center justify-center">
-                <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path
-                    d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"
-                  />
-                </svg>
+                <MapPin class="w-6 h-6 text-white" />
               </div>
               <div>
                 <h4 class="font-semibold text-gray-900 mb-2">Lokasi Pondok</h4>
@@ -128,14 +114,7 @@
                   class="inline-flex items-center text-green-700 hover:text-green-800 font-medium"
                 >
                   <span>Lihat di Google Maps</span>
-                  <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                    />
-                  </svg>
+                  <ExternalLink class="w-4 h-4 ml-1" />
                 </a>
               </div>
             </div>
@@ -149,14 +128,7 @@
               class="btn-primary inline-flex items-center"
             >
               <span>Lihat Program Kami</span>
-              <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M17 8l4 4m0 0l-4 4m4-4H3"
-                />
-              </svg>
+              <ArrowRight class="w-5 h-5 ml-2" />
             </a>
           </div>
         </div>
@@ -167,6 +139,7 @@
 
 <script setup lang="ts">
 import { pondokData } from '@/data/pondokData'
+import { User, Star, CheckCircle, MapPin, ExternalLink, ArrowRight } from 'lucide-vue-next'
 
 const aboutFeatures = [
   {

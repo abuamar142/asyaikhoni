@@ -29,11 +29,7 @@
               <div
                 class="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center flex-shrink-0"
               >
-                <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path
-                    d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"
-                  />
-                </svg>
+                <Phone class="w-6 h-6 text-white" />
               </div>
               <div>
                 <h3 class="font-semibold text-gray-900 mb-1">WhatsApp</h3>
@@ -43,14 +39,7 @@
                   class="inline-flex items-center text-green-700 hover:text-green-800 font-medium"
                 >
                   {{ pondokData.contact.phone }}
-                  <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                    />
-                  </svg>
+                  <ExternalLink class="w-4 h-4 ml-1" />
                 </a>
               </div>
             </div>
@@ -62,11 +51,7 @@
               <div
                 class="w-12 h-12 bg-yellow-500 rounded-xl flex items-center justify-center flex-shrink-0"
               >
-                <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path
-                    d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"
-                  />
-                </svg>
+                <Mail class="w-6 h-6 text-white" />
               </div>
               <div>
                 <h3 class="font-semibold text-gray-900 mb-1">Email</h3>
@@ -76,14 +61,7 @@
                   class="inline-flex items-center text-yellow-700 hover:text-yellow-800 font-medium"
                 >
                   {{ pondokData.contact.email }}
-                  <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                    />
-                  </svg>
+                  <ExternalLink class="w-4 h-4 ml-1" />
                 </a>
               </div>
             </div>
@@ -95,11 +73,7 @@
               <div
                 class="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center flex-shrink-0"
               >
-                <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path
-                    d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"
-                  />
-                </svg>
+                <MapPin class="w-6 h-6 text-white" />
               </div>
               <div>
                 <h3 class="font-semibold text-gray-900 mb-1">Alamat Pondok</h3>
@@ -110,14 +84,7 @@
                   class="inline-flex items-center text-green-700 hover:text-green-800 font-medium"
                 >
                   Lihat di Google Maps
-                  <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                    />
-                  </svg>
+                  <ExternalLink class="w-4 h-4 ml-1" />
                 </a>
               </div>
             </div>
@@ -137,11 +104,7 @@
                 <div
                   class="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center group-hover:bg-pink-200 transition-colors"
                 >
-                  <svg class="w-5 h-5 text-pink-600" fill="currentColor" viewBox="0 0 24 24">
-                    <path
-                      d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 6.621 5.367 11.988 11.988 11.988s11.988-5.367 11.988-11.988C24.005 5.367 18.638.001 12.017.001z"
-                    />
-                  </svg>
+                  <Instagram class="w-5 h-5 text-pink-600" />
                 </div>
                 <div>
                   <p class="font-medium text-gray-900">Instagram</p>
@@ -157,11 +120,7 @@
                 <div
                   class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center group-hover:bg-red-200 transition-colors"
                 >
-                  <svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 24 24">
-                    <path
-                      d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"
-                    />
-                  </svg>
+                  <Youtube class="w-5 h-5 text-red-600" />
                 </div>
                 <div>
                   <p class="font-medium text-gray-900">YouTube</p>
@@ -183,19 +142,7 @@
                 class="flex items-center justify-between p-3 bg-white rounded-lg hover:bg-green-50 transition-colors group"
               >
                 <span class="text-gray-700 group-hover:text-green-800">Link Tree Pondok</span>
-                <svg
-                  class="w-4 h-4 text-gray-400 group-hover:text-green-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                  />
-                </svg>
+                <ExternalLink class="w-4 h-4 text-gray-400 group-hover:text-green-600" />
               </a>
               <a
                 href="https://forms.gle/GjtXGUQWE3bUKbbA6"
@@ -203,19 +150,7 @@
                 class="flex items-center justify-between p-3 bg-white rounded-lg hover:bg-green-50 transition-colors group"
               >
                 <span class="text-gray-700 group-hover:text-green-800">Form Saran</span>
-                <svg
-                  class="w-4 h-4 text-gray-400 group-hover:text-green-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                  />
-                </svg>
+                <ExternalLink class="w-4 h-4 text-gray-400 group-hover:text-green-600" />
               </a>
               <a
                 href="https://lynk.id/payme/pptq-asyaikhoni"
@@ -223,19 +158,7 @@
                 class="flex items-center justify-between p-3 bg-white rounded-lg hover:bg-yellow-50 transition-colors group"
               >
                 <span class="text-gray-700 group-hover:text-yellow-800">Infaq Pondok</span>
-                <svg
-                  class="w-4 h-4 text-gray-400 group-hover:text-yellow-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                  />
-                </svg>
+                <ExternalLink class="w-4 h-4 text-gray-400 group-hover:text-yellow-600" />
               </a>
             </div>
           </div>
@@ -333,26 +256,7 @@
             >
               <span v-if="!isSubmitting">Kirim Pesan</span>
               <span v-else class="flex items-center">
-                <svg
-                  class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    class="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    stroke-width="4"
-                  ></circle>
-                  <path
-                    class="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
+                <Loader2 class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />
                 Mengirim...
               </span>
             </button>
@@ -361,11 +265,7 @@
           <!-- Success Message -->
           <div v-if="showSuccess" class="mt-6 p-4 bg-green-100 border border-green-200 rounded-lg">
             <div class="flex items-center space-x-3">
-              <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                <path
-                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
-                />
-              </svg>
+              <CheckCircle class="w-5 h-5 text-green-600" />
               <p class="text-green-800 font-medium">
                 Pesan berhasil dikirim! Kami akan menghubungi Anda segera.
               </p>
@@ -379,6 +279,16 @@
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
+import {
+  Phone,
+  Mail,
+  MapPin,
+  ExternalLink,
+  Instagram,
+  Youtube,
+  CheckCircle,
+  Loader2,
+} from 'lucide-vue-next'
 import { pondokData } from '@/data/pondokData'
 
 const isSubmitting = ref(false)

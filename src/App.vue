@@ -39,7 +39,3 @@ import FacilitiesSection from '@/components/sections/FacilitiesSection.vue'
 import TestimonialsSection from '@/components/sections/TestimonialsSection.vue'
 import ContactSection from '@/components/sections/ContactSection.vue'
 </script>
-
-<style>
-/* Global styles are handled in main.css */
-</style>

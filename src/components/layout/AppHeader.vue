@@ -9,11 +9,7 @@
           <div
             class="w-10 h-10 bg-gradient-to-br from-green-600 to-green-800 rounded-lg flex items-center justify-center"
           >
-            <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-              <path
-                d="M12 3L2 12h3v8h14v-8h3L12 3zm0 2.2L18.8 12H17v6H7v-6H5.2L12 5.2zM9 13h6v5H9v-5z"
-              />
-            </svg>
+            <Home class="w-6 h-6 text-white" />
           </div>
           <div class="hidden sm:block">
             <h1 class="text-xl font-bold text-green-800">PPTQ</h1>
@@ -50,34 +46,8 @@
           class="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
           :class="{ 'bg-gray-100': isMobileMenuOpen }"
         >
-          <svg
-            v-if="!isMobileMenuOpen"
-            class="w-6 h-6 text-gray-600"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M4 6h16M4 12h16M4 18h16"
-            />
-          </svg>
-          <svg
-            v-else
-            class="w-6 h-6 text-gray-600"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
+          <Menu v-if="!isMobileMenuOpen" class="w-6 h-6 text-gray-600" />
+          <X v-else class="w-6 h-6 text-gray-600" />
         </button>
       </div>
 
@@ -110,6 +80,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
+import { Home, Menu, X } from 'lucide-vue-next'
 import { navigationMenu } from '@/data/pondokData'
 
 const isMobileMenuOpen = ref(false)

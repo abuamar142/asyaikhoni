@@ -36,33 +36,7 @@
               <div
                 class="relative z-10 w-20 h-20 bg-white rounded-2xl shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300"
               >
-                <svg class="w-10 h-10 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                  <path v-if="facility.icon === 'home'" d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
-                  <path
-                    v-else-if="facility.icon === 'mosque'"
-                    d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"
-                  />
-                  <path
-                    v-else-if="facility.icon === 'library'"
-                    d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"
-                  />
-                  <path
-                    v-else-if="facility.icon === 'book'"
-                    d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"
-                  />
-                  <path
-                    v-else-if="facility.icon === 'sports'"
-                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
-                  />
-                  <path
-                    v-else-if="facility.icon === 'restaurant'"
-                    d="M8.1 13.34l2.83-2.83L3.91 3.5c-1.56 1.56-1.56 4.09 0 5.66l4.19 4.18zm6.78-1.81c1.53.71 3.68.21 5.27-1.38 1.91-1.91 2.28-4.65.81-6.12-1.46-1.46-4.20-1.10-6.12.81-1.59 1.59-2.09 3.74-1.38 5.27L3.7 19.87l1.41 1.41L12 14.41l6.88 6.88 1.41-1.41L13.41 13l1.47-1.47z"
-                  />
-                  <path
-                    v-else
-                    d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-                  />
-                </svg>
+                <component :is="getIconComponent(facility.icon)" class="w-10 h-10 text-green-600" />
               </div>
 
               <!-- Decorative Elements -->
@@ -220,7 +194,25 @@
 </template>
 
 <script setup lang="ts">
+import { Home, Building, BookOpen, Utensils, Car, Wifi, Shield, Dumbbell } from 'lucide-vue-next'
 import { pondokData } from '@/data/pondokData'
+import type { Component } from 'vue'
+
+// Icon mapping function
+const getIconComponent = (iconName: string) => {
+  const iconMap: { [key: string]: Component } = {
+    home: Home,
+    mosque: Building,
+    library: BookOpen,
+    book: BookOpen,
+    sports: Dumbbell,
+    restaurant: Utensils,
+    car: Car,
+    wifi: Wifi,
+    shield: Shield,
+  }
+  return iconMap[iconName] || Home
+}
 
 const facilityHighlights = [
   {

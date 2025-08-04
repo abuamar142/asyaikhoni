@@ -33,28 +33,7 @@
               <div
                 class="w-14 h-14 bg-gradient-to-br from-green-600 to-green-700 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300"
               >
-                <svg class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path
-                    v-if="program.icon === 'book-open'"
-                    d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"
-                  />
-                  <path
-                    v-else-if="program.icon === 'academic-cap'"
-                    d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6L23 9l-11-6z"
-                  />
-                  <path
-                    v-else-if="program.icon === 'heart'"
-                    d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
-                  />
-                  <path
-                    v-else-if="program.icon === 'users'"
-                    d="M16 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zm4 18v-6h2.5l-2.54-7.63A2.996 2.996 0 0 0 17.06 7c-.8 0-1.54.37-2.01.97L12 11.5l-3.05-3.53A2.996 2.996 0 0 0 6.94 7c-1.05 0-1.99.54-2.54 1.37L1.5 16H4v6h3v-6h2v6h3v-6h2v6h4z"
-                  />
-                  <path
-                    v-else
-                    d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-                  />
-                </svg>
+                <component :is="getIconComponent(program.icon)" class="w-7 h-7 text-white" />
               </div>
               <div>
                 <h3
@@ -83,9 +62,7 @@
                   <div
                     class="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0"
                   >
-                    <svg class="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
+                    <CheckCircle class="w-3 h-3 text-green-600" />
                   </div>
                   <span class="text-gray-700">{{ feature }}</span>
                 </div>
@@ -151,7 +128,9 @@
 </template>
 
 <script setup lang="ts">
+import { BookOpen, GraduationCap, Heart, Users, CheckCircle } from 'lucide-vue-next'
 import { pondokData } from '@/data/pondokData'
+import type { Component } from 'vue'
 
 const teachingMethods = [
   'Talaqqi Langsung',
@@ -161,6 +140,18 @@ const teachingMethods = [
   'Metode Visual',
   'Audio Learning',
 ]
+
+// Icon mapping function
+const getIconComponent = (iconName: string) => {
+  const iconMap: { [key: string]: Component } = {
+    'book-open': BookOpen,
+    'academic-cap': GraduationCap,
+    heart: Heart,
+    users: Users,
+    'check-circle': CheckCircle,
+  }
+  return iconMap[iconName] || BookOpen
+}
 
 const scrollToSection = (sectionId: string) => {
   const element = document.getElementById(sectionId)

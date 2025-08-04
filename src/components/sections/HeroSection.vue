@@ -85,15 +85,7 @@
 
               <!-- Mosque Silhouette -->
               <div class="absolute inset-0 flex items-center justify-center">
-                <svg
-                  class="w-64 h-64 text-green-700 opacity-20"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    d="M12 2C10.9 2 10 2.9 10 4V6H8C6.9 6 6 6.9 6 8V20C6 21.1 6.9 22 8 22H16C17.1 22 18 21.1 18 20V8C18 6.9 17.1 6 16 6H14V4C14 2.9 13.1 2 12 2M12 4C12 4 12 4 12 4V6H12V4M8 8H16V20H8V8M10 10V18H12V10H10M14 10V18H16V14H14V10Z"
-                  />
-                </svg>
+                <Building class="w-64 h-64 text-green-700 opacity-20" />
               </div>
 
               <!-- Decorative Elements -->
@@ -115,11 +107,7 @@
                 <div
                   class="w-16 h-16 bg-green-700 rounded-lg flex items-center justify-center shadow-lg"
                 >
-                  <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                    <path
-                      d="M12 3L2 12h3v8h14v-8h3L12 3zm0 2.2L18.8 12H17v6H7v-6H5.2L12 5.2zM9 13h6v5H9v-5z"
-                    />
-                  </svg>
+                  <Play class="w-8 h-8 text-white" />
                 </div>
               </div>
             </div>
@@ -128,9 +116,7 @@
             <div
               class="absolute -top-4 -left-4 w-20 h-20 bg-white rounded-xl shadow-lg flex items-center justify-center float"
             >
-              <svg class="w-8 h-8 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 3L2 12h3v8h14v-8h3L12 3zm0 2.2L18.8 12H17v6H7v-6H5.2L12 5.2z" />
-              </svg>
+              <Users class="w-8 h-8 text-green-600" />
             </div>
 
             <div
@@ -146,19 +132,13 @@
 
     <!-- Scroll Indicator -->
     <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-      <svg class="w-6 h-6 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M19 14l-7 7m0 0l-7-7m7 7V3"
-        />
-      </svg>
+      <ChevronDown class="w-6 h-6 text-green-700" />
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
+import { Play, Users, ChevronDown, Building } from 'lucide-vue-next'
 import { pondokData } from '@/data/pondokData'
 
 const scrollToSection = (sectionId: string) => {
