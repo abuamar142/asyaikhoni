@@ -130,51 +130,23 @@
               </div>
 
               <form @submit.prevent="submitForm" class="space-y-6 flex-1 flex flex-col">
-                <div class="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
-                      Nama Lengkap *
-                    </label>
-                    <input
-                      type="text"
-                      id="name"
-                      v-model="form.name"
-                      required
-                      class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
-                      placeholder="Masukkan nama lengkap"
-                    />
-                  </div>
-                  <div>
-                    <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">
-                      No. Telepon *
-                    </label>
-                    <input
-                      type="tel"
-                      id="phone"
-                      v-model="form.phone"
-                      required
-                      class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
-                      placeholder="081234567890"
-                    />
-                  </div>
-                </div>
-
                 <div>
-                  <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
-                    Email
+                  <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+                    Nama *
                   </label>
                   <input
-                    type="email"
-                    id="email"
-                    v-model="form.email"
+                    type="text"
+                    id="name"
+                    v-model="form.name"
+                    required
                     class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
-                    placeholder="nama@email.com"
+                    placeholder="Masukkan nama"
                   />
                 </div>
 
                 <div>
                   <label for="subject" class="block text-sm font-medium text-gray-700 mb-2">
-                    Subjek *
+                    Keperluan *
                   </label>
                   <select
                     id="subject"
@@ -182,11 +154,12 @@
                     required
                     class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
                   >
-                    <option value="">Pilih subjek</option>
-                    <option value="pendaftaran">Pendaftaran Santri Baru</option>
-                    <option value="informasi">Informasi Program</option>
-                    <option value="kunjungan">Kunjungan Pondok</option>
-                    <option value="lainnya">Lainnya</option>
+                    <option value="">Pilih keperluan</option>
+                    <option value="Pendaftaran Santri Baru">Pendaftaran Santri Baru</option>
+                    <option value="Informasi Program">Informasi Program</option>
+                    <option value="Kunjungan Pondok">Kunjungan Pondok</option>
+                    <option value="Konsultasi">Konsultasi</option>
+                    <option value="Lainnya">Lainnya</option>
                   </select>
                 </div>
 
@@ -210,10 +183,10 @@
                     class="w-full btn-primary flex items-center justify-center"
                     :class="{ 'opacity-50 cursor-not-allowed': isSubmitting }"
                   >
-                    <span v-if="!isSubmitting">Kirim Pesan</span>
+                    <span v-if="!isSubmitting">Kirim ke WhatsApp</span>
                     <span v-else class="flex items-center">
                       <Loader2 class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />
-                      Mengirim...
+                      Menyiapkan...
                     </span>
                   </button>
                 </div>
@@ -226,9 +199,15 @@
               >
                 <div class="flex items-center space-x-3">
                   <CheckCircle class="w-5 h-5 text-green-600" />
-                  <p class="text-green-800 font-medium">
-                    Pesan berhasil dikirim! Kami akan menghubungi Anda segera.
-                  </p>
+                  <div>
+                    <p class="text-green-800 font-medium">
+                      Pesan berhasil disiapkan! WhatsApp akan terbuka untuk mengirim pesan.
+                    </p>
+                    <p class="text-green-700 text-sm mt-1">
+                      Jika WhatsApp tidak terbuka otomatis, silakan copy pesan dan kirim manual ke
+                      {{ pondokData.contact.phone }}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -278,7 +257,7 @@
 
             <!-- Quick Links -->
             <div
-              class="bg-gradient-to-br from-green-50 to-white p-6 rounded-2xl border border-green-100 shadow-sm"
+              class="bg-gradient-to-br from-green-50 to-white p-6 rounded-2xl border border-green-100 shadow-sm flex-1"
             >
               <h4 class="font-semibold text-gray-900 mb-4">Link Penting</h4>
               <div class="space-y-3">
@@ -306,29 +285,8 @@
                   <span class="text-gray-700 group-hover:text-yellow-800">Infaq Pondok</span>
                   <ExternalLink class="w-4 h-4 text-gray-400 group-hover:text-yellow-600" />
                 </a>
-              </div>
-            </div>
-
-            <!-- Hours Info -->
-            <div
-              class="bg-gradient-to-br from-blue-50 to-white p-6 rounded-2xl border border-blue-100 shadow-sm flex-1 flex flex-col"
-            >
-              <h4 class="font-semibold text-gray-900 mb-3">Jam Operasional</h4>
-              <div class="space-y-2 text-sm flex-1 flex flex-col justify-center">
-                <div class="flex justify-between">
-                  <span class="text-gray-600">Senin - Kamis</span>
-                  <span class="text-gray-900 font-medium">08:00 - 17:00</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-gray-600">Jumat</span>
-                  <span class="text-gray-900 font-medium">08:00 - 11:30</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-gray-600">Sabtu - Minggu</span>
-                  <span class="text-gray-900 font-medium">08:00 - 16:00</span>
-                </div>
-                <div class="pt-2 border-t border-blue-100 mt-4">
-                  <p class="text-blue-700 font-medium">📞 Konsultasi 24/7 via WhatsApp</p>
+                <div class="pt-3 mt-3 border-t border-green-100">
+                  <p class="text-green-700 font-medium text-sm">📞 Konsultasi 24/7 via WhatsApp</p>
                 </div>
               </div>
             </div>
@@ -358,8 +316,6 @@ const showSuccess = ref(false)
 
 const form = reactive({
   name: '',
-  phone: '',
-  email: '',
   subject: '',
   message: '',
 })
@@ -367,24 +323,66 @@ const form = reactive({
 const submitForm = async () => {
   isSubmitting.value = true
 
-  // Simulate form submission
-  await new Promise((resolve) => setTimeout(resolve, 2000))
+  try {
+    // Create WhatsApp message
+    const message = `*Pesan dari Website PPTQ Asy-Syaikhoni*
 
-  // Reset form
-  Object.assign(form, {
-    name: '',
-    phone: '',
-    email: '',
-    subject: '',
-    message: '',
-  })
+*Nama:* ${form.name}
+*Keperluan:* ${form.subject}
 
-  isSubmitting.value = false
-  showSuccess.value = true
+*Pesan:*
+${form.message}
 
-  // Hide success message after 5 seconds
-  setTimeout(() => {
-    showSuccess.value = false
-  }, 5000)
+---
+Dikirim dari website resmi PPTQ Asy-Syaikhoni`
+
+    // Encode message for URL
+    const encodedMessage = encodeURIComponent(message)
+
+    // Get WhatsApp number from pondok data (remove +62 and leading zeros)
+    const phoneNumber = pondokData.contact.phone.replace(/[^0-9]/g, '')
+    const whatsappNumber = phoneNumber.startsWith('0')
+      ? '62' + phoneNumber.substring(1)
+      : phoneNumber.startsWith('62')
+        ? phoneNumber
+        : '62' + phoneNumber
+
+    // Create WhatsApp URL
+    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`
+
+    // Simulate processing time
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+
+    // Open WhatsApp
+    window.open(whatsappUrl, '_blank')
+
+    // Reset form
+    Object.assign(form, {
+      name: '',
+      subject: '',
+      message: '',
+    })
+
+    isSubmitting.value = false
+    showSuccess.value = true
+
+    // Hide success message after 5 seconds
+    setTimeout(() => {
+      showSuccess.value = false
+    }, 5000)
+  } catch (error) {
+    console.error('Error sending message:', error)
+    isSubmitting.value = false
+
+    // Still try to open WhatsApp as fallback
+    const fallbackMessage = `Halo, saya ${form.name}. ${form.message}`
+    const encodedFallback = encodeURIComponent(fallbackMessage)
+    const phoneNumber = pondokData.contact.phone.replace(/[^0-9]/g, '')
+    const whatsappNumber = phoneNumber.startsWith('0')
+      ? '62' + phoneNumber.substring(1)
+      : phoneNumber
+
+    window.open(`https://wa.me/${whatsappNumber}?text=${encodedFallback}`, '_blank')
+  }
 }
 </script>
