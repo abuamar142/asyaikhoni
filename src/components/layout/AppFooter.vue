@@ -10,19 +10,21 @@
               <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center p-1">
                 <img
                   src="/logo.png"
-                  alt="PPTQ Asy-Syaikhoni Logo"
+                  :alt="`${pondokData.shortName} Logo`"
                   class="w-full h-full object-contain"
                 />
               </div>
               <div>
-                <h3 class="text-xl font-bold">PPTQ Asy-Syaikhoni</h3>
-                <p class="text-green-200 text-sm">Tahfidzul Qur'an</p>
+                <h3 class="text-xl font-bold">{{ pondokData.shortName }}</h3>
+                <p class="text-green-200 text-sm">
+                  {{ pondokData.name.split(' ').slice(2, 4).join(' ') }}
+                </p>
               </div>
             </div>
 
             <p class="text-green-100 leading-relaxed">
-              Mencetak generasi Qur'ani yang berakhlak mulia dengan metode pembelajaran yang efektif
-              dan lingkungan yang kondusif.
+              {{ pondokData.tagline }} dengan metode pembelajaran yang efektif dan lingkungan yang
+              kondusif.
             </p>
 
             <!-- Arabic Quote -->
@@ -164,7 +166,7 @@
         <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
           <div class="flex items-center space-x-4">
             <p class="text-green-200 text-sm">
-              © {{ currentYear }} PPTQ Asy-Syaikhoni. All rights reserved.
+              © {{ currentYear }} {{ pondokData.shortName }}. All rights reserved.
             </p>
           </div>
 

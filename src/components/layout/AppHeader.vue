@@ -7,11 +7,19 @@
         <!-- Logo -->
         <div class="flex items-center space-x-3">
           <div class="w-10 h-10 rounded-lg flex items-center justify-center">
-            <img src="/logo.png" alt="PPTQ Asy-Syaikhoni Logo" class="w-10 h-10 object-contain" />
+            <img
+              src="/logo.png"
+              :alt="`${pondokData.shortName} Logo`"
+              class="w-10 h-10 object-contain"
+            />
           </div>
           <div class="hidden sm:block">
-            <h1 class="text-xl font-bold text-green-800">PPTQ</h1>
-            <p class="text-xs text-green-600 -mt-1">Asy-Syaikhoni</p>
+            <h1 class="text-xl font-bold text-green-800">
+              {{ pondokData.shortName.split(' ')[0] }}
+            </h1>
+            <p class="text-xs text-green-600 -mt-1">
+              {{ pondokData.shortName.split(' ').slice(1).join(' ') }}
+            </p>
           </div>
         </div>
 
@@ -79,7 +87,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { Menu, X } from 'lucide-vue-next'
-import { navigationMenu } from '@/data/pondokData'
+import { navigationMenu, pondokData } from '@/data/pondokData'
 
 const isMobileMenuOpen = ref(false)
 

@@ -69,12 +69,11 @@
               </span>
             </div>
             <h2 class="text-3xl md:text-4xl font-bold text-gray-900">
-              <span class="text-green-800">Pondok Pesantren</span> yang Berkualitas dan
+              <span class="text-green-800">{{ pondokData.name }}</span> yang Berkualitas dan
               Berpengalaman
             </h2>
             <p class="text-lg text-gray-600">
-              Kami berkomitmen mencetak generasi Qur'ani yang berakhlak mulia dengan metode
-              pembelajaran yang efektif dan lingkungan yang kondusif.
+              {{ pondokData.description }}
             </p>
           </div>
 

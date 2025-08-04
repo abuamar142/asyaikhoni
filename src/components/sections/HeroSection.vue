@@ -32,12 +32,18 @@
           <!-- Main Heading -->
           <div class="space-y-4">
             <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
-              <span class="text-green-800">Pondok Pesantren</span><br />
-              <span class="text-yellow-600">Tahfidzul Qur'an</span><br />
+              <span class="text-green-800">{{
+                pondokData.name.split(' ').slice(0, 2).join(' ')
+              }}</span
+              ><br />
+              <span class="text-yellow-600">{{
+                pondokData.name.split(' ').slice(2, 4).join(' ')
+              }}</span
+              ><br />
               <span
                 class="bg-gradient-to-r from-green-700 to-green-800 bg-clip-text text-transparent"
               >
-                Asy-Syaikhoni
+                {{ pondokData.name.split(' ').slice(4).join(' ') }}
               </span>
             </h1>
 
