@@ -6,10 +6,8 @@
       <div class="flex items-center justify-between h-16 px-4">
         <!-- Logo -->
         <div class="flex items-center space-x-3">
-          <div
-            class="w-10 h-10 bg-gradient-to-br from-green-600 to-green-800 rounded-lg flex items-center justify-center"
-          >
-            <Home class="w-6 h-6 text-white" />
+          <div class="w-10 h-10 rounded-lg flex items-center justify-center">
+            <img src="/logo.png" alt="PPTQ Asy-Syaikhoni Logo" class="w-10 h-10 object-contain" />
           </div>
           <div class="hidden sm:block">
             <h1 class="text-xl font-bold text-green-800">PPTQ</h1>
@@ -80,7 +78,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import { Home, Menu, X } from 'lucide-vue-next'
+import { Menu, X } from 'lucide-vue-next'
 import { navigationMenu } from '@/data/pondokData'
 
 const isMobileMenuOpen = ref(false)

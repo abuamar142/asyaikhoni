@@ -74,7 +74,7 @@
           <div class="px-6 pb-6">
             <div class="border-t border-gray-100 pt-4">
               <button
-                class="w-full bg-green-50 hover:bg-green-100 text-green-800 font-semibold py-3 px-4 rounded-lg transition-colors duration-200 group-hover:bg-green-700 group-hover:text-white"
+                class="w-full bg-green-50 text-green-800 font-semibold py-3 px-4 rounded-lg transition-all duration-300 hover:bg-green-700 hover:text-white group-hover:bg-green-600 group-hover:text-white group-hover:shadow-lg"
               >
                 Pelajari Lebih Lanjut
               </button>

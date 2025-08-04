@@ -105,14 +105,7 @@
               <div
                 class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center"
               >
-                <span class="text-white font-semibold text-lg">
-                  {{
-                    testimonial.name
-                      .split(' ')
-                      .map((n) => n[0])
-                      .join('')
-                  }}
-                </span>
+                <User class="w-6 h-6 text-white" />
               </div>
               <div>
                 <h4 class="font-semibold text-gray-900">{{ testimonial.name }}</h4>
@@ -176,7 +169,7 @@
 
 <script setup lang="ts">
 import { pondokData } from '@/data/pondokData'
-import { Star, Shield, Quote, Phone, Mail, Instagram } from 'lucide-vue-next'
+import { Star, Shield, Quote, Phone, Mail, Instagram, User } from 'lucide-vue-next'
 
 const ratingBreakdown = [
   { stars: 5, count: 6, percentage: 100 },

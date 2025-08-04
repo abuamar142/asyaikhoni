@@ -7,8 +7,12 @@
           <!-- Logo & Description -->
           <div class="space-y-6">
             <div class="flex items-center space-x-3">
-              <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center">
-                <Home class="w-7 h-7 text-green-700" />
+              <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center p-1">
+                <img
+                  src="/logo.png"
+                  alt="PPTQ Asy-Syaikhoni Logo"
+                  class="w-full h-full object-contain"
+                />
               </div>
               <div>
                 <h3 class="text-xl font-bold">PPTQ Asy-Syaikhoni</h3>
@@ -193,7 +197,6 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { pondokData, navigationMenu } from '@/data/pondokData'
 import {
-  Home,
   ChevronRight,
   CheckCircle,
   Phone,
