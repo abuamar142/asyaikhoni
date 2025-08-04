@@ -18,8 +18,8 @@
                 >
                   <User class="w-12 h-12 text-white" />
                 </div>
-                <h3 class="text-2xl font-bold text-green-800">15+ Tahun</h3>
-                <p class="text-gray-600">Pengalaman Mendidik</p>
+                <h3 class="text-heading-lg text-brand">15+ Tahun</h3>
+                <p class="text-body-sm text-muted">Pengalaman Mendidik</p>
               </div>
             </div>
 
@@ -40,8 +40,8 @@
                 <Star class="w-5 h-5 text-green-600" />
               </div>
               <div>
-                <p class="font-semibold text-green-800">Rating 5.0</p>
-                <p class="text-xs text-gray-500">6 Reviews</p>
+                <p class="text-heading-sm text-brand">Rating 5.0</p>
+                <p class="text-caption text-muted">6 Reviews</p>
               </div>
             </div>
           </div>
@@ -51,8 +51,8 @@
             style="animation: float 3s ease-in-out infinite 2s"
           >
             <div class="text-center">
-              <p class="font-bold text-green-800 text-lg">100+</p>
-              <p class="text-xs text-green-700">Santri Aktif</p>
+              <p class="text-heading-sm text-brand">100+</p>
+              <p class="text-caption text-brand">Santri Aktif</p>
             </div>
           </div>
         </div>
@@ -68,11 +68,11 @@
                 Tentang Kami
               </span>
             </div>
-            <h2 class="text-3xl md:text-4xl font-bold text-gray-900">
-              <span class="text-green-800">{{ pondokData.name }}</span> yang Berkualitas dan
+            <h2 class="text-display-sm">
+              <span class="text-brand">{{ pondokData.name }}</span> yang Berkualitas dan
               Berpengalaman
             </h2>
-            <p class="text-lg text-gray-600">
+            <p class="text-body-lg text-muted">
               {{ pondokData.description }}
             </p>
           </div>
@@ -90,8 +90,8 @@
                 <CheckCircle class="w-5 h-5 text-green-600" />
               </div>
               <div>
-                <h4 class="font-semibold text-gray-900">{{ feature.title }}</h4>
-                <p class="text-gray-600">{{ feature.description }}</p>
+                <h4 class="text-heading-sm">{{ feature.title }}</h4>
+                <p class="text-body-sm text-muted">{{ feature.description }}</p>
               </div>
             </div>
           </div>
@@ -105,12 +105,12 @@
                 <MapPin class="w-6 h-6 text-white" />
               </div>
               <div>
-                <h4 class="font-semibold text-gray-900 mb-2">Lokasi Pondok</h4>
-                <p class="text-gray-600 mb-3">{{ pondokData.contact.address }}</p>
+                <h4 class="text-heading-sm mb-2">Lokasi Pondok</h4>
+                <p class="text-body-sm text-muted mb-3">{{ pondokData.contact.address }}</p>
                 <a
                   :href="pondokData.contact.maps"
                   target="_blank"
-                  class="inline-flex items-center text-green-700 hover:text-green-800 font-medium"
+                  class="inline-flex items-center text-brand hover:text-green-800 font-medium"
                 >
                   <span>Lihat di Google Maps</span>
                   <ExternalLink class="w-4 h-4 ml-1" />

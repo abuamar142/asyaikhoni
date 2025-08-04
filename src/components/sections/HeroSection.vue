@@ -24,21 +24,15 @@
         <div class="space-y-8 fade-in">
           <!-- Arabic Calligraphy -->
           <div class="text-center lg:text-left">
-            <p class="text-3xl md:text-4xl font-arabic text-green-800 mb-4">
-              بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
-            </p>
+            <p class="text-arabic-lg mb-4">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</p>
           </div>
 
           <!-- Main Heading -->
           <div class="space-y-4">
-            <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
-              <span class="text-green-800">{{
-                pondokData.name.split(' ').slice(0, 2).join(' ')
-              }}</span
+            <h1 class="text-display-lg leading-tight">
+              <span class="text-brand">{{ pondokData.name.split(' ').slice(0, 2).join(' ') }}</span
               ><br />
-              <span class="text-yellow-600">{{
-                pondokData.name.split(' ').slice(2, 4).join(' ')
-              }}</span
+              <span class="text-accent">{{ pondokData.name.split(' ').slice(2, 4).join(' ') }}</span
               ><br />
               <span
                 class="bg-gradient-to-r from-green-700 to-green-800 bg-clip-text text-transparent"
@@ -47,11 +41,11 @@
               </span>
             </h1>
 
-            <p class="text-xl md:text-2xl text-gray-600 font-medium">
+            <p class="text-body-lg font-medium">
               {{ pondokData.tagline }}
             </p>
 
-            <p class="text-lg text-gray-500 max-w-2xl">
+            <p class="text-body-md text-muted max-w-2xl">
               {{ pondokData.description }}
             </p>
           </div>
@@ -73,8 +67,8 @@
           <!-- Quick Stats -->
           <div class="grid grid-cols-2 md:grid-cols-4 gap-6 pt-8 border-t border-gray-200">
             <div v-for="stat in pondokData.stats" :key="stat.id" class="text-center">
-              <div class="text-2xl md:text-3xl font-bold text-green-800">{{ stat.number }}</div>
-              <div class="text-sm text-gray-600">{{ stat.label }}</div>
+              <div class="text-heading-lg text-brand">{{ stat.number }}</div>
+              <div class="text-body-sm text-muted">{{ stat.label }}</div>
             </div>
           </div>
         </div>

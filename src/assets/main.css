@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap');
 @import 'tailwindcss';
 
+/* Base Styles */
 html {
   scroll-behavior: smooth;
 }
@@ -9,6 +10,259 @@ body {
   font-family: ui-sans-serif, system-ui, sans-serif;
   color: #111827;
   background-color: #ffffff;
+}
+
+/* Text Component Classes */
+/* Display Text - Hero sections */
+.text-display-lg {
+  font-size: 3.5rem;
+  line-height: 1.2;
+  font-weight: 700;
+  color: #111827;
+}
+
+.text-display-md {
+  font-size: 2.875rem;
+  line-height: 1.25;
+  font-weight: 700;
+  color: #111827;
+}
+
+.text-display-sm {
+  font-size: 2.25rem;
+  line-height: 1.3;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* Headings */
+.text-heading-xl {
+  font-size: 1.875rem;
+  line-height: 1.4;
+  font-weight: 600;
+  color: #111827;
+}
+
+.text-heading-lg {
+  font-size: 1.5rem;
+  line-height: 1.4;
+  font-weight: 600;
+  color: #111827;
+}
+
+.text-heading-md {
+  font-size: 1.25rem;
+  line-height: 1.4;
+  font-weight: 600;
+  color: #111827;
+}
+
+.text-heading-sm {
+  font-size: 1.125rem;
+  line-height: 1.4;
+  font-weight: 500;
+  color: #111827;
+}
+
+/* Body Text */
+.text-body-lg {
+  font-size: 1.125rem;
+  line-height: 1.6;
+  font-weight: 400;
+  color: #374151;
+}
+
+.text-body-md {
+  font-size: 1rem;
+  line-height: 1.6;
+  font-weight: 400;
+  color: #374151;
+}
+
+.text-body-sm {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  font-weight: 400;
+  color: #374151;
+}
+
+/* Special Text */
+.text-caption {
+  font-size: 0.75rem;
+  line-height: 1.5;
+  font-weight: 400;
+  color: #6b7280;
+}
+
+.text-arabic-lg {
+  font-size: 2rem;
+  line-height: 1.8;
+  font-weight: 400;
+  color: #15803d;
+  font-family: 'Amiri', serif;
+}
+
+.text-arabic-md {
+  font-size: 1.5rem;
+  line-height: 1.8;
+  font-weight: 400;
+  color: #15803d;
+  font-family: 'Amiri', serif;
+}
+
+/* Text Color Utilities */
+.text-brand {
+  color: #15803d;
+}
+
+.text-accent {
+  color: #fde047;
+}
+
+.text-muted {
+  color: #6b7280;
+}
+
+.text-light {
+  color: #9ca3af;
+}
+
+.text-success {
+  color: #059669;
+}
+
+.text-warning {
+  color: #f59e0b;
+}
+
+.text-error {
+  color: #dc2626;
+}
+
+/* Dark Background Variants */
+.text-on-dark {
+  color: #ffffff;
+}
+
+.text-on-dark-muted {
+  color: #d1d5db;
+}
+
+.text-on-dark-light {
+  color: #9ca3af;
+}
+
+.text-on-dark-brand {
+  color: #86efac;
+}
+
+.text-on-dark-accent {
+  color: #fef08a;
+}
+
+/* Dark Background Text Classes */
+.text-display-lg-dark {
+  font-size: 3.5rem;
+  line-height: 1.2;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.text-display-md-dark {
+  font-size: 2.875rem;
+  line-height: 1.25;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.text-display-sm-dark {
+  font-size: 2.25rem;
+  line-height: 1.3;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.text-heading-xl-dark {
+  font-size: 1.875rem;
+  line-height: 1.4;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.text-heading-lg-dark {
+  font-size: 1.5rem;
+  line-height: 1.4;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.text-heading-md-dark {
+  font-size: 1.25rem;
+  line-height: 1.4;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.text-heading-sm-dark {
+  font-size: 1.125rem;
+  line-height: 1.4;
+  font-weight: 500;
+  color: #ffffff;
+}
+
+.text-body-lg-dark {
+  font-size: 1.125rem;
+  line-height: 1.6;
+  font-weight: 400;
+  color: #d1d5db;
+}
+
+.text-body-md-dark {
+  font-size: 1rem;
+  line-height: 1.6;
+  font-weight: 400;
+  color: #d1d5db;
+}
+
+.text-body-sm-dark {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  font-weight: 400;
+  color: #d1d5db;
+}
+
+.text-caption-dark {
+  font-size: 0.75rem;
+  line-height: 1.5;
+  font-weight: 400;
+  color: #9ca3af;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .text-display-lg {
+    font-size: 2.25rem;
+  }
+
+  .text-display-md {
+    font-size: 1.875rem;
+  }
+
+  .text-display-sm {
+    font-size: 1.5rem;
+  }
+
+  .text-heading-xl {
+    font-size: 1.5rem;
+  }
+
+  .text-arabic-lg {
+    font-size: 1.5rem;
+  }
+
+  .text-arabic-md {
+    font-size: 1.25rem;
+  }
 }
 
 .btn-primary {

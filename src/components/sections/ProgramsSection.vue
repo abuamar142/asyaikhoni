@@ -10,10 +10,10 @@
             Program Unggulan
           </span>
         </div>
-        <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-          Program <span class="text-green-800">Pendidikan</span> yang Komprehensif
+        <h2 class="text-display-sm mb-4">
+          Program <span class="text-brand">Pendidikan</span> yang Komprehensif
         </h2>
-        <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+        <p class="text-body-lg text-muted max-w-3xl mx-auto">
           Kami menyediakan berbagai program pendidikan Islam yang dirancang untuk mengembangkan
           kemampuan spiritual, intelektual, dan karakter santri.
         </p>
@@ -36,23 +36,19 @@
                 <component :is="getIconComponent(program.icon)" class="w-7 h-7 text-white" />
               </div>
               <div>
-                <h3
-                  class="text-xl font-bold text-gray-900 group-hover:text-green-800 transition-colors"
-                >
+                <h3 class="text-heading-lg text-brand transition-colors">
                   {{ program.title }}
                 </h3>
               </div>
             </div>
 
-            <p class="text-gray-600 mb-6">
+            <p class="text-body-md text-muted mb-6">
               {{ program.description }}
             </p>
 
             <!-- Features List -->
             <div class="space-y-3">
-              <h4 class="font-semibold text-gray-900 text-sm uppercase tracking-wide">
-                Program Meliputi:
-              </h4>
+              <h4 class="text-heading-sm uppercase tracking-wide">Program Meliputi:</h4>
               <div class="grid grid-cols-1 gap-2">
                 <div
                   v-for="feature in program.features"
@@ -64,7 +60,7 @@
                   >
                     <CheckCircle class="w-3 h-3 text-green-600" />
                   </div>
-                  <span class="text-gray-700">{{ feature }}</span>
+                  <span class="text-body-sm text-muted">{{ feature }}</span>
                 </div>
               </div>
             </div>
@@ -88,10 +84,10 @@
         <div class="grid lg:grid-cols-3 gap-8 items-center">
           <!-- Info Content -->
           <div class="lg:col-span-2 space-y-4">
-            <h3 class="text-2xl font-bold text-gray-900">
-              Metode Pembelajaran <span class="text-green-800">Modern & Efektif</span>
+            <h3 class="text-heading-xl">
+              Metode Pembelajaran <span class="text-brand">Modern & Efektif</span>
             </h3>
-            <p class="text-gray-600">
+            <p class="text-body-md text-muted">
               Kami menggunakan metode pembelajaran yang telah terbukti efektif dalam menghafal
               Al-Qur'an, dengan bimbingan yang intensif dan personal dari para ustadz yang
               berpengalaman.
@@ -110,8 +106,8 @@
           <!-- CTA Section -->
           <div class="text-center lg:text-right">
             <div class="space-y-4">
-              <div class="text-3xl font-bold text-green-800">24/7</div>
-              <div class="text-gray-600">Bimbingan Tersedia</div>
+              <div class="text-heading-xl text-brand">24/7</div>
+              <div class="text-body-md text-muted">Bimbingan Tersedia</div>
               <a
                 href="#contact"
                 @click="scrollToSection('contact')"

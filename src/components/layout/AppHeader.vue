@@ -14,10 +14,10 @@
             />
           </div>
           <div class="hidden sm:block">
-            <h1 class="text-xl font-bold text-green-800">
+            <h1 class="text-heading-lg text-brand">
               {{ pondokData.shortName.split(' ')[0] }}
             </h1>
-            <p class="text-xs text-green-600 -mt-1">
+            <p class="text-caption text-brand -mt-1">
               {{ pondokData.shortName.split(' ').slice(1).join(' ') }}
             </p>
           </div>
@@ -30,7 +30,7 @@
             :key="item.id"
             :href="item.href"
             @click="scrollToSection(item.id)"
-            class="text-gray-600 hover:text-green-700 font-medium transition-colors duration-200 relative group"
+            class="text-body-md text-muted hover:text-brand font-medium transition-colors duration-200 relative group"
           >
             {{ item.name }}
             <span
@@ -65,7 +65,7 @@
             :key="item.id"
             :href="item.href"
             @click="(scrollToSection(item.id), closeMobileMenu())"
-            class="block py-2 text-gray-600 hover:text-green-700 font-medium transition-colors duration-200"
+            class="block py-2 text-body-md text-muted hover:text-brand font-medium transition-colors duration-200"
           >
             {{ item.name }}
           </a>

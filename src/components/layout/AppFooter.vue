@@ -15,24 +15,24 @@
                 />
               </div>
               <div>
-                <h3 class="text-xl font-bold">{{ pondokData.shortName }}</h3>
-                <p class="text-green-200 text-sm">
+                <h3 class="text-heading-lg-dark">{{ pondokData.shortName }}</h3>
+                <p class="text-body-sm-dark text-green-200">
                   {{ pondokData.name.split(' ').slice(2, 4).join(' ') }}
                 </p>
               </div>
             </div>
 
-            <p class="text-green-100 leading-relaxed">
+            <p class="text-body-md-dark leading-relaxed">
               {{ pondokData.tagline }} dengan metode pembelajaran yang efektif dan lingkungan yang
               kondusif.
             </p>
 
             <!-- Arabic Quote -->
             <div class="bg-white/10 p-4 rounded-xl">
-              <p class="text-xl font-arabic text-center text-yellow-300 mb-2">
+              <p class="text-arabic-md text-center text-yellow-300 mb-2">
                 وَلَقَدْ يَسَّرْنَا الْقُرْآنَ لِلذِّكْرِ
               </p>
-              <p class="text-sm text-green-200 text-center">
+              <p class="text-body-sm-dark text-green-200 text-center">
                 "Dan sungguh, telah Kami mudahkan Al-Qur'an untuk peringatan"
               </p>
             </div>
@@ -40,7 +40,7 @@
 
           <!-- Quick Links -->
           <div class="space-y-6">
-            <h4 class="text-lg font-semibold">Navigasi</h4>
+            <h4 class="text-heading-md-dark">Navigasi</h4>
             <ul class="space-y-3">
               <li v-for="item in navigationMenu" :key="item.id">
                 <a
@@ -59,7 +59,7 @@
 
           <!-- Programs -->
           <div class="space-y-6">
-            <h4 class="text-lg font-semibold">Program</h4>
+            <h4 class="text-heading-md-dark">Program</h4>
             <ul class="space-y-3">
               <li v-for="program in pondokData.programs.slice(0, 4)" :key="program.id">
                 <div
@@ -76,7 +76,7 @@
 
           <!-- Contact Info -->
           <div class="space-y-6">
-            <h4 class="text-lg font-semibold">Kontak</h4>
+            <h4 class="text-heading-md-dark">Kontak</h4>
             <div class="space-y-4">
               <!-- Phone -->
               <div class="flex items-start space-x-3">
@@ -86,7 +86,7 @@
                   <Phone class="w-4 h-4 text-white" />
                 </div>
                 <div>
-                  <p class="text-green-200 text-sm">Telepon / WhatsApp</p>
+                  <p class="text-body-sm-dark">Telepon / WhatsApp</p>
                   <a
                     :href="'tel:' + pondokData.contact.phone.replace(/\D/g, '')"
                     class="text-white hover:text-yellow-300 transition-colors"
@@ -104,7 +104,7 @@
                   <Mail class="w-4 h-4 text-white" />
                 </div>
                 <div>
-                  <p class="text-green-200 text-sm">Email</p>
+                  <p class="text-body-sm-dark">Email</p>
                   <a
                     :href="'mailto:' + pondokData.contact.email"
                     class="text-white hover:text-yellow-300 transition-colors break-all"
@@ -122,15 +122,17 @@
                   <MapPin class="w-4 h-4 text-white" />
                 </div>
                 <div>
-                  <p class="text-green-200 text-sm">Alamat</p>
-                  <p class="text-white leading-relaxed">{{ pondokData.contact.address }}</p>
+                  <p class="text-body-sm-dark">Alamat</p>
+                  <p class="text-body-md-dark leading-relaxed">
+                    {{ pondokData.contact.address }}
+                  </p>
                 </div>
               </div>
             </div>
 
             <!-- Social Media -->
             <div class="space-y-3">
-              <h5 class="font-medium">Ikuti Kami</h5>
+              <h5 class="text-heading-sm-dark">Ikuti Kami</h5>
               <div class="flex space-x-3">
                 <a
                   :href="pondokData.socialMedia.instagram"
@@ -165,12 +167,12 @@
       <div class="container-custom py-6">
         <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
           <div class="flex items-center space-x-4">
-            <p class="text-green-200 text-sm">
+            <p class="text-body-sm-dark">
               © {{ currentYear }} {{ pondokData.shortName }}. All rights reserved.
             </p>
           </div>
 
-          <div class="flex items-center space-x-6 text-sm">
+          <div class="flex items-center space-x-6 text-body-sm-dark">
             <div class="flex items-center space-x-2 text-green-200">
               <Star class="w-4 h-4" />
               <span>Rating 5.0</span>

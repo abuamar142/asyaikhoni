@@ -39,10 +39,44 @@ export default {
           gold: '#f59e0b',
           sage: '#6b7280',
         },
+        text: {
+          primary: '#111827', // Gray 900 - Main text
+          secondary: '#374151', // Gray 700 - Secondary text
+          muted: '#6b7280', // Gray 500 - Muted text
+          light: '#9ca3af', // Gray 400 - Light text
+          white: '#ffffff', // White text
+          brand: '#15803d', // Primary green
+          accent: '#fde047', // Primary yellow
+          success: '#059669', // Success green
+          warning: '#f59e0b', // Warning orange
+          error: '#dc2626', // Error red
+        },
       },
       fontFamily: {
         arabic: ['Amiri', 'serif'],
         sans: ['ui-sans-serif', 'system-ui', 'sans-serif'],
+      },
+      fontSize: {
+        // Display sizes (for hero sections)
+        'display-lg': ['3.5rem', { lineHeight: '1.2', fontWeight: '700' }],
+        'display-md': ['2.875rem', { lineHeight: '1.25', fontWeight: '700' }],
+        'display-sm': ['2.25rem', { lineHeight: '1.3', fontWeight: '600' }],
+
+        // Heading sizes
+        'heading-xl': ['1.875rem', { lineHeight: '1.4', fontWeight: '600' }],
+        'heading-lg': ['1.5rem', { lineHeight: '1.4', fontWeight: '600' }],
+        'heading-md': ['1.25rem', { lineHeight: '1.4', fontWeight: '600' }],
+        'heading-sm': ['1.125rem', { lineHeight: '1.4', fontWeight: '600' }],
+
+        // Body text sizes
+        'body-lg': ['1.125rem', { lineHeight: '1.6', fontWeight: '400' }],
+        'body-md': ['1rem', { lineHeight: '1.6', fontWeight: '400' }],
+        'body-sm': ['0.875rem', { lineHeight: '1.6', fontWeight: '400' }],
+
+        // Special sizes
+        caption: ['0.75rem', { lineHeight: '1.5', fontWeight: '400' }],
+        'arabic-lg': ['2rem', { lineHeight: '1.8', fontWeight: '400' }],
+        'arabic-md': ['1.5rem', { lineHeight: '1.8', fontWeight: '400' }],
       },
       animation: {
         'fade-in': 'fadeIn 0.6s ease-in-out',

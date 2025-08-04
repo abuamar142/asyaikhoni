@@ -8,10 +8,10 @@
             Hubungi Kami
           </span>
         </div>
-        <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-          Mari <span class="text-green-800">Bergabung</span> dengan Kami
+        <h2 class="text-display-sm mb-4">
+          Mari <span class="text-brand">Bergabung</span> dengan Kami
         </h2>
-        <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+        <p class="text-body-lg text-muted max-w-3xl mx-auto">
           Silakan hubungi kami untuk informasi lebih lanjut tentang pendaftaran dan program-program
           yang tersedia di pondok pesantren.
         </p>
@@ -23,7 +23,7 @@
         <div class="grid lg:grid-cols-2 gap-8">
           <!-- Contact Information -->
           <div class="flex flex-col">
-            <h3 class="text-2xl font-bold text-gray-900 mb-6">Informasi Kontak</h3>
+            <h3 class="text-heading-xl mb-6">Informasi Kontak</h3>
 
             <!-- Contact Methods -->
             <div class="space-y-4 flex-1">
@@ -37,11 +37,11 @@
                   <Phone class="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h4 class="font-semibold text-gray-900 mb-1">WhatsApp</h4>
-                  <p class="text-gray-600 mb-2">Hubungi kami langsung untuk konsultasi</p>
+                  <h4 class="text-heading-sm mb-1">WhatsApp</h4>
+                  <p class="text-body-sm text-muted mb-2">Hubungi kami langsung untuk konsultasi</p>
                   <a
                     :href="pondokData.socialMedia.whatsapp"
-                    class="inline-flex items-center text-green-700 hover:text-green-800 font-medium"
+                    class="inline-flex items-center text-brand hover:text-green-800 font-medium"
                   >
                     {{ pondokData.contact.phone }}
                     <ExternalLink class="w-4 h-4 ml-1" />
@@ -59,11 +59,11 @@
                   <Mail class="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h4 class="font-semibold text-gray-900 mb-1">Email</h4>
-                  <p class="text-gray-600 mb-2">Kirim pertanyaan atau pesan Anda</p>
+                  <h4 class="text-heading-sm mb-1">Email</h4>
+                  <p class="text-body-sm text-muted mb-2">Kirim pertanyaan atau pesan Anda</p>
                   <a
                     :href="'mailto:' + pondokData.contact.email"
-                    class="inline-flex items-center text-yellow-700 hover:text-yellow-800 font-medium"
+                    class="inline-flex items-center text-warning hover:text-yellow-800 font-medium"
                   >
                     {{ pondokData.contact.email }}
                     <ExternalLink class="w-4 h-4 ml-1" />
@@ -81,12 +81,12 @@
                   <MapPin class="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h4 class="font-semibold text-gray-900 mb-1">Alamat Pondok</h4>
-                  <p class="text-gray-600 mb-2">{{ pondokData.contact.address }}</p>
+                  <h4 class="text-heading-sm mb-1">Alamat Pondok</h4>
+                  <p class="text-body-sm text-muted mb-2">{{ pondokData.contact.address }}</p>
                   <a
                     :href="pondokData.contact.maps"
                     target="_blank"
-                    class="inline-flex items-center text-green-700 hover:text-green-800 font-medium"
+                    class="inline-flex items-center text-brand hover:text-green-800 font-medium"
                   >
                     Lihat di Google Maps
                     <ExternalLink class="w-4 h-4 ml-1" />
@@ -98,7 +98,7 @@
 
           <!-- Google Maps -->
           <div class="flex flex-col">
-            <h3 class="text-2xl font-bold text-gray-900 mb-6">Lokasi Pondok</h3>
+            <h3 class="text-heading-xl mb-6">Lokasi Pondok</h3>
             <div
               class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden flex flex-col flex-1"
             >
@@ -125,15 +125,15 @@
               class="bg-gradient-to-br from-green-50 to-white p-8 rounded-2xl shadow-lg border border-green-100 flex flex-col w-full"
             >
               <div class="mb-6">
-                <h3 class="text-2xl font-bold text-gray-900 mb-2">Kirim Pesan</h3>
-                <p class="text-gray-600">Isi form di bawah ini untuk mengirim pesan kepada kami</p>
+                <h3 class="text-heading-xl mb-2">Kirim Pesan</h3>
+                <p class="text-body-md text-muted">
+                  Isi form di bawah ini untuk mengirim pesan kepada kami
+                </p>
               </div>
 
               <form @submit.prevent="submitForm" class="space-y-6 flex-1 flex flex-col">
                 <div>
-                  <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
-                    Nama *
-                  </label>
+                  <label for="name" class="text-body-sm font-medium mb-2"> Nama * </label>
                   <input
                     type="text"
                     id="name"
@@ -145,9 +145,7 @@
                 </div>
 
                 <div>
-                  <label for="subject" class="block text-sm font-medium text-gray-700 mb-2">
-                    Keperluan *
-                  </label>
+                  <label for="subject" class="text-body-sm font-medium mb-2"> Keperluan * </label>
                   <select
                     id="subject"
                     v-model="form.subject"
@@ -164,9 +162,7 @@
                 </div>
 
                 <div class="flex-1 flex flex-col">
-                  <label for="message" class="block text-sm font-medium text-gray-700 mb-2">
-                    Pesan *
-                  </label>
+                  <label for="message" class="text-body-sm font-medium mb-2"> Pesan * </label>
                   <textarea
                     id="message"
                     v-model="form.message"
@@ -200,10 +196,10 @@
                 <div class="flex items-center space-x-3">
                   <CheckCircle class="w-5 h-5 text-green-600" />
                   <div>
-                    <p class="text-green-800 font-medium">
+                    <p class="text-success font-medium">
                       Pesan berhasil disiapkan! WhatsApp akan terbuka untuk mengirim pesan.
                     </p>
-                    <p class="text-green-700 text-sm mt-1">
+                    <p class="text-body-sm text-success mt-1">
                       Jika WhatsApp tidak terbuka otomatis, silakan copy pesan dan kirim manual ke
                       {{ pondokData.contact.phone }}
                     </p>
@@ -219,7 +215,7 @@
             <div
               class="bg-gradient-to-br from-gray-50 to-white p-6 rounded-2xl border border-gray-100 shadow-sm"
             >
-              <h4 class="font-semibold text-gray-900 mb-4">Media Sosial</h4>
+              <h4 class="text-heading-sm mb-4">Media Sosial</h4>
               <div class="space-y-3">
                 <a
                   :href="pondokData.socialMedia.instagram"
@@ -232,8 +228,8 @@
                     <Instagram class="w-5 h-5 text-pink-600" />
                   </div>
                   <div>
-                    <p class="font-medium text-gray-900">Instagram</p>
-                    <p class="text-sm text-gray-600">@pptq_asyaikhoni</p>
+                    <p class="text-heading-sm">Instagram</p>
+                    <p class="text-body-sm text-muted">@pptq_asyaikhoni</p>
                   </div>
                 </a>
 
@@ -248,8 +244,8 @@
                     <Youtube class="w-5 h-5 text-red-600" />
                   </div>
                   <div>
-                    <p class="font-medium text-gray-900">YouTube</p>
-                    <p class="text-sm text-gray-600">PPTQ Asy-Syaikhoni</p>
+                    <p class="text-heading-sm">YouTube</p>
+                    <p class="text-body-sm text-muted">PPTQ Asy-Syaikhoni</p>
                   </div>
                 </a>
               </div>
@@ -259,14 +255,14 @@
             <div
               class="bg-gradient-to-br from-green-50 to-white p-6 rounded-2xl border border-green-100 shadow-sm flex-1"
             >
-              <h4 class="font-semibold text-gray-900 mb-4">Link Penting</h4>
+              <h4 class="text-heading-sm mb-4">Link Penting</h4>
               <div class="space-y-3">
                 <a
                   :href="pondokData.socialMedia.linktree"
                   target="_blank"
                   class="flex items-center justify-between p-3 bg-white rounded-lg hover:bg-green-50 transition-colors group"
                 >
-                  <span class="text-gray-700 group-hover:text-green-800">Link Tree</span>
+                  <span class="text-body-md text-muted group-hover:text-brand">Link Tree</span>
                   <ExternalLink class="w-4 h-4 text-gray-400 group-hover:text-green-600" />
                 </a>
                 <a
@@ -274,7 +270,7 @@
                   target="_blank"
                   class="flex items-center justify-between p-3 bg-white rounded-lg hover:bg-green-50 transition-colors group"
                 >
-                  <span class="text-gray-700 group-hover:text-green-800">Form Saran</span>
+                  <span class="text-body-md text-muted group-hover:text-brand">Form Saran</span>
                   <ExternalLink class="w-4 h-4 text-gray-400 group-hover:text-green-600" />
                 </a>
                 <a
@@ -282,11 +278,11 @@
                   target="_blank"
                   class="flex items-center justify-between p-3 bg-white rounded-lg hover:bg-yellow-50 transition-colors group"
                 >
-                  <span class="text-gray-700 group-hover:text-yellow-800">Infaq Pondok</span>
+                  <span class="text-body-md text-muted group-hover:text-warning">Infaq Pondok</span>
                   <ExternalLink class="w-4 h-4 text-gray-400 group-hover:text-yellow-600" />
                 </a>
                 <div class="pt-3 mt-3 border-t border-green-100">
-                  <p class="text-green-700 font-medium text-sm">📞 Konsultasi 24/7 via WhatsApp</p>
+                  <p class="text-brand font-medium text-body-sm">📞 Konsultasi 24/7 via WhatsApp</p>
                 </div>
               </div>
             </div>

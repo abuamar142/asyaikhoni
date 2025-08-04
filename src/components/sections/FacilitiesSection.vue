@@ -8,10 +8,10 @@
             Fasilitas Pondok
           </span>
         </div>
-        <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-          <span class="text-green-800">Fasilitas Lengkap</span> untuk Kenyamanan Belajar
+        <h2 class="text-display-sm mb-4">
+          <span class="text-brand">Fasilitas Lengkap</span> untuk Kenyamanan Belajar
         </h2>
-        <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+        <p class="text-body-lg text-muted max-w-3xl mx-auto">
           Kami menyediakan berbagai fasilitas yang mendukung kegiatan belajar mengajar dan kehidupan
           sehari-hari santri di pondok pesantren.
         </p>
@@ -51,12 +51,10 @@
 
             <!-- Content -->
             <div class="p-6">
-              <h3
-                class="text-xl font-bold text-gray-900 mb-3 group-hover:text-green-800 transition-colors"
-              >
+              <h3 class="text-heading-lg text-brand transition-colors">
                 {{ facility.name }}
               </h3>
-              <p class="text-gray-600 leading-relaxed">
+              <p class="text-body-md text-muted leading-relaxed">
                 {{ facility.description }}
               </p>
             </div>
@@ -76,8 +74,8 @@
         <div class="grid lg:grid-cols-2 gap-8 items-center">
           <!-- Content -->
           <div class="p-8 lg:p-12">
-            <h3 class="text-2xl md:text-3xl font-bold text-gray-900 mb-6">
-              Lingkungan <span class="text-green-800">Bersih, Asri</span> & Nyaman
+            <h3 class="text-heading-xl mb-6">
+              Lingkungan <span class="text-brand">Bersih, Asri</span> & Nyaman
             </h3>
 
             <div class="space-y-4 mb-8">
@@ -94,8 +92,8 @@
                   </svg>
                 </div>
                 <div>
-                  <h4 class="font-semibold text-gray-900">{{ highlight.title }}</h4>
-                  <p class="text-gray-600 text-sm">{{ highlight.description }}</p>
+                  <h4 class="text-heading-sm">{{ highlight.title }}</h4>
+                  <p class="text-body-sm text-muted">{{ highlight.description }}</p>
                 </div>
               </div>
             </div>
