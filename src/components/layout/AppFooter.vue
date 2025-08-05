@@ -12,11 +12,11 @@
     </div>
 
     <!-- Main Footer -->
-    <div class="py-16 relative z-10">
+    <div class="py-8 sm:py-12 lg:py-16 px-4 sm:px-6 lg:px-0 relative z-10">
       <div class="container-custom">
-        <div class="grid lg:grid-cols-4 md:grid-cols-2 gap-8">
+        <div class="grid lg:grid-cols-4 md:grid-cols-2 gap-6 sm:gap-8">
           <!-- Logo & Description -->
-          <div class="space-y-6">
+          <div class="space-y-4 sm:space-y-6">
             <div class="flex items-center space-x-3">
               <div
                 class="w-12 h-12 bg-gradient-to-br from-white to-gray-100 rounded-xl flex items-center justify-center p-1.5 shadow-lg"
@@ -44,7 +44,7 @@
           </div>
 
           <!-- Quick Links -->
-          <div class="space-y-5">
+          <div class="space-y-3 sm:space-y-5">
             <h4 class="text-lg font-bold text-white border-b border-emerald-400/50 pb-2">
               Navigasi
             </h4>
@@ -56,7 +56,7 @@
                   class="text-emerald-100 hover:text-yellow-300 transition-all duration-300 flex items-center group hover:translate-x-1 text-base font-medium"
                 >
                   <ChevronRight
-                    class="w-4 h-4 mr-2 opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:translate-x-1 text-yellow-400"
+                    class="w-4 h-4 mr-2 opacity-60 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-300 group-hover:translate-x-1 text-yellow-400"
                   />
                   {{ item.name }}
                 </a>
@@ -65,7 +65,7 @@
           </div>
 
           <!-- Programs -->
-          <div class="space-y-5">
+          <div class="space-y-3 sm:space-y-5">
             <h4 class="text-lg font-bold text-white border-b border-emerald-400/50 pb-2">
               Program
             </h4>
@@ -84,9 +84,9 @@
           </div>
 
           <!-- Contact Info -->
-          <div class="space-y-5">
+          <div class="space-y-3 sm:space-y-5">
             <h4 class="text-lg font-bold text-white border-b border-emerald-400/50 pb-2">Kontak</h4>
-            <div class="space-y-4">
+            <div class="space-y-3 sm:space-y-4">
               <!-- Phone -->
               <div class="flex items-start space-x-3">
                 <div
@@ -175,22 +175,24 @@
     <div
       class="border-t border-emerald-400/30 bg-gradient-to-r from-emerald-950/80 to-teal-950/80 backdrop-blur-sm"
     >
-      <div class="container-custom py-6">
-        <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+      <div class="container-custom py-4 sm:py-6 px-4 sm:px-6 lg:px-0">
+        <div
+          class="flex flex-col md:flex-row justify-between items-center space-y-3 md:space-y-0 text-center md:text-left"
+        >
           <div class="flex items-center space-x-4">
-            <p class="text-emerald-200 text-base font-medium">
+            <p class="text-emerald-200 text-sm sm:text-base font-medium">
               © {{ currentYear }} {{ pondokData.shortName }}. All rights reserved.
             </p>
           </div>
 
-          <div class="flex items-center space-x-6">
+          <div class="flex items-center space-x-4 sm:space-x-6">
             <div class="flex items-center space-x-2">
-              <Star class="w-5 h-5 text-yellow-400" />
-              <span class="text-white text-base font-bold">Rating 5.0</span>
+              <Star class="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400" />
+              <span class="text-white text-sm sm:text-base font-bold">Rating 5.0</span>
             </div>
             <div class="flex items-center space-x-2">
-              <Shield class="w-5 h-5 text-emerald-400" />
-              <span class="text-white text-base font-bold">Terpercaya</span>
+              <Shield class="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" />
+              <span class="text-white text-sm sm:text-base font-bold">Terpercaya</span>
             </div>
           </div>
         </div>
