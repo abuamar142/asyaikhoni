@@ -22,7 +22,7 @@
                 class="w-12 h-12 bg-gradient-to-br from-white to-gray-100 rounded-xl flex items-center justify-center p-1.5 shadow-lg"
               >
                 <img
-                  src="/logo.png"
+                  src="/logo.svg"
                   :alt="`${pondokData.shortName} Logo`"
                   class="w-full h-full object-contain"
                 />
@@ -146,6 +146,7 @@
                 <a
                   :href="pondokData.socialMedia.instagram"
                   target="_blank"
+                  aria-label="Kunjungi halaman Instagram PPTQ Asy-Syaikhoni"
                   class="w-10 h-10 bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl flex items-center justify-center hover:scale-110 hover:shadow-xl transition-all duration-300"
                 >
                   <Instagram class="w-5 h-5 text-white" />
@@ -153,6 +154,7 @@
                 <a
                   :href="pondokData.socialMedia.youtube"
                   target="_blank"
+                  aria-label="Kunjungi channel YouTube PPTQ Asy-Syaikhoni"
                   class="w-10 h-10 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center hover:scale-110 hover:shadow-xl transition-all duration-300"
                 >
                   <Youtube class="w-5 h-5 text-white" />
@@ -160,6 +162,7 @@
                 <a
                   :href="pondokData.socialMedia.linktree"
                   target="_blank"
+                  aria-label="Kunjungi semua tautan sosial media PPTQ Asy-Syaikhoni"
                   class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center hover:scale-110 hover:shadow-xl transition-all duration-300"
                 >
                   <ExternalLink class="w-5 h-5 text-white" />
@@ -203,6 +206,7 @@
     <button
       v-show="showBackToTop"
       @click="scrollToTop"
+      aria-label="Kembali ke atas"
       class="fixed bottom-6 right-6 w-12 h-12 bg-gradient-to-br from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center justify-center z-40 hover:scale-110 active:scale-95"
     >
       <ArrowUp class="w-5 h-5" />

@@ -111,6 +111,7 @@
                   allowfullscreen
                   loading="lazy"
                   referrerpolicy="no-referrer-when-downgrade"
+                  title="Lokasi Pondok Pesantren Tahfidzul Qur'an Asy-Syaikhoni di Google Maps"
                   class="w-full h-full"
                 ></iframe>
               </div>

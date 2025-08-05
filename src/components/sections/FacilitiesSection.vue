@@ -166,7 +166,7 @@
                 </div>
 
                 <div
-                  class="absolute bottom-8 left-8 w-14 h-10 bg-green-400 rounded-lg flex items-center justify-center"
+                  class="absolute bottom-8 left-8 w-14 h-10 bg-green-700 rounded-lg flex items-center justify-center"
                   style="animation: float 3s ease-in-out infinite 2s"
                 >
                   <span class="text-white font-bold text-xs">24/7</span>

@@ -1,0 +1,31 @@
+# robots.txt for PPTQ Asy-Syaikhoni
+# Website: https://www.asyaikhoni.abuamar.site
+
+User-agent: *
+Allow: /
+
+# Sitemaps
+Sitemap: https://www.asyaikhoni.abuamar.site/sitemap.xml
+
+# Crawl-delay (helps prevent server overload)
+Crawl-delay: 1
+
+# Allow all major search engines
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+# Block common spam bots (optional)
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+# Host (preferred domain)
+Host: www.asyaikhoni.abuamar.site

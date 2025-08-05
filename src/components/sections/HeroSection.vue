@@ -179,6 +179,7 @@
                 <!-- Close button -->
                 <button
                   @click.stop="closeVideo"
+                  aria-label="Tutup video"
                   class="absolute top-4 right-4 w-10 h-10 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center transition-colors z-10"
                 >
                   <X class="w-5 h-5 text-white" />

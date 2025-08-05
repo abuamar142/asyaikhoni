@@ -9,7 +9,7 @@
         <div class="flex items-center space-x-3">
           <div class="w-10 h-10 rounded-lg flex items-center justify-center">
             <img
-              src="/logo.png"
+              src="/logo.svg"
               :alt="`${pondokData.shortName} Logo`"
               class="w-10 h-10 object-contain"
             />

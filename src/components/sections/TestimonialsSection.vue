@@ -108,7 +108,7 @@
                 <User class="w-6 h-6 text-white" />
               </div>
               <div>
-                <h4 class="text-heading-sm">{{ testimonial.name }}</h4>
+                <h3 class="text-heading-sm">{{ testimonial.name }}</h3>
                 <p class="text-body-sm text-muted">{{ testimonial.role }}</p>
               </div>
             </div>
