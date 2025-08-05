@@ -71,10 +71,21 @@ const textClasses = computed(() => {
       classes.push(props.theme === 'dark' ? 'text-on-dark-muted' : 'text-text-secondary')
     } else if (props.color === 'muted') {
       classes.push(props.theme === 'dark' ? 'text-on-dark-muted' : 'text-muted')
+    } else if (props.color === 'accent') {
+      // Special handling for accent color on dark backgrounds
+      classes.push(props.theme === 'dark' ? 'text-yellow-200' : 'text-accent')
     } else if (props.color.startsWith('on-dark')) {
       classes.push(`text-${props.color}`)
     } else {
       classes.push(`text-${props.color}`)
+    }
+  } else {
+    // Default colors for arabic text when no color is specified
+    if (
+      (props.variant === 'arabic-lg' || props.variant === 'arabic-md') &&
+      props.theme === 'dark'
+    ) {
+      classes.push('text-yellow-200')
     }
   }
 

@@ -53,7 +53,6 @@ export default {
         },
       },
       fontFamily: {
-        arabic: ['Amiri', 'serif'],
         sans: ['ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       fontSize: {

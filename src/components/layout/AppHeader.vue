@@ -1,6 +1,7 @@
 <template>
   <header
-    class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-green-100 shadow-sm"
+    class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-green-100 shadow-sm transition-all duration-300"
+    :class="{ 'shadow-lg': isMobileMenuOpen }"
   >
     <nav class="container-custom">
       <div class="flex items-center justify-between h-16 px-4">
@@ -49,31 +50,67 @@
         <!-- Mobile Menu Button -->
         <button
           @click="toggleMobileMenu"
-          class="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
-          :class="{ 'bg-gray-100': isMobileMenuOpen }"
+          class="lg:hidden relative p-3 rounded-xl hover:bg-green-50 active:bg-green-100 transition-all duration-200 transform active:scale-95"
+          :class="{
+            'bg-green-50 shadow-sm': isMobileMenuOpen,
+            'hover:shadow-md': !isMobileMenuOpen,
+          }"
+          aria-label="Toggle mobile menu"
         >
-          <Menu v-if="!isMobileMenuOpen" class="w-6 h-6 text-gray-600" />
-          <X v-else class="w-6 h-6 text-gray-600" />
+          <div class="relative w-6 h-6 flex items-center justify-center">
+            <!-- Hamburger Icon with Animation -->
+            <span
+              class="absolute w-6 h-0.5 bg-green-700 rounded-full transition-all duration-300 ease-in-out transform origin-center"
+              :class="{
+                'rotate-45 translate-y-0': isMobileMenuOpen,
+                'rotate-0 -translate-y-2': !isMobileMenuOpen,
+              }"
+            ></span>
+            <span
+              class="absolute w-6 h-0.5 bg-green-700 rounded-full transition-all duration-300 ease-in-out transform"
+              :class="{
+                'opacity-0 scale-0': isMobileMenuOpen,
+                'opacity-100 scale-100': !isMobileMenuOpen,
+              }"
+            ></span>
+            <span
+              class="absolute w-6 h-0.5 bg-green-700 rounded-full transition-all duration-300 ease-in-out transform origin-center"
+              :class="{
+                '-rotate-45 translate-y-0': isMobileMenuOpen,
+                'rotate-0 translate-y-2': !isMobileMenuOpen,
+              }"
+            ></span>
+          </div>
         </button>
       </div>
 
       <!-- Mobile Menu -->
-      <div v-show="isMobileMenuOpen" class="lg:hidden border-t border-gray-100 bg-white">
-        <div class="px-4 py-4 space-y-3">
+      <div
+        v-show="isMobileMenuOpen"
+        class="lg:hidden border-t border-green-100 bg-white/95 backdrop-blur-sm shadow-lg"
+      >
+        <div class="px-4 py-6 space-y-1">
           <a
             v-for="item in navigationMenu"
             :key="item.id"
             :href="item.href"
             @click="(scrollToSection(item.id), closeMobileMenu())"
-            class="block py-2 text-body-md text-muted hover:text-brand font-medium transition-colors duration-200"
+            class="flex items-center py-3 px-4 text-body-md text-muted hover:text-brand hover:bg-green-50 font-medium transition-all duration-200 rounded-lg group"
           >
-            {{ item.name }}
+            <span class="relative">
+              {{ item.name }}
+              <span
+                class="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-green-700 transition-all duration-300 group-hover:w-full"
+              ></span>
+            </span>
           </a>
-          <div class="pt-3 border-t border-gray-100">
+
+          <!-- Mobile CTA Button -->
+          <div class="pt-4 mt-4 border-t border-green-100">
             <a
               href="#contact"
               @click="(scrollToSection('contact'), closeMobileMenu())"
-              class="btn-primary w-full text-center block"
+              class="btn-primary w-full text-center block py-3 transform hover:scale-105 active:scale-95 transition-all duration-200"
             >
               Daftar Sekarang
             </a>
@@ -86,7 +123,6 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import { Menu, X } from 'lucide-vue-next'
 import { navigationMenu, pondokData } from '@/data/pondokData'
 
 const isMobileMenuOpen = ref(false)

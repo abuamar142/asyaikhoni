@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap');
 @import 'tailwindcss';
 
 /* Base Styles */
@@ -92,22 +91,6 @@ body {
   line-height: 1.5;
   font-weight: 400;
   color: #6b7280;
-}
-
-.text-arabic-lg {
-  font-size: 2rem;
-  line-height: 1.8;
-  font-weight: 400;
-  color: #15803d;
-  font-family: 'Amiri', serif;
-}
-
-.text-arabic-md {
-  font-size: 1.5rem;
-  line-height: 1.8;
-  font-weight: 400;
-  color: #15803d;
-  font-family: 'Amiri', serif;
 }
 
 /* Text Color Utilities */
@@ -254,14 +237,6 @@ body {
 
   .text-heading-xl {
     font-size: 1.5rem;
-  }
-
-  .text-arabic-lg {
-    font-size: 1.5rem;
-  }
-
-  .text-arabic-md {
-    font-size: 1.25rem;
   }
 }
 

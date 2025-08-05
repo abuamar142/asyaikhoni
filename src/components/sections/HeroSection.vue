@@ -28,7 +28,9 @@
 
           <!-- Arabic Calligraphy -->
           <div class="text-center lg:text-left">
-            <p class="text-arabic-lg mb-4">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</p>
+            <p class="text-2xl leading-relaxed font-normal text-emerald-700 mb-4">
+              بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+            </p>
           </div>
 
           <!-- Main Heading -->
