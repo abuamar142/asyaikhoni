@@ -224,6 +224,7 @@
 import { ref } from 'vue'
 import { Play, Users, ChevronDown, X } from 'lucide-vue-next'
 import { pondokData } from '@/data/pondokData'
+import { scrollToSection } from '@/utils/navigation'
 
 // Video state
 const isVideoPlaying = ref(false)
@@ -243,17 +244,5 @@ const toggleVideo = () => {
 const closeVideo = () => {
   isVideoPlaying.value = false
   videoUrl.value = ''
-}
-
-const scrollToSection = (sectionId: string) => {
-  const element = document.getElementById(sectionId)
-  if (element) {
-    const headerHeight = 64
-    const elementPosition = element.offsetTop - headerHeight
-    window.scrollTo({
-      top: elementPosition,
-      behavior: 'smooth',
-    })
-  }
 }
 </script>

@@ -194,6 +194,7 @@
 <script setup lang="ts">
 import { Home, Building, BookOpen, Utensils, Car, Wifi, Shield, Dumbbell } from 'lucide-vue-next'
 import { pondokData } from '@/data/pondokData'
+import { scrollToSection } from '@/utils/navigation'
 import type { Component } from 'vue'
 
 // Icon mapping function
@@ -234,16 +235,4 @@ const facilityHighlights = [
     description: 'Dilengkapi dengan fasilitas modern yang mendukung kegiatan santri',
   },
 ]
-
-const scrollToSection = (sectionId: string) => {
-  const element = document.getElementById(sectionId)
-  if (element) {
-    const headerHeight = 64
-    const elementPosition = element.offsetTop - headerHeight
-    window.scrollTo({
-      top: elementPosition,
-      behavior: 'smooth',
-    })
-  }
-}
 </script>

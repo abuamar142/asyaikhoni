@@ -272,6 +272,14 @@ body {
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
+/* 
+ * Section Padding Guidelines:
+ * - Header height: 64px (h-16)
+ * - section-padding: 64px top/bottom (4rem)
+ * - Scroll offset: 64px (untuk smooth scroll navigation)
+ * - Page sections (home): gunakan section-padding + scroll offset
+ * - Standalone pages (sejarah): gunakan pt-24 (96px) untuk consistent spacing
+ */
 .section-padding {
   padding: 4rem 1rem;
 }

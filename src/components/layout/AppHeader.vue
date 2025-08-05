@@ -30,8 +30,8 @@
             v-for="item in navigationMenu"
             :key="item.id"
             :href="item.href"
-            @click="scrollToSection(item.id)"
-            class="text-body-md text-muted hover:text-brand font-medium transition-colors duration-200 relative group"
+            @click.prevent="handleNavigation(item)"
+            class="text-body-md text-muted hover:text-brand font-medium transition-all duration-200 relative group"
           >
             {{ item.name }}
             <span
@@ -42,7 +42,11 @@
 
         <!-- CTA Button (Desktop) -->
         <div class="hidden lg:block">
-          <a href="#contact" @click="scrollToSection('contact')" class="btn-primary">
+          <a
+            href="#contact"
+            @click="handleNavigation({ name: 'Kontak', href: '#contact', id: 'contact' })"
+            class="btn-primary"
+          >
             Daftar Sekarang
           </a>
         </div>
@@ -94,7 +98,7 @@
             v-for="item in navigationMenu"
             :key="item.id"
             :href="item.href"
-            @click="(scrollToSection(item.id), closeMobileMenu())"
+            @click.prevent="(handleNavigation(item), closeMobileMenu())"
             class="flex items-center py-3 px-4 text-body-md text-muted hover:text-brand hover:bg-green-50 font-medium transition-all duration-200 rounded-lg group"
           >
             <span class="relative">
@@ -109,7 +113,10 @@
           <div class="pt-4 mt-4 border-t border-green-100">
             <a
               href="#contact"
-              @click="(scrollToSection('contact'), closeMobileMenu())"
+              @click="
+                (handleNavigation({ name: 'Kontak', href: '#contact', id: 'contact' }),
+                closeMobileMenu())
+              "
               class="btn-primary w-full text-center block py-3 transform hover:scale-105 active:scale-95 transition-all duration-200"
             >
               Daftar Sekarang
@@ -123,8 +130,11 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { navigationMenu, pondokData } from '@/data/pondokData'
+import { handleCrossRouteNavigation } from '@/utils/navigation'
 
+const router = useRouter()
 const isMobileMenuOpen = ref(false)
 
 const toggleMobileMenu = () => {
@@ -135,19 +145,13 @@ const closeMobileMenu = () => {
   isMobileMenuOpen.value = false
 }
 
-const scrollToSection = (sectionId: string) => {
-  const element = document.getElementById(sectionId)
-  if (element) {
-    const headerHeight = 64 // header height
-    const elementPosition = element.offsetTop - headerHeight
-    window.scrollTo({
-      top: elementPosition,
-      behavior: 'smooth',
-    })
-  }
-}
+const handleNavigation = (item: { name: string; href: string; id: string }) => {
+  // Tutup mobile menu terlebih dahulu
+  isMobileMenuOpen.value = false
 
-// Close mobile menu when clicking outside
+  // Gunakan utility function untuk cross-route navigation
+  handleCrossRouteNavigation(router, item)
+} // Close mobile menu when clicking outside
 const handleClickOutside = (event: Event) => {
   const target = event.target as HTMLElement
   if (!target.closest('header') && isMobileMenuOpen.value) {

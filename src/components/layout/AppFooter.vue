@@ -52,7 +52,7 @@
               <li v-for="item in navigationMenu" :key="item.id">
                 <a
                   :href="item.href"
-                  @click="scrollToSection(item.id)"
+                  @click.prevent="handleNavigation(item)"
                   class="text-emerald-100 hover:text-yellow-300 transition-all duration-300 flex items-center group hover:translate-x-1 text-base font-medium"
                 >
                   <ChevronRight
@@ -216,8 +216,9 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { pondokData, navigationMenu } from '@/data/pondokData'
-import AppText from '@/components/ui/AppText.vue'
+import { scrollToTop, handleCrossRouteNavigation } from '@/utils/navigation'
 import {
   ChevronRight,
   CheckCircle,
@@ -232,26 +233,13 @@ import {
   ArrowUp,
 } from 'lucide-vue-next'
 
+const router = useRouter()
 const currentYear = new Date().getFullYear()
 const showBackToTop = ref(false)
 
-const scrollToSection = (sectionId: string) => {
-  const element = document.getElementById(sectionId)
-  if (element) {
-    const headerHeight = 64
-    const elementPosition = element.offsetTop - headerHeight
-    window.scrollTo({
-      top: elementPosition,
-      behavior: 'smooth',
-    })
-  }
-}
-
-const scrollToTop = () => {
-  window.scrollTo({
-    top: 0,
-    behavior: 'smooth',
-  })
+const handleNavigation = (item: { name: string; href: string; id: string }) => {
+  // Gunakan utility function untuk cross-route navigation
+  handleCrossRouteNavigation(router, item)
 }
 
 const handleScroll = () => {

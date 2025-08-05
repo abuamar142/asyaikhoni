@@ -144,16 +144,25 @@
             </div>
           </div>
 
-          <!-- CTA Button -->
-          <div class="text-center lg:text-left">
-            <a
-              href="#programs"
-              @click="scrollToSection('programs')"
-              class="btn-primary inline-flex items-center"
-            >
-              <span>Lihat Program Kami</span>
-              <ArrowRight class="w-5 h-5 ml-2" />
-            </a>
+          <!-- CTA Buttons -->
+          <div class="text-center lg:text-left space-y-4">
+            <div class="flex flex-col sm:flex-row gap-4">
+              <a
+                href="#programs"
+                @click.prevent="scrollToSection('programs')"
+                class="btn-primary inline-flex items-center justify-center"
+              >
+                <span>Lihat Program Kami</span>
+                <ArrowRight class="w-5 h-5 ml-2" />
+              </a>
+              <button
+                @click="navigateToSejarah"
+                class="btn-secondary inline-flex items-center justify-center"
+              >
+                <span>Sejarah Pondok</span>
+                <BookOpen class="w-5 h-5 ml-2" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -162,8 +171,20 @@
 </template>
 
 <script setup lang="ts">
+import { useRouter } from 'vue-router'
 import { pondokData } from '@/data/pondokData'
-import { User, Star, CheckCircle, MapPin, ExternalLink, ArrowRight } from 'lucide-vue-next'
+import { scrollToSection } from '@/utils/navigation'
+import {
+  User,
+  Star,
+  CheckCircle,
+  MapPin,
+  ExternalLink,
+  ArrowRight,
+  BookOpen,
+} from 'lucide-vue-next'
+
+const router = useRouter()
 
 const aboutFeatures = [
   {
@@ -188,15 +209,7 @@ const aboutFeatures = [
   },
 ]
 
-const scrollToSection = (sectionId: string) => {
-  const element = document.getElementById(sectionId)
-  if (element) {
-    const headerHeight = 64
-    const elementPosition = element.offsetTop - headerHeight
-    window.scrollTo({
-      top: elementPosition,
-      behavior: 'smooth',
-    })
-  }
+const navigateToSejarah = () => {
+  router.push('/sejarah')
 }
 </script>

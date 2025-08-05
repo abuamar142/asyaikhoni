@@ -126,6 +126,7 @@
 <script setup lang="ts">
 import { BookOpen, GraduationCap, Heart, Users, CheckCircle } from 'lucide-vue-next'
 import { pondokData } from '@/data/pondokData'
+import { scrollToSection } from '@/utils/navigation'
 import type { Component } from 'vue'
 
 const teachingMethods = [
@@ -147,17 +148,5 @@ const getIconComponent = (iconName: string) => {
     'check-circle': CheckCircle,
   }
   return iconMap[iconName] || BookOpen
-}
-
-const scrollToSection = (sectionId: string) => {
-  const element = document.getElementById(sectionId)
-  if (element) {
-    const headerHeight = 64
-    const elementPosition = element.offsetTop - headerHeight
-    window.scrollTo({
-      top: elementPosition,
-      behavior: 'smooth',
-    })
-  }
 }
 </script>

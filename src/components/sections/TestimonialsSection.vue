@@ -169,6 +169,7 @@
 
 <script setup lang="ts">
 import { pondokData } from '@/data/pondokData'
+import { scrollToSection } from '@/utils/navigation'
 import { Star, Shield, Quote, Phone, Mail, Instagram, User } from 'lucide-vue-next'
 
 const ratingBreakdown = [
@@ -178,16 +179,4 @@ const ratingBreakdown = [
   { stars: 2, count: 0, percentage: 0 },
   { stars: 1, count: 0, percentage: 0 },
 ]
-
-const scrollToSection = (sectionId: string) => {
-  const element = document.getElementById(sectionId)
-  if (element) {
-    const headerHeight = 64
-    const elementPosition = element.offsetTop - headerHeight
-    window.scrollTo({
-      top: elementPosition,
-      behavior: 'smooth',
-    })
-  }
-}
 </script>

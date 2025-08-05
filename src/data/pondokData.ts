@@ -116,13 +116,13 @@ export const pondokData = {
   stats: [
     {
       id: 1,
-      number: '100+',
+      number: '70+',
       label: 'Santri Aktif',
       icon: 'users',
     },
     {
       id: 2,
-      number: '50+',
+      number: '30+',
       label: 'Hafidz Alumni',
       icon: 'graduation-cap',
     },
