@@ -19,16 +19,20 @@
     </div>
 
     <div class="container-custom section-padding relative z-10">
-      <div class="grid lg:grid-cols-2 gap-12 items-center">
+      <div class="grid lg:grid-cols-2 gap-12 lg:items-center">
+        <!-- Mobile: Content takes full screen height, Desktop: normal alignment -->
         <!-- Content -->
         <div class="space-y-8 fade-in">
+          <!-- Mobile: Add top spacing after header, Desktop: normal spacing -->
+          <div class="pt-16 sm:pt-8 lg:pt-0"></div>
+
           <!-- Arabic Calligraphy -->
           <div class="text-center lg:text-left">
             <p class="text-arabic-lg mb-4">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</p>
           </div>
 
           <!-- Main Heading -->
-          <div class="space-y-4">
+          <div class="space-y-4 text-center lg:text-left">
             <h1 class="text-display-lg leading-tight">
               <span class="text-brand">{{ pondokData.name.split(' ').slice(0, 2).join(' ') }}</span
               ><br />
@@ -45,7 +49,7 @@
               {{ pondokData.tagline }}
             </p>
 
-            <p class="text-body-md text-muted max-w-2xl">
+            <p class="text-body-md text-muted max-w-2xl mx-auto lg:mx-0">
               {{ pondokData.description }}
             </p>
           </div>
@@ -71,10 +75,14 @@
               <div class="text-body-sm text-muted">{{ stat.label }}</div>
             </div>
           </div>
+
+          <!-- Mobile: Add bottom spacing to ensure full screen for text content -->
+          <div class="pb-16 lg:pb-0"></div>
         </div>
 
         <!-- Hero Image/Visual -->
-        <div class="relative slide-up">
+        <!-- Mobile: Video section starts after text content scroll -->
+        <div class="relative slide-up mt-12 lg:mt-0">
           <!-- Video Info Badge - positioned above video -->
           <div class="mb-4 text-center lg:text-right">
             <div
