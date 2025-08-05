@@ -139,6 +139,29 @@ export const pondokData = {
       icon: 'clock',
     },
   ],
+
+  facilityHighlights: [
+    {
+      id: 1,
+      title: 'Kebersihan Terjaga',
+      description: 'Lingkungan pondok selalu bersih dan terawat untuk kenyamanan santri',
+    },
+    {
+      id: 2,
+      title: 'Keamanan 24 Jam',
+      description: 'Sistem keamanan yang baik untuk menjamin keselamatan santri',
+    },
+    {
+      id: 3,
+      title: 'Suasana Tenang',
+      description: 'Lokasi yang tenang dan kondusif untuk konsentrasi belajar',
+    },
+    {
+      id: 4,
+      title: 'Fasilitas Modern',
+      description: 'Dilengkapi dengan fasilitas modern yang mendukung kegiatan santri',
+    },
+  ],
 }
 
 export const navigationMenu = [
