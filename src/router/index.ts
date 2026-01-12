@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { getSession, isAdmin } from '@/services/authService'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -22,6 +23,57 @@ const router = createRouter({
         description:
           'Sejarah dan perjalanan PPTQ Asy-Syaikhoni dari tahun 2008 hingga sekarang, visi misi, dan para pendiri pesantren',
       },
+    },
+    {
+      path: '/amalan',
+      name: 'amalan-list',
+      component: () => import('@/views/AmalanList.vue'),
+      meta: {
+        title: 'Amalan - PPTQ Asy-Syaikhoni',
+        description: 'Daftar amalan (tahlil, doa, dll) yang aktif di PPTQ Asy-Syaikhoni',
+      },
+    },
+    {
+      path: '/amalan/:slug',
+      name: 'amalan-detail',
+      component: () => import('@/views/AmalanDetail.vue'),
+      meta: {
+        title: 'Detail Amalan - PPTQ Asy-Syaikhoni',
+        description: 'Konten amalan dalam format Markdown dari Supabase Storage',
+      },
+    },
+    {
+      path: '/admin/login',
+      name: 'admin-login',
+      component: () => import('@/views/Admin/Login.vue'),
+      meta: {
+        title: 'Admin Login - PPTQ Asy-Syaikhoni',
+        description: 'Masuk sebagai admin untuk mengelola amalan',
+      },
+    },
+    {
+      path: '/admin',
+      name: 'admin-index',
+      component: () => import('@/views/Admin/Index.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true, title: 'Admin - Dashboard' },
+    },
+    {
+      path: '/admin/amalan',
+      name: 'admin-amalan-list',
+      component: () => import('@/views/Admin/AmalanList.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true, title: 'Admin - Amalan' },
+    },
+    {
+      path: '/admin/amalan/new',
+      name: 'admin-amalan-new',
+      component: () => import('@/views/Admin/AmalanForm.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true, title: 'Admin - Tambah Amalan' },
+    },
+    {
+      path: '/admin/amalan/:id/edit',
+      name: 'admin-amalan-edit',
+      component: () => import('@/views/Admin/AmalanForm.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true, title: 'Admin - Edit Amalan' },
     },
     // Redirect any unknown routes to home
     {
@@ -58,7 +110,7 @@ const router = createRouter({
 })
 
 // Middleware untuk handle perpindahan halaman
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   // Update page title
   document.title = (to.meta.title as string) || 'PPTQ Asy-Syaikhoni'
 
@@ -70,6 +122,22 @@ router.beforeEach((to, from, next) => {
 
   // Loading state (optional) - bisa ditambahkan jika diperlukan
   // console.log(`Navigating from ${from.path} to ${to.path}`)
+
+  // Auth guard
+  const requiresAuth = Boolean(to.meta?.requiresAuth)
+  const requiresAdmin = Boolean(to.meta?.requiresAdmin)
+  if (requiresAuth || requiresAdmin) {
+    const session = await getSession().catch(() => null)
+    if (!session) {
+      return next({ name: 'admin-login', query: { redirect: to.fullPath } })
+    }
+    if (requiresAdmin) {
+      const admin = await isAdmin()
+      if (!admin) {
+        return next({ name: 'home' })
+      }
+    }
+  }
 
   next()
 })
