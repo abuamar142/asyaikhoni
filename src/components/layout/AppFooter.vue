@@ -25,6 +25,8 @@
                   src="/logo.svg"
                   :alt="`${pondokData.shortName} Logo`"
                   class="w-full h-full object-contain"
+                  decoding="async"
+                  loading="lazy"
                 />
               </div>
               <div>

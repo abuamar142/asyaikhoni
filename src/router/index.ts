@@ -1,6 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Home from '@/views/Home.vue'
-import Sejarah from '@/views/Sejarah.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -8,7 +6,7 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: Home,
+      component: () => import('@/views/Home.vue'),
       meta: {
         title: "PPTQ Asy-Syaikhoni | Pondok Pesantren Tahfidzul Qur'an",
         description:
@@ -18,7 +16,7 @@ const router = createRouter({
     {
       path: '/sejarah',
       name: 'sejarah',
-      component: Sejarah,
+      component: () => import('@/views/Sejarah.vue'),
       meta: {
         title: "Sejarah - PPTQ Asy-Syaikhoni | Pondok Pesantren Tahfidzul Qur'an",
         description:
