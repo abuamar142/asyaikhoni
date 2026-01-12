@@ -114,9 +114,8 @@ onMounted(fetchDetail)
 </script>
 
 <style scoped>
-/* Arabic text styling via class */
 :deep(.text-arabic) {
-  font-family: Amiri, serif !important;
+  font-family: 'Amiri', serif !important;
   font-size: 1.5rem !important;
   line-height: 2 !important;
   text-align: right !important;
