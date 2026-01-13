@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-white">
+  <AdminLayout>
     <!-- Header -->
     <div class="bg-gradient-to-r from-primary-50 to-white border-b border-green-100 py-8">
       <div class="container mx-auto px-4">
@@ -35,12 +35,13 @@
       <AmalanTable :items="items" @delete="onDelete" @toggle="onToggle" />
       <p v-if="error" class="text-text-error text-body-md mt-6">{{ error }}</p>
     </div>
-  </div>
+  </AdminLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import AmalanTable from '@/components/admin/AmalanTable.vue'
+import AdminLayout from '@/components/admin/AdminLayout.vue'
 import { listAll, deleteAmalan, toggleAktif, type Amalan } from '@/services/amalanService'
 
 const items = ref<Amalan[]>([])

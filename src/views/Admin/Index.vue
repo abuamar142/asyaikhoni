@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-white">
+  <AdminLayout>
     <!-- Header -->
     <div class="bg-gradient-to-r from-primary-50 to-white border-b border-green-100 py-8">
       <div class="container mx-auto px-4">
@@ -22,10 +22,12 @@
         </router-link>
       </div>
     </div>
-  </div>
+  </AdminLayout>
 </template>
 
 <script setup lang="ts">
+import AdminLayout from '@/components/admin/AdminLayout.vue'
+
 defineOptions({
   name: 'AdminIndexPage',
 })

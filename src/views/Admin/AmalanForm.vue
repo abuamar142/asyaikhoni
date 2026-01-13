@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-white">
+  <AdminLayout>
     <!-- Header -->
     <div class="bg-gradient-to-r from-primary-50 to-white border-b border-green-100 py-8">
       <div class="container mx-auto px-4">
@@ -35,13 +35,14 @@
         <p v-if="error" class="text-text-error text-body-md">{{ error }}</p>
       </form>
     </div>
-  </div>
+  </AdminLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AmalanFormFields from '@/components/admin/AmalanFormFields.vue'
+import AdminLayout from '@/components/admin/AdminLayout.vue'
 import {
   createAmalan,
   getById,
