@@ -23,7 +23,7 @@ export function useAmalanListQuery(
   }>,
 ) {
   return useQuery({
-    queryKey: ['amalan', 'public', unref(params)] as const,
+    queryKey: amalanKeys.list({ scope: 'public', ...unref(params) }),
     queryFn: () => amalanService.listPublic(unref(params)),
   })
 }
@@ -38,7 +38,7 @@ export function useAdminAmalanListQuery(
   }>,
 ) {
   return useQuery({
-    queryKey: ['amalan', 'admin', unref(params)] as const,
+    queryKey: amalanKeys.list({ scope: 'admin', ...unref(params) }),
     queryFn: () => amalanService.listAll(unref(params)),
   })
 }
@@ -77,7 +77,7 @@ export function useCreateAmalanMutation() {
   return useMutation({
     mutationFn: amalanService.createAmalan,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: amalanKeys.all })
+      queryClient.invalidateQueries({ queryKey: amalanKeys.lists(), refetchType: 'active' })
     },
   })
 }
@@ -96,7 +96,7 @@ export function useUpdateAmalanMutation() {
     }) => amalanService.updateAmalan(id, data),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: amalanKeys.detail(id) })
-      queryClient.invalidateQueries({ queryKey: amalanKeys.all })
+      queryClient.invalidateQueries({ queryKey: amalanKeys.lists(), refetchType: 'active' })
     },
   })
 }
@@ -109,7 +109,7 @@ export function useDeleteAmalanMutation() {
     mutationFn: ({ id, deleteFile }: { id: string; deleteFile?: boolean }) =>
       amalanService.deleteAmalan(id, { deleteFile }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: amalanKeys.all })
+      queryClient.invalidateQueries({ queryKey: amalanKeys.lists(), refetchType: 'active' })
     },
   })
 }
@@ -123,7 +123,7 @@ export function useToggleAktifMutation() {
       amalanService.toggleAktif(id, aktif),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: amalanKeys.detail(id) })
-      queryClient.invalidateQueries({ queryKey: amalanKeys.all })
+      queryClient.invalidateQueries({ queryKey: amalanKeys.lists(), refetchType: 'active' })
     },
   })
 }
