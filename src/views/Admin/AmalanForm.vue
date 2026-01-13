@@ -15,8 +15,8 @@
         <AmalanFormFields
           :model="form"
           :md-content="mdContent"
-          @update:model="(payload) => (form = { ...form, ...payload })"
-          @update:mdContent="(v) => (mdContent = v)"
+          @update:model="onUpdateModel"
+          @update:mdContent="onUpdateMd"
         />
         <div class="flex items-center gap-3 pt-4 border-t border-green-100">
           <button
@@ -59,6 +59,14 @@ const form = ref<Partial<Amalan>>({ aktif: true })
 const mdContent = ref('')
 const loading = ref(false)
 const error = ref('')
+
+const onUpdateModel = (payload: Partial<Amalan>) => {
+  form.value = { ...form.value, ...payload }
+}
+
+const onUpdateMd = (v: string) => {
+  mdContent.value = v
+}
 
 onMounted(async () => {
   if (isEdit.value && id) {

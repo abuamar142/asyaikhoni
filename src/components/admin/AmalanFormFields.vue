@@ -5,7 +5,7 @@
         >Judul <span class="text-text-error">*</span></label
       >
       <input
-        :model-value="model.judul"
+        :value="model.judul"
         @input="updateField('judul', ($event.target as HTMLInputElement).value)"
         type="text"
         required
@@ -18,7 +18,7 @@
         >Slug <span class="text-text-error">*</span></label
       >
       <input
-        :model-value="model.slug"
+        :value="model.slug"
         @input="updateField('slug', ($event.target as HTMLInputElement).value)"
         type="text"
         required
@@ -34,7 +34,7 @@
         >Ringkasan</label
       >
       <textarea
-        :model-value="model.ringkasan"
+        :value="model.ringkasan"
         @input="updateField('ringkasan', ($event.target as HTMLTextAreaElement).value)"
         rows="3"
         class="w-full px-4 py-2 border border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
@@ -47,7 +47,7 @@
           >Kategori</label
         >
         <input
-          :model-value="model.kategori"
+          :value="model.kategori"
           @input="updateField('kategori', ($event.target as HTMLInputElement).value)"
           type="text"
           class="w-full px-4 py-2 border border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
@@ -59,7 +59,7 @@
           >URL Ikon</label
         >
         <input
-          :model-value="model.ikon_url"
+          :value="model.ikon_url"
           @input="updateField('ikon_url', ($event.target as HTMLInputElement).value)"
           type="text"
           class="w-full px-4 py-2 border border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
@@ -74,7 +74,7 @@
         >
         <input
           id="urutan"
-          :model-value="model.urutan"
+          :value="model.urutan"
           @input="updateField('urutan', Number(($event.target as HTMLInputElement).value))"
           type="number"
           class="w-full px-4 py-2 border border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
