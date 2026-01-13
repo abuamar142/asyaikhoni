@@ -25,6 +25,16 @@
       <p v-if="error" class="text-text-error text-body-md mt-6">{{ error }}</p>
     </div>
   </AdminLayout>
+
+  <ConfirmDialog
+    v-model="showDeleteConfirm"
+    title="Hapus Amalan"
+    :message="deleteTarget ? `Hapus amalan: ${deleteTarget.judul}?` : ''"
+    confirm-label="Hapus"
+    confirm-variant="danger"
+    @confirm="confirmDelete"
+    @cancel="resetDelete"
+  />
 </template>
 
 <script setup lang="ts">
@@ -33,6 +43,7 @@ import AmalanTable from '@/components/admin/AmalanTable.vue'
 import AdminLayout from '@/components/admin/AdminLayout.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import SearchInput from '@/components/ui/SearchInput.vue'
+import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
 import { deleteAmalan, toggleAktif, type Amalan } from '@/services/amalanService'
 import { useDebouncedRef } from '@/composables/useDebouncedRef'
 import { useAdminAmalanListQuery } from '@/composables/useAmalanQueries'
@@ -42,10 +53,22 @@ const qDebounced = useDebouncedRef(q, 400)
 const queryParams = computed(() => ({ q: qDebounced.value || undefined }))
 
 const { data: items, error, refetch } = useAdminAmalanListQuery(queryParams)
+const showDeleteConfirm = ref(false)
+const deleteTarget = ref<Amalan | null>(null)
 
 async function onDelete(item: Amalan) {
-  if (!confirm(`Hapus amalan: ${item.judul}?`)) return
-  await deleteAmalan(item.id)
+  deleteTarget.value = item
+  showDeleteConfirm.value = true
+}
+
+function resetDelete() {
+  deleteTarget.value = null
+}
+
+async function confirmDelete() {
+  if (!deleteTarget.value) return
+  await deleteAmalan(deleteTarget.value.id)
+  resetDelete()
   await refetch()
 }
 

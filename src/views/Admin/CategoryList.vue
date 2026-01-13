@@ -75,7 +75,7 @@
                   variant="danger"
                   size="sm"
                   :disabled="deleteMutation.isPending.value"
-                  @click="onDelete(item)"
+                  @click="askDelete(item)"
                 >
                   Hapus
                 </BaseButton>
@@ -90,6 +90,16 @@
       </div>
     </div>
   </AdminLayout>
+
+  <ConfirmDialog
+    v-model="showDeleteConfirm"
+    title="Hapus Kategori"
+    :message="deleteTarget ? `Hapus kategori: ${deleteTarget.nama}?` : ''"
+    confirm-label="Hapus"
+    confirm-variant="danger"
+    @confirm="confirmDelete"
+    @cancel="resetDelete"
+  />
 </template>
 
 <script setup lang="ts">
@@ -104,6 +114,7 @@ import {
 import { useDebouncedRef } from '@/composables/useDebouncedRef'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import SearchInput from '@/components/ui/SearchInput.vue'
+import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
 import type { Category } from '@/services/categoryService'
 
 const search = ref('')
@@ -136,6 +147,8 @@ watch(
 const createMutation = useCreateCategoryMutation()
 const deleteMutation = useDeleteCategoryMutation()
 const updateMutation = useUpdateCategoryMutation()
+const showDeleteConfirm = ref(false)
+const deleteTarget = ref<Category | null>(null)
 
 const isEditing = computed(() => Boolean(editId.value))
 const isSaving = computed(() => createMutation.isPending.value || updateMutation.isPending.value)
@@ -170,9 +183,19 @@ function onEdit(item: Category) {
   formError.value = ''
 }
 
-async function onDelete(item: Category) {
-  if (!confirm(`Hapus kategori: ${item.nama}?`)) return
-  await deleteMutation.mutateAsync(item.id)
+function askDelete(item: Category) {
+  deleteTarget.value = item
+  showDeleteConfirm.value = true
+}
+
+function resetDelete() {
+  deleteTarget.value = null
+}
+
+async function confirmDelete() {
+  if (!deleteTarget.value) return
+  await deleteMutation.mutateAsync(deleteTarget.value.id)
+  resetDelete()
   await refetch()
 }
 </script>

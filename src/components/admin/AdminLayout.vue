@@ -36,7 +36,7 @@
       </nav>
 
       <div class="mt-auto px-4 py-4 border-t border-primary-800">
-        <BaseButton block variant="danger" @click="onLogout">Logout</BaseButton>
+        <BaseButton block variant="danger" @click="showLogoutConfirm = true">Logout</BaseButton>
       </div>
     </aside>
 
@@ -54,17 +54,28 @@
       </main>
     </div>
   </div>
+
+  <ConfirmDialog
+    v-model="showLogoutConfirm"
+    title="Logout"
+    message="Apakah Anda yakin ingin keluar dari admin?"
+    confirm-label="Logout"
+    confirm-variant="danger"
+    @confirm="onLogout"
+  />
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
 import BaseButton from '@/components/ui/BaseButton.vue'
+import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
 import * as authService from '@/services/authService'
 
 const route = useRoute()
 const router = useRouter()
 const open = ref(false)
+const showLogoutConfirm = ref(false)
 
 const navItems = [
   { label: 'Dashboard', to: { name: 'admin-index' } },
