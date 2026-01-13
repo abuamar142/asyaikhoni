@@ -73,6 +73,7 @@ const open = ref(false)
 const navItems = [
   { label: 'Dashboard', to: { name: 'admin-index' } },
   { label: 'Kelola Amalan', to: { name: 'admin-amalan-list' } },
+  { label: 'Kategori', to: { name: 'admin-kategori' } },
 ]
 
 function toggle() {

@@ -1,4 +1,5 @@
 import { supabase, AMALAN_BUCKET_ID } from '@/utils/supabaseClient'
+import type { Category } from '@/services/categoryService'
 
 export type Amalan = {
   id: string
@@ -8,11 +9,27 @@ export type Amalan = {
   md_path: string
   md_bucket_id: string
   kategori?: string | null
+  kategori_ids?: string[]
+  categories?: Category[]
   ikon_url?: string | null
   urutan?: number | null
   aktif: boolean
   created_at?: string
   updated_at?: string
+}
+
+type AmalanRow = Amalan & {
+  amalan_kategori?: { kategori: Category | null; kategori_id: string }[]
+}
+
+function mapAmalan(row: AmalanRow): Amalan {
+  const categories = (row.amalan_kategori || [])
+    .map((rel) => rel.kategori)
+    .filter(Boolean) as Category[]
+  const kategori_ids = categories.map((c) => c.id)
+  const { amalan_kategori: _relations, ...rest } = row
+  void _relations
+  return { ...rest, categories, kategori_ids }
 }
 
 export async function listPublic(params?: {
@@ -21,12 +38,15 @@ export async function listPublic(params?: {
   limit?: number
   offset?: number
 }) {
-  let query = supabase.from('amalan').select('*').eq('aktif', true)
+  let query = supabase
+    .from('amalan')
+    .select('*, amalan_kategori:amalan_kategori ( kategori:kategori_id ( id, nama, deskripsi ) )')
+    .eq('aktif', true)
   if (params?.q) {
     query = query.ilike('judul', `%${params.q}%`)
   }
   if (params?.kategori) {
-    query = query.eq('kategori', params.kategori)
+    query = query.eq('amalan_kategori.kategori_id', params.kategori)
   }
   query = query.order('urutan', { ascending: true })
   if (params?.limit) query = query.limit(params.limit)
@@ -34,7 +54,7 @@ export async function listPublic(params?: {
     query = query.range(params.offset, (params.offset || 0) + (params?.limit || 10) - 1)
   const { data, error } = await query
   if (error) throw error
-  return data as Amalan[]
+  return (data || []).map((row) => mapAmalan(row as AmalanRow))
 }
 
 export async function listAll(params?: {
@@ -43,12 +63,14 @@ export async function listAll(params?: {
   limit?: number
   offset?: number
 }) {
-  let query = supabase.from('amalan').select('*')
+  let query = supabase
+    .from('amalan')
+    .select('*, amalan_kategori:amalan_kategori ( kategori:kategori_id ( id, nama, deskripsi ) )')
   if (params?.q) {
     query = query.ilike('judul', `%${params.q}%`)
   }
   if (params?.kategori) {
-    query = query.eq('kategori', params.kategori)
+    query = query.eq('amalan_kategori.kategori_id', params.kategori)
   }
   query = query.order('created_at', { ascending: false })
   if (params?.limit) query = query.limit(params.limit)
@@ -56,29 +78,29 @@ export async function listAll(params?: {
     query = query.range(params.offset, (params.offset || 0) + (params?.limit || 10) - 1)
   const { data, error } = await query
   if (error) throw error
-  return data as Amalan[]
+  return (data || []).map((row) => mapAmalan(row as AmalanRow))
 }
 
 export async function getBySlug(slug: string) {
   const { data, error } = await supabase
     .from('amalan')
-    .select('*')
+    .select('*, amalan_kategori:amalan_kategori ( kategori:kategori_id ( id, nama, deskripsi ) )')
     .eq('slug', slug)
     .limit(1)
     .maybeSingle()
   if (error) throw error
-  return data as Amalan | null
+  return data ? mapAmalan(data as AmalanRow) : null
 }
 
 export async function getById(id: string) {
   const { data, error } = await supabase
     .from('amalan')
-    .select('*')
+    .select('*, amalan_kategori:amalan_kategori ( kategori:kategori_id ( id, nama, deskripsi ) )')
     .eq('id', id)
     .limit(1)
     .maybeSingle()
   if (error) throw error
-  return data as Amalan | null
+  return data ? mapAmalan(data as AmalanRow) : null
 }
 
 export async function downloadMarkdown(bucketId: string, mdPath: string): Promise<string> {
@@ -92,10 +114,10 @@ export async function createAmalan(payload: {
   judul: string
   slug: string
   ringkasan?: string
-  kategori?: string
   ikon_url?: string
   urutan?: number
   aktif?: boolean
+  kategoriIds?: string[]
   mdFile: File
 }) {
   const path = `amalan/${payload.slug}.md`
@@ -115,7 +137,6 @@ export async function createAmalan(payload: {
       ringkasan: payload.ringkasan || null,
       md_path: path,
       md_bucket_id: bucket,
-      kategori: payload.kategori || null,
       ikon_url: payload.ikon_url || null,
       urutan: payload.urutan ?? null,
       aktif: payload.aktif ?? true,
@@ -123,13 +144,19 @@ export async function createAmalan(payload: {
     .select('*')
     .single()
   if (error) throw error
-  return data as Amalan
+  const created = data as Amalan
+  if (payload.kategoriIds?.length) {
+    await setAmalanCategories(created.id, payload.kategoriIds)
+    return (await getById(created.id)) as Amalan
+  }
+  return created
 }
 
 export async function updateAmalan(
   id: string,
   payload: Partial<Omit<Amalan, 'id' | 'md_path' | 'md_bucket_id'>> & {
     slug?: string
+    kategoriIds?: string[]
     mdFile?: File
   },
 ) {
@@ -171,14 +198,13 @@ export async function updateAmalan(
     }
   }
 
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from('amalan')
     .update({
       judul: payload.judul ?? existing.judul,
       slug: newSlug,
       ringkasan: payload.ringkasan ?? existing.ringkasan,
       md_path,
-      kategori: payload.kategori ?? existing.kategori,
       ikon_url: payload.ikon_url ?? existing.ikon_url,
       urutan: payload.urutan ?? existing.urutan,
       aktif: payload.aktif ?? existing.aktif,
@@ -187,7 +213,10 @@ export async function updateAmalan(
     .select('*')
     .single()
   if (error) throw error
-  return data as Amalan
+  if (payload.kategoriIds) {
+    await setAmalanCategories(id, payload.kategoriIds)
+  }
+  return (await getById(id)) as Amalan
 }
 
 export async function deleteAmalan(id: string, options?: { deleteFile?: boolean }) {
@@ -208,5 +237,33 @@ export async function toggleAktif(id: string, aktif: boolean) {
     .select('*')
     .single()
   if (error) throw error
-  return data as Amalan
+  return data ? mapAmalan(data as AmalanRow) : (data as Amalan)
+}
+
+async function setAmalanCategories(amalanId: string, categoryIds: string[]) {
+  // Fetch existing links
+  const { data: existing } = await supabase
+    .from('amalan_kategori')
+    .select('kategori_id')
+    .eq('amalan_id', amalanId)
+
+  const existingIds = new Set((existing || []).map((row) => row.kategori_id))
+  const nextIds = new Set(categoryIds)
+
+  const toInsert = Array.from(nextIds).filter((id) => !existingIds.has(id))
+  const toDelete = Array.from(existingIds).filter((id) => !nextIds.has(id))
+
+  if (toInsert.length) {
+    await supabase
+      .from('amalan_kategori')
+      .insert(toInsert.map((kategori_id) => ({ amalan_id: amalanId, kategori_id })))
+  }
+
+  if (toDelete.length) {
+    await supabase
+      .from('amalan_kategori')
+      .delete()
+      .eq('amalan_id', amalanId)
+      .in('kategori_id', toDelete)
+  }
 }

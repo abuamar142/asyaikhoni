@@ -24,50 +24,40 @@
           placeholder="Cari amalan..."
           class="flex-1 max-w-md px-4 py-2 border border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
         />
-        <button
-          @click="fetchList"
-          class="px-6 py-2 rounded-lg bg-primary-700 hover:bg-primary-800 text-white font-medium transition-all duration-200"
-        >
-          Cari
-        </button>
       </div>
 
-      <AmalanTable :items="items" @delete="onDelete" @toggle="onToggle" />
+      <AmalanTable :items="items || []" @delete="onDelete" @toggle="onToggle" />
       <p v-if="error" class="text-text-error text-body-md mt-6">{{ error }}</p>
     </div>
   </AdminLayout>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { computed, ref, watch } from 'vue'
 import AmalanTable from '@/components/admin/AmalanTable.vue'
 import AdminLayout from '@/components/admin/AdminLayout.vue'
-import { listAll, deleteAmalan, toggleAktif, type Amalan } from '@/services/amalanService'
+import { deleteAmalan, toggleAktif, type Amalan } from '@/services/amalanService'
+import { useDebouncedRef } from '@/composables/useDebouncedRef'
+import { useAdminAmalanListQuery } from '@/composables/useAmalanQueries'
 
-const items = ref<Amalan[]>([])
 const q = ref('')
-const error = ref('')
+const qDebounced = useDebouncedRef(q, 400)
+const queryParams = computed(() => ({ q: qDebounced.value || undefined }))
 
-async function fetchList() {
-  error.value = ''
-  try {
-    items.value = await listAll({ q: q.value })
-  } catch (e: unknown) {
-    const err = e as Error
-    error.value = err?.message || 'Gagal memuat data'
-  }
-}
+const { data: items, error, refetch } = useAdminAmalanListQuery(queryParams)
 
 async function onDelete(item: Amalan) {
   if (!confirm(`Hapus amalan: ${item.judul}?`)) return
   await deleteAmalan(item.id)
-  await fetchList()
+  await refetch()
 }
 
 async function onToggle(item: Amalan) {
   await toggleAktif(item.id, !item.aktif)
-  await fetchList()
+  await refetch()
 }
 
-onMounted(fetchList)
+watch(qDebounced, () => {
+  refetch()
+})
 </script>

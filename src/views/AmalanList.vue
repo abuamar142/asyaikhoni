@@ -18,19 +18,16 @@
           placeholder="Cari amalan..."
           class="flex-1 max-w-md px-4 py-2 border border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
         />
-        <button
-          @click="fetchList"
-          class="px-6 py-2 rounded-lg bg-primary-700 hover:bg-primary-800 text-white font-medium transition-all duration-200"
-        >
-          Cari
-        </button>
       </div>
 
       <!-- Loading State -->
       <div v-if="loading" class="text-body-md text-muted py-8 text-center">Sedang memuat...</div>
 
       <!-- Empty State -->
-      <div v-else-if="!items || items.length === 0" class="text-body-md text-muted py-8 text-center">
+      <div
+        v-else-if="!items || items.length === 0"
+        class="text-body-md text-muted py-8 text-center"
+      >
         Tidak ada amalan yang ditemukan.
       </div>
 
@@ -45,15 +42,23 @@
             :to="{ name: 'amalan-detail', params: { slug: item.slug } }"
             class="block group"
           >
-            <div class="flex items-center justify-between mb-2">
+            <div class="flex items-start justify-between gap-3 mb-2">
               <h2 class="text-heading-md text-brand group-hover:text-primary-800 transition-colors">
                 {{ item.judul }}
               </h2>
-              <span
-                v-if="item.kategori"
-                class="text-caption px-3 py-1 rounded-full bg-primary-100 text-primary-700 font-medium"
-                >{{ item.kategori }}</span
-              >
+              <div class="flex flex-wrap gap-2 justify-end">
+                <span
+                  v-for="cat in item.categories"
+                  :key="cat.id"
+                  class="text-caption px-3 py-1 rounded-full bg-primary-100 text-primary-700 font-medium"
+                  >{{ cat.nama }}</span
+                >
+                <span
+                  v-if="!item.categories?.length && item.kategori"
+                  class="text-caption px-3 py-1 rounded-full bg-primary-100 text-primary-700 font-medium"
+                  >{{ item.kategori }}</span
+                >
+              </div>
             </div>
             <p v-if="item.ringkasan" class="text-body-sm text-muted">{{ item.ringkasan }}</p>
           </router-link>
@@ -66,17 +71,14 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useAmalanListQuery } from '@/composables/useAmalanQueries'
+import { useDebouncedRef } from '@/composables/useDebouncedRef'
 
 const q = ref('')
+const qDebounced = useDebouncedRef(q, 400)
 
 const queryParams = computed(() => ({
-  q: q.value || undefined,
+  q: qDebounced.value || undefined,
 }))
 
 const { data: items = [], isLoading: loading } = useAmalanListQuery(queryParams)
-
-function fetchList() {
-  // Query will auto-refetch when queryParams change
-}
 </script>
-

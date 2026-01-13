@@ -15,6 +15,7 @@
         <AmalanFormFields
           :model="form"
           :md-content="mdContent"
+          :categories="categoryOptions"
           @update:model="onUpdateModel"
           @update:mdContent="onUpdateMd"
         />
@@ -43,6 +44,8 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AmalanFormFields from '@/components/admin/AmalanFormFields.vue'
 import AdminLayout from '@/components/admin/AdminLayout.vue'
+import { useCategoryListQuery } from '@/composables/useCategoryQueries'
+import type { Category } from '@/services/categoryService'
 import {
   createAmalan,
   getById,
@@ -56,10 +59,13 @@ const router = useRouter()
 const id = route.params.id as string | undefined
 const isEdit = computed(() => Boolean(id))
 
-const form = ref<Partial<Amalan>>({ aktif: true })
+const form = ref<Partial<Amalan>>({ aktif: true, kategori_ids: [] })
 const mdContent = ref('')
 const loading = ref(false)
 const error = ref('')
+const { data: categories } = useCategoryListQuery()
+
+const categoryOptions = computed<Category[]>(() => categories?.value ?? [])
 
 const onUpdateModel = (payload: Partial<Amalan>) => {
   form.value = { ...form.value, ...payload }
@@ -74,6 +80,7 @@ onMounted(async () => {
     const data = await getById(id)
     if (data) {
       form.value = { ...data }
+      form.value.kategori_ids = data.kategori_ids || []
       try {
         const md = await downloadMarkdown(data.md_bucket_id, data.md_path)
         mdContent.value = md
@@ -96,16 +103,20 @@ async function onSubmit() {
     const file = new File([blob], fileName, { type: 'text/markdown' })
 
     if (isEdit.value && id) {
-      await updateAmalan(id, { ...form.value, mdFile: file })
+      await updateAmalan(id, {
+        ...form.value,
+        kategoriIds: form.value.kategori_ids || [],
+        mdFile: file,
+      })
     } else {
       await createAmalan({
         judul: (form.value.judul as string) || '',
         slug: (form.value.slug as string) || '',
         ringkasan: (form.value.ringkasan as string) || '',
-        kategori: (form.value.kategori as string) || '',
         ikon_url: (form.value.ikon_url as string) || '',
         urutan: (form.value.urutan as number) || undefined,
         aktif: Boolean(form.value.aktif),
+        kategoriIds: form.value.kategori_ids || [],
         mdFile: file,
       })
     }

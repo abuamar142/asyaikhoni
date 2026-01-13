@@ -64,6 +64,12 @@ const router = createRouter({
       meta: { requiresAuth: true, requiresAdmin: true, title: 'Admin - Amalan' },
     },
     {
+      path: '/admin/kategori',
+      name: 'admin-kategori',
+      component: () => import('@/views/Admin/CategoryList.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true, title: 'Admin - Kategori' },
+    },
+    {
       path: '/admin/amalan/new',
       name: 'admin-amalan-new',
       component: () => import('@/views/Admin/AmalanForm.vue'),

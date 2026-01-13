@@ -18,7 +18,18 @@
         >
           <td class="px-6 py-4 text-body-sm text-text-primary font-medium">{{ item.judul }}</td>
           <td class="px-6 py-4 text-body-sm text-text-secondary">{{ item.slug }}</td>
-          <td class="px-6 py-4 text-body-sm text-text-secondary">{{ item.kategori || '-' }}</td>
+          <td class="px-6 py-4 text-body-sm text-text-secondary">
+            <div class="flex flex-wrap gap-1" v-if="item.categories?.length">
+              <span
+                v-for="cat in item.categories"
+                :key="cat.id"
+                class="px-2 py-1 rounded-full text-caption bg-primary-100 text-primary-700"
+              >
+                {{ cat.nama }}
+              </span>
+            </div>
+            <span v-else>{{ item.kategori || '-' }}</span>
+          </td>
           <td class="px-6 py-4 text-center">
             <label class="inline-flex items-center gap-2 cursor-pointer">
               <input
