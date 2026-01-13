@@ -8,9 +8,9 @@
             <h1 class="text-heading-xl text-brand mb-1">Kelola Amalan</h1>
             <p class="text-body-md text-muted">Kelola semua amalan di pondok</p>
           </div>
-          <router-link :to="{ name: 'admin-amalan-new' }" class="btn-primary"
-            >+ Tambah Amalan</router-link
-          >
+          <BaseButton as="router-link" :to="{ name: 'admin-amalan-new' }" variant="primary">
+            + Tambah Amalan
+          </BaseButton>
         </div>
       </div>
     </div>
@@ -36,6 +36,7 @@
 import { computed, ref, watch } from 'vue'
 import AmalanTable from '@/components/admin/AmalanTable.vue'
 import AdminLayout from '@/components/admin/AdminLayout.vue'
+import BaseButton from '@/components/ui/BaseButton.vue'
 import { deleteAmalan, toggleAktif, type Amalan } from '@/services/amalanService'
 import { useDebouncedRef } from '@/composables/useDebouncedRef'
 import { useAdminAmalanListQuery } from '@/composables/useAmalanQueries'

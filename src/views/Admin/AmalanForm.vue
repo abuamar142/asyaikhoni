@@ -20,18 +20,17 @@
           @update:mdContent="onUpdateMd"
         />
         <div class="flex items-center gap-3 pt-4 border-t border-green-100">
-          <button
-            :disabled="loading"
-            type="submit"
-            class="btn-primary inline-flex items-center gap-2 text-body-md disabled:opacity-80 disabled:cursor-not-allowed"
-          >
+          <BaseButton :disabled="loading" type="submit" variant="primary">
             {{ loading ? 'Menyimpan...' : 'Simpan' }}
-          </button>
-          <router-link
+          </BaseButton>
+          <BaseButton
+            as="router-link"
+            variant="ghost"
             :to="{ name: 'admin-amalan-list' }"
-            class="px-6 py-2 rounded-lg border border-green-200 hover:bg-primary-50 text-text-primary font-medium transition-all duration-200"
-            >Batal</router-link
+            class="text-text-primary"
           >
+            Batal
+          </BaseButton>
         </div>
         <p v-if="error" class="text-text-error text-body-md">{{ error }}</p>
       </form>
@@ -44,6 +43,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AmalanFormFields from '@/components/admin/AmalanFormFields.vue'
 import AdminLayout from '@/components/admin/AdminLayout.vue'
+import BaseButton from '@/components/ui/BaseButton.vue'
 import { useCategoryListQuery } from '@/composables/useCategoryQueries'
 import type { Category } from '@/services/categoryService'
 import {

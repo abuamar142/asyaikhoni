@@ -36,12 +36,7 @@
       </nav>
 
       <div class="mt-auto px-4 py-4 border-t border-primary-800">
-        <button
-          class="w-full px-4 py-2 rounded-lg bg-red-500 text-white font-semibold shadow-sm hover:bg-red-600 transition"
-          @click="onLogout"
-        >
-          Logout
-        </button>
+        <BaseButton block variant="danger" @click="onLogout">Logout</BaseButton>
       </div>
     </aside>
 
@@ -64,6 +59,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
+import BaseButton from '@/components/ui/BaseButton.vue'
 import * as authService from '@/services/authService'
 
 const route = useRoute()

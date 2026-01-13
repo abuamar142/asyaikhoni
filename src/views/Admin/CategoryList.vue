@@ -39,20 +39,12 @@
             ></textarea>
           </div>
           <div class="flex items-center gap-3">
-            <button
-              type="submit"
-              :disabled="isSaving"
-              class="btn-primary inline-flex items-center justify-center gap-2 text-body-md disabled:opacity-80 disabled:cursor-not-allowed"
-            >
+            <BaseButton type="submit" :disabled="isSaving" variant="primary">
               {{ isSaving ? 'Menyimpan...' : isEditing ? 'Simpan Perubahan' : 'Simpan' }}
-            </button>
-            <button
-              type="button"
-              class="px-4 py-2 rounded-lg border border-green-200 text-text-primary hover:bg-primary-50"
-              @click="resetForm"
-            >
+            </BaseButton>
+            <BaseButton type="button" variant="ghost" @click="resetForm">
               {{ isEditing ? 'Batal Edit' : 'Reset' }}
-            </button>
+            </BaseButton>
           </div>
           <p v-if="formError" class="text-text-error text-body-sm">{{ formError }}</p>
         </form>
@@ -89,19 +81,15 @@
                 </p>
               </div>
               <div class="flex items-center gap-3">
-                <button
-                  class="px-3 py-1.5 rounded text-body-sm font-medium bg-primary-100 text-primary-700 hover:bg-primary-200"
-                  @click="onEdit(item)"
-                >
-                  Edit
-                </button>
-                <button
-                  class="px-3 py-1.5 rounded text-body-sm font-medium bg-red-100 text-red-700 hover:bg-red-200"
+                <BaseButton variant="secondary" size="sm" @click="onEdit(item)">Edit</BaseButton>
+                <BaseButton
+                  variant="danger"
+                  size="sm"
                   :disabled="deleteMutation.isPending.value"
                   @click="onDelete(item)"
                 >
                   Hapus
-                </button>
+                </BaseButton>
               </div>
             </div>
           </div>
@@ -125,6 +113,7 @@ import {
   useUpdateCategoryMutation,
 } from '@/composables/useCategoryQueries'
 import { useDebouncedRef } from '@/composables/useDebouncedRef'
+import BaseButton from '@/components/ui/BaseButton.vue'
 import type { Category } from '@/services/categoryService'
 
 const search = ref('')

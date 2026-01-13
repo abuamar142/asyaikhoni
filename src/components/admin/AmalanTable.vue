@@ -47,17 +47,17 @@
           </td>
           <td class="px-6 py-4 text-right">
             <div class="flex justify-end gap-2">
-              <router-link
+              <BaseButton
+                as="router-link"
+                size="sm"
+                variant="secondary"
                 :to="{ name: 'admin-amalan-edit', params: { id: item.id } }"
-                class="px-3 py-1.5 rounded text-body-sm font-medium bg-primary-100 text-primary-700 hover:bg-primary-200 transition-all duration-200"
-                >Edit</router-link
               >
-              <button
-                @click="$emit('delete', item)"
-                class="px-3 py-1.5 rounded text-body-sm font-medium bg-red-100 text-red-700 hover:bg-red-200 transition-all duration-200"
-              >
+                Edit
+              </BaseButton>
+              <BaseButton size="sm" variant="danger" @click="$emit('delete', item)">
                 Hapus
-              </button>
+              </BaseButton>
             </div>
           </td>
         </tr>
@@ -68,6 +68,7 @@
 
 <script setup lang="ts">
 import type { Amalan } from '@/services/amalanService'
+import BaseButton from '@/components/ui/BaseButton.vue'
 
 defineProps<{ items: Amalan[] }>()
 defineEmits<{ (e: 'toggle', item: Amalan): void; (e: 'delete', item: Amalan): void }>()

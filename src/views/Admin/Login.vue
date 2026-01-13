@@ -29,12 +29,9 @@
             placeholder="••••••••"
           />
         </div>
-        <button
-          :disabled="loading"
-          class="btn-primary w-full inline-flex items-center justify-center gap-2 text-body-md disabled:opacity-80 disabled:cursor-not-allowed mt-6"
-        >
+        <BaseButton type="submit" :disabled="loading" block class="mt-6" variant="primary">
           {{ loading ? 'Sedang masuk...' : 'Masuk' }}
-        </button>
+        </BaseButton>
         <p v-if="error" class="text-text-error text-body-sm text-center">{{ error }}</p>
       </form>
     </div>
@@ -44,6 +41,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import BaseButton from '@/components/ui/BaseButton.vue'
 import { login } from '@/services/authService'
 
 defineOptions({
