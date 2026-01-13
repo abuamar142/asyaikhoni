@@ -10,9 +10,14 @@
     </div>
 
     <!-- Form -->
-    <div class="container mx-auto px-4 py-8 max-w-2xl">
+    <div class="container mx-auto px-4 py-8 max-w-8xl">
       <form @submit.prevent="onSubmit" class="space-y-6">
-        <AmalanFormFields :model="form" @file="(f) => (mdFile = f)" />
+        <AmalanFormFields
+          :model="form"
+          :md-content="mdContent"
+          @update:model="(payload) => (form = { ...form, ...payload })"
+          @update:mdContent="(v) => (mdContent = v)"
+        />
         <div class="flex items-center gap-3 pt-4 border-t border-green-100">
           <button
             :disabled="loading"
@@ -37,7 +42,13 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AmalanFormFields from '@/components/admin/AmalanFormFields.vue'
-import { createAmalan, getById, updateAmalan, type Amalan } from '@/services/amalanService'
+import {
+  createAmalan,
+  getById,
+  updateAmalan,
+  type Amalan,
+  downloadMarkdown,
+} from '@/services/amalanService'
 
 const route = useRoute()
 const router = useRouter()
@@ -45,14 +56,22 @@ const id = route.params.id as string | undefined
 const isEdit = computed(() => Boolean(id))
 
 const form = ref<Partial<Amalan>>({ aktif: true })
-let mdFile: File | undefined
+const mdContent = ref('')
 const loading = ref(false)
 const error = ref('')
 
 onMounted(async () => {
   if (isEdit.value && id) {
     const data = await getById(id)
-    if (data) form.value = { ...data }
+    if (data) {
+      form.value = { ...data }
+      try {
+        const md = await downloadMarkdown(data.md_bucket_id, data.md_path)
+        mdContent.value = md
+      } catch (err) {
+        console.error('Gagal memuat markdown', err)
+      }
+    }
   }
 })
 
@@ -60,10 +79,16 @@ async function onSubmit() {
   loading.value = true
   error.value = ''
   try {
+    const content = mdContent.value?.trim()
+    if (!content) throw new Error('Konten Markdown wajib diisi')
+
+    const fileName = `${(form.value.slug || 'amalan').toString()}.md`
+    const blob = new Blob([content], { type: 'text/markdown' })
+    const file = new File([blob], fileName, { type: 'text/markdown' })
+
     if (isEdit.value && id) {
-      await updateAmalan(id, { ...form.value, mdFile })
+      await updateAmalan(id, { ...form.value, mdFile: file })
     } else {
-      if (!mdFile) throw new Error('File Markdown wajib diunggah')
       await createAmalan({
         judul: (form.value.judul as string) || '',
         slug: (form.value.slug as string) || '',
@@ -72,7 +97,7 @@ async function onSubmit() {
         ikon_url: (form.value.ikon_url as string) || '',
         urutan: (form.value.urutan as number) || undefined,
         aktif: Boolean(form.value.aktif),
-        mdFile,
+        mdFile: file,
       })
     }
     router.push({ name: 'admin-amalan-list' })

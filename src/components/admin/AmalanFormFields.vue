@@ -95,18 +95,19 @@
       </div>
     </div>
     <div>
-      <label for="mdFile" class="block text-body-sm text-text-primary font-medium mb-2"
-        >File Markdown (.md) <span class="text-text-error">*</span></label
+      <label for="mdContent" class="block text-body-sm text-text-primary font-medium mb-2"
+        >Konten Markdown <span class="text-text-error">*</span></label
       >
-      <input
-        id="mdFile"
-        type="file"
-        accept=".md,text/markdown"
-        @change="onFileChange"
-        class="w-full px-4 py-2 border border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
-      />
+      <textarea
+        id="mdContent"
+        :value="mdContent"
+        @input="emit('update:mdContent', ($event.target as HTMLTextAreaElement).value)"
+        rows="16"
+        class="w-full px-4 py-3 border border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all font-mono text-sm"
+        placeholder="Tuliskan konten amalan dalam format Markdown di sini"
+      ></textarea>
       <p class="text-caption text-muted mt-2">
-        Konten amalan harus dalam format Markdown. File akan disimpan di Storage.
+        Tidak perlu unggah file, konten akan otomatis disimpan.
       </p>
     </div>
   </div>
@@ -115,22 +116,13 @@
 <script setup lang="ts">
 import type { Amalan } from '@/services/amalanService'
 
-defineProps<{ model: Partial<Amalan> & { mdFile?: File } }>()
+defineProps<{ model: Partial<Amalan>; mdContent?: string }>()
 const emit = defineEmits<{
-  (e: 'update:model', value: Partial<Amalan> & { mdFile?: File }): void
-  (e: 'file', file: File): void
+  (e: 'update:model', value: Partial<Amalan>): void
+  (e: 'update:mdContent', value: string): void
 }>()
 
-function updateField<K extends keyof (Partial<Amalan> & { mdFile?: File })>(
-  field: K,
-  value: (Partial<Amalan> & { mdFile?: File })[K]
-) {
-  emit('update:model', { [field]: value } as Partial<Amalan> & { mdFile?: File })
-}
-
-function onFileChange(e: Event) {
-  const input = e.target as HTMLInputElement
-  const file = (input.files && input.files[0]) || undefined
-  if (file) emit('file', file)
+function updateField<K extends keyof Partial<Amalan>>(field: K, value: Partial<Amalan>[K]) {
+  emit('update:model', { [field]: value } as Partial<Amalan>)
 }
 </script>
