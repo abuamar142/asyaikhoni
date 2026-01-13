@@ -5,7 +5,8 @@
         >Judul <span class="text-text-error">*</span></label
       >
       <input
-        v-model="model.judul"
+        :model-value="model.judul"
+        @input="updateField('judul', ($event.target as HTMLInputElement).value)"
         type="text"
         required
         class="w-full px-4 py-2 border border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
@@ -17,7 +18,8 @@
         >Slug <span class="text-text-error">*</span></label
       >
       <input
-        v-model="model.slug"
+        :model-value="model.slug"
+        @input="updateField('slug', ($event.target as HTMLInputElement).value)"
         type="text"
         required
         class="w-full px-4 py-2 border border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
@@ -32,7 +34,8 @@
         >Ringkasan</label
       >
       <textarea
-        v-model="model.ringkasan"
+        :model-value="model.ringkasan"
+        @input="updateField('ringkasan', ($event.target as HTMLTextAreaElement).value)"
         rows="3"
         class="w-full px-4 py-2 border border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
         placeholder="Deskripsi singkat tentang amalan ini..."
@@ -44,7 +47,8 @@
           >Kategori</label
         >
         <input
-          v-model="model.kategori"
+          :model-value="model.kategori"
+          @input="updateField('kategori', ($event.target as HTMLInputElement).value)"
           type="text"
           class="w-full px-4 py-2 border border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
           placeholder="Contoh: tahlil, doa"
@@ -55,7 +59,8 @@
           >URL Ikon</label
         >
         <input
-          v-model="model.ikon_url"
+          :model-value="model.ikon_url"
+          @input="updateField('ikon_url', ($event.target as HTMLInputElement).value)"
           type="text"
           class="w-full px-4 py-2 border border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
           placeholder="https://example.com/icon.png"
@@ -69,7 +74,8 @@
         >
         <input
           id="urutan"
-          v-model.number="model.urutan"
+          :model-value="model.urutan"
+          @input="updateField('urutan', Number(($event.target as HTMLInputElement).value))"
           type="number"
           class="w-full px-4 py-2 border border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
           placeholder="1"
@@ -79,7 +85,8 @@
         <label class="flex items-center gap-3 cursor-pointer">
           <input
             id="aktif"
-            v-model="model.aktif"
+            :checked="model.aktif"
+            @change="updateField('aktif', ($event.target as HTMLInputElement).checked)"
             type="checkbox"
             class="w-4 h-4 rounded text-primary-600"
           />
@@ -108,12 +115,22 @@
 <script setup lang="ts">
 import type { Amalan } from '@/services/amalanService'
 
-const props = defineProps<{ model: Partial<Amalan> & { mdFile?: File } }>()
-const emits = defineEmits<{ (e: 'file', file: File): void }>()
+defineProps<{ model: Partial<Amalan> & { mdFile?: File } }>()
+const emit = defineEmits<{
+  (e: 'update:model', value: Partial<Amalan> & { mdFile?: File }): void
+  (e: 'file', file: File): void
+}>()
+
+function updateField<K extends keyof (Partial<Amalan> & { mdFile?: File })>(
+  field: K,
+  value: (Partial<Amalan> & { mdFile?: File })[K]
+) {
+  emit('update:model', { [field]: value } as Partial<Amalan> & { mdFile?: File })
+}
 
 function onFileChange(e: Event) {
   const input = e.target as HTMLInputElement
   const file = (input.files && input.files[0]) || undefined
-  if (file) emits('file', file)
+  if (file) emit('file', file)
 }
 </script>

@@ -51,8 +51,9 @@ async function fetchList() {
   error.value = ''
   try {
     items.value = await listAll({ q: q.value })
-  } catch (e: any) {
-    error.value = e?.message || 'Gagal memuat data'
+  } catch (e: unknown) {
+    const err = e as Error
+    error.value = err?.message || 'Gagal memuat data'
   }
 }
 

@@ -26,5 +26,8 @@
 </template>
 
 <script setup lang="ts">
+defineOptions({
+  name: 'AdminIndexPage',
+})
 // Simple dashboard page with links
 </script>

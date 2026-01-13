@@ -30,7 +30,7 @@
       <div v-if="loading" class="text-body-md text-muted py-8 text-center">Sedang memuat...</div>
 
       <!-- Empty State -->
-      <div v-else-if="items.length === 0" class="text-body-md text-muted py-8 text-center">
+      <div v-else-if="!items || items.length === 0" class="text-body-md text-muted py-8 text-center">
         Tidak ada amalan yang ditemukan.
       </div>
 
@@ -64,21 +64,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { listPublic, type Amalan } from '@/services/amalanService'
+import { ref, computed } from 'vue'
+import { useAmalanListQuery } from '@/composables/useAmalanQueries'
 
-const items = ref<Amalan[]>([])
-const loading = ref(false)
 const q = ref('')
 
-async function fetchList() {
-  loading.value = true
-  try {
-    items.value = await listPublic({ q: q.value })
-  } finally {
-    loading.value = false
-  }
-}
+const queryParams = computed(() => ({
+  q: q.value || undefined,
+}))
 
-onMounted(fetchList)
+const { data: items = [], isLoading: loading } = useAmalanListQuery(queryParams)
+
+function fetchList() {
+  // Query will auto-refetch when queryParams change
+}
 </script>
+
