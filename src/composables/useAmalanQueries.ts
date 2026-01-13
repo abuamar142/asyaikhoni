@@ -22,10 +22,10 @@ export function useAmalanListQuery(
     offset?: number
   }>,
 ) {
-  return useQuery({
+  return useQuery(() => ({
     queryKey: amalanKeys.list({ scope: 'public', ...unref(params) }),
     queryFn: () => amalanService.listPublic(unref(params)),
-  })
+  }))
 }
 
 // Admin amalan list query
@@ -37,10 +37,10 @@ export function useAdminAmalanListQuery(
     offset?: number
   }>,
 ) {
-  return useQuery({
+  return useQuery(() => ({
     queryKey: amalanKeys.list({ scope: 'admin', ...unref(params) }),
     queryFn: () => amalanService.listAll(unref(params)),
-  })
+  }))
 }
 
 // Amalan by slug query

@@ -50,19 +50,8 @@
         </form>
 
         <div class="lg:col-span-2">
-          <div class="flex items-center gap-3 mb-4">
-            <input
-              v-model="search"
-              type="text"
-              placeholder="Cari kategori..."
-              class="flex-1 px-4 py-2 border border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-            />
-            <button
-              class="px-5 py-2 rounded-lg border border-green-200 text-text-primary hover:bg-primary-50"
-              @click="refetch()"
-            >
-              Cari
-            </button>
+          <div class="mb-4">
+            <SearchInput v-model="search" placeholder="Cari kategori..." />
           </div>
 
           <div
@@ -114,6 +103,7 @@ import {
 } from '@/composables/useCategoryQueries'
 import { useDebouncedRef } from '@/composables/useDebouncedRef'
 import BaseButton from '@/components/ui/BaseButton.vue'
+import SearchInput from '@/components/ui/SearchInput.vue'
 import type { Category } from '@/services/categoryService'
 
 const search = ref('')
@@ -124,11 +114,17 @@ const listError = ref('')
 const editId = ref<string | null>(null)
 
 const {
-  data: categories = [],
+  data,
   isLoading,
   error: listErr,
   refetch,
 } = useCategoryListQuery(computed(() => ({ q: debouncedSearch.value || undefined })))
+
+const categories = computed(() => data.value || [])
+
+watch(debouncedSearch, () => {
+  refetch()
+})
 
 watch(
   () => listErr?.value,

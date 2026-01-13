@@ -17,13 +17,8 @@
 
     <!-- Search & List -->
     <div class="container mx-auto px-4 py-8">
-      <div class="mb-6 flex items-center gap-3">
-        <input
-          v-model="q"
-          type="text"
-          placeholder="Cari amalan..."
-          class="flex-1 max-w-md px-4 py-2 border border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-        />
+      <div class="mb-6 max-w-xl">
+        <SearchInput v-model="q" placeholder="Cari amalan..." />
       </div>
 
       <AmalanTable :items="items || []" @delete="onDelete" @toggle="onToggle" />
@@ -37,6 +32,7 @@ import { computed, ref, watch } from 'vue'
 import AmalanTable from '@/components/admin/AmalanTable.vue'
 import AdminLayout from '@/components/admin/AdminLayout.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
+import SearchInput from '@/components/ui/SearchInput.vue'
 import { deleteAmalan, toggleAktif, type Amalan } from '@/services/amalanService'
 import { useDebouncedRef } from '@/composables/useDebouncedRef'
 import { useAdminAmalanListQuery } from '@/composables/useAmalanQueries'
