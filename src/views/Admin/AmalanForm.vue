@@ -45,6 +45,8 @@ import AmalanFormFields from '@/components/admin/AmalanFormFields.vue'
 import AdminLayout from '@/components/admin/AdminLayout.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import { useCategoryListQuery } from '@/composables/useCategoryQueries'
+import { useQueryClient } from '@tanstack/vue-query'
+import { amalanKeys } from '@/composables/useAmalanQueries'
 import type { Category } from '@/services/categoryService'
 import {
   createAmalan,
@@ -56,6 +58,7 @@ import {
 
 const route = useRoute()
 const router = useRouter()
+const queryClient = useQueryClient()
 const id = route.params.id as string | undefined
 const isEdit = computed(() => Boolean(id))
 
@@ -120,6 +123,7 @@ async function onSubmit() {
         mdFile: file,
       })
     }
+    await queryClient.invalidateQueries({ queryKey: amalanKeys.lists(), refetchType: 'all' })
     router.push({ name: 'admin-amalan-list' })
   } catch (e: unknown) {
     error.value = e instanceof Error ? e.message : 'Gagal menyimpan'

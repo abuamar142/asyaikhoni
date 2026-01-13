@@ -21,7 +21,11 @@
         <SearchInput v-model="q" placeholder="Cari amalan..." />
       </div>
 
-      <AmalanTable :items="items || []" @delete="onDelete" @toggle="onToggle" />
+      <div v-if="isLoading" class="text-body-md text-muted py-8 text-center">Sedang memuat...</div>
+      <div v-else-if="itemsList.length === 0" class="text-body-md text-muted py-8 text-center">
+        Belum ada amalan.
+      </div>
+      <AmalanTable v-else :items="itemsList" @delete="onDelete" @toggle="onToggle" />
       <p v-if="error" class="text-text-error text-body-md mt-6">{{ error }}</p>
     </div>
   </AdminLayout>
@@ -52,7 +56,8 @@ const q = ref('')
 const qDebounced = useDebouncedRef(q, 400)
 const queryParams = computed(() => ({ q: qDebounced.value || undefined }))
 
-const { data: items, error, refetch } = useAdminAmalanListQuery(queryParams)
+const { data: items, error, refetch, isLoading } = useAdminAmalanListQuery(queryParams)
+const itemsList = computed(() => items.value || [])
 const showDeleteConfirm = ref(false)
 const deleteTarget = ref<Amalan | null>(null)
 

@@ -10,7 +10,7 @@
           <th class="text-right px-6 py-3 text-body-sm font-semibold text-text-primary">Aksi</th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-green-100">
+      <tbody v-if="items.length" class="divide-y divide-green-100">
         <tr
           v-for="item in items"
           :key="item.id"
@@ -59,6 +59,13 @@
                 Hapus
               </BaseButton>
             </div>
+          </td>
+        </tr>
+      </tbody>
+      <tbody v-else>
+        <tr>
+          <td colspan="5" class="px-6 py-6 text-center text-body-sm text-text-muted">
+            Belum ada amalan.
           </td>
         </tr>
       </tbody>
