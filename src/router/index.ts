@@ -59,7 +59,7 @@ const router = createRouter({
     },
     {
       path: '/admin/amalan',
-      name: 'admin-amalan-list',
+      name: 'admin-amalan',
       component: () => import('@/views/Admin/AmalanList.vue'),
       meta: { requiresAuth: true, requiresAdmin: true, title: 'Admin - Amalan' },
     },

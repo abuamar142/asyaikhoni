@@ -5,7 +5,7 @@
       <div class="container mx-auto px-4">
         <div class="flex items-center justify-between">
           <div>
-            <h1 class="text-heading-xl text-brand mb-1">Kelola Amalan</h1>
+            <h1 class="text-heading-xl text-brand mb-1">Amalan</h1>
             <p class="text-body-md text-muted">Kelola semua amalan di pondok</p>
           </div>
           <BaseButton as="router-link" :to="{ name: 'admin-amalan-new' }" variant="primary">

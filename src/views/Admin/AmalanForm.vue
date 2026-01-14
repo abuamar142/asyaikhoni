@@ -26,7 +26,7 @@
           <BaseButton
             as="router-link"
             variant="ghost"
-            :to="{ name: 'admin-amalan-list' }"
+            :to="{ name: 'admin-amalan' }"
             class="text-text-primary"
           >
             Batal
@@ -124,7 +124,7 @@ async function onSubmit() {
       })
     }
     await queryClient.invalidateQueries({ queryKey: amalanKeys.lists(), refetchType: 'all' })
-    router.push({ name: 'admin-amalan-list' })
+    router.push({ name: 'admin-amalan' })
   } catch (e: unknown) {
     error.value = e instanceof Error ? e.message : 'Gagal menyimpan'
   } finally {
