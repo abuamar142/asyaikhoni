@@ -43,6 +43,7 @@ import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import { login } from '@/services/authService'
+import { useToast } from '@/composables/useToast'
 
 defineOptions({
   name: 'LoginPage',
@@ -54,16 +55,19 @@ const email = ref('')
 const password = ref('')
 const loading = ref(false)
 const error = ref('')
+const { showToast } = useToast()
 
 async function onSubmit() {
   loading.value = true
   error.value = ''
   try {
     await login(email.value, password.value)
+    showToast({ type: 'success', title: 'Berhasil masuk', message: 'Selamat datang kembali.' })
     const redirect = route.query.redirect as string | undefined
     router.push(redirect || { name: 'admin-index' })
   } catch (e: unknown) {
     error.value = (e instanceof Error ? e.message : 'Login gagal') || 'Login gagal'
+    showToast({ type: 'error', title: 'Login gagal', message: error.value })
   } finally {
     loading.value = false
   }

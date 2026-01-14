@@ -116,6 +116,7 @@ import BaseButton from '@/components/ui/BaseButton.vue'
 import SearchInput from '@/components/ui/SearchInput.vue'
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
 import type { Category } from '@/services/categoryService'
+import { useToast } from '@/composables/useToast'
 
 const search = ref('')
 const debouncedSearch = useDebouncedRef(search, 400)
@@ -149,6 +150,7 @@ const deleteMutation = useDeleteCategoryMutation()
 const updateMutation = useUpdateCategoryMutation()
 const showDeleteConfirm = ref(false)
 const deleteTarget = ref<Category | null>(null)
+const { showToast } = useToast()
 
 const isEditing = computed(() => Boolean(editId.value))
 const isSaving = computed(() => createMutation.isPending.value || updateMutation.isPending.value)
@@ -164,13 +166,16 @@ async function onSubmit() {
   try {
     if (editId.value) {
       await updateMutation.mutateAsync({ id: editId.value, data: { ...form.value } })
+      showToast({ type: 'success', title: 'Kategori diperbarui', message: 'Perubahan disimpan.' })
     } else {
       await createMutation.mutateAsync({ ...form.value })
+      showToast({ type: 'success', title: 'Kategori dibuat', message: 'Kategori baru ditambahkan.' })
     }
     resetForm()
     await refetch()
   } catch (e: unknown) {
     formError.value = (e as Error)?.message || 'Gagal menyimpan kategori'
+    showToast({ type: 'error', title: 'Gagal menyimpan', message: formError.value })
   }
 }
 
@@ -194,8 +199,14 @@ function resetDelete() {
 
 async function confirmDelete() {
   if (!deleteTarget.value) return
-  await deleteMutation.mutateAsync(deleteTarget.value.id)
-  resetDelete()
-  await refetch()
+  try {
+    await deleteMutation.mutateAsync(deleteTarget.value.id)
+    resetDelete()
+    await refetch()
+    showToast({ type: 'success', title: 'Kategori dihapus', message: 'Kategori berhasil dihapus.' })
+  } catch (e: unknown) {
+    const message = (e as Error)?.message || 'Gagal menghapus kategori'
+    showToast({ type: 'error', title: 'Gagal menghapus', message })
+  }
 }
 </script>

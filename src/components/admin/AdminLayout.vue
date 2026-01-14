@@ -79,11 +79,13 @@ import { useRoute, useRouter, RouterLink } from 'vue-router'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
 import * as authService from '@/services/authService'
+import { useToast } from '@/composables/useToast'
 
 const route = useRoute()
 const router = useRouter()
 const open = ref(false)
 const showLogoutConfirm = ref(false)
+const { showToast } = useToast()
 
 const navItems = [
   { label: 'Dashboard', to: { name: 'admin-index' } },
@@ -96,7 +98,13 @@ function toggle() {
 }
 
 async function onLogout() {
-  await authService.logout()
-  router.push({ name: 'admin-login' })
+  try {
+    await authService.logout()
+    showToast({ type: 'success', title: 'Logout', message: 'Anda telah keluar.' })
+    router.push({ name: 'admin-login' })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Gagal logout'
+    showToast({ type: 'error', title: 'Gagal logout', message })
+  }
 }
 </script>

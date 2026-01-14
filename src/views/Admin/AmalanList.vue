@@ -27,6 +27,7 @@
       </div>
       <AmalanTable v-else :items="itemsList" @delete="onDelete" @toggle="onToggle" />
       <p v-if="error" class="text-text-error text-body-md mt-6">{{ error }}</p>
+      <p v-if="actionError" class="text-text-error text-body-md mt-3">{{ actionError }}</p>
     </div>
   </AdminLayout>
 
@@ -51,6 +52,7 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
 import { deleteAmalan, toggleAktif, type Amalan } from '@/services/amalanService'
 import { useDebouncedRef } from '@/composables/useDebouncedRef'
 import { useAdminAmalanListQuery } from '@/composables/useAmalanQueries'
+import { useToast } from '@/composables/useToast'
 
 const q = ref('')
 const qDebounced = useDebouncedRef(q, 400)
@@ -60,6 +62,8 @@ const { data: items, error, refetch, isLoading } = useAdminAmalanListQuery(query
 const itemsList = computed(() => items.value || [])
 const showDeleteConfirm = ref(false)
 const deleteTarget = ref<Amalan | null>(null)
+const actionError = ref('')
+const { showToast } = useToast()
 
 async function onDelete(item: Amalan) {
   deleteTarget.value = item
@@ -72,14 +76,34 @@ function resetDelete() {
 
 async function confirmDelete() {
   if (!deleteTarget.value) return
-  await deleteAmalan(deleteTarget.value.id)
-  resetDelete()
-  await refetch()
+  actionError.value = ''
+  try {
+    await deleteAmalan(deleteTarget.value.id)
+    resetDelete()
+    await refetch()
+    showToast({ type: 'success', title: 'Amalan dihapus', message: 'Amalan berhasil dihapus.' })
+  } catch (e) {
+    const message = e instanceof Error ? e.message : 'Gagal menghapus amalan'
+    actionError.value = message
+    showToast({ type: 'error', title: 'Gagal menghapus', message })
+  }
 }
 
 async function onToggle(item: Amalan) {
-  await toggleAktif(item.id, !item.aktif)
-  await refetch()
+  actionError.value = ''
+  try {
+    await toggleAktif(item.id, !item.aktif)
+    await refetch()
+    showToast({
+      type: 'success',
+      title: 'Status diperbarui',
+      message: `Amalan ${item.aktif ? 'dinonaktifkan' : 'diaktifkan'}.`,
+    })
+  } catch (e) {
+    const message = e instanceof Error ? e.message : 'Gagal memperbarui status'
+    actionError.value = message
+    showToast({ type: 'error', title: 'Gagal memperbarui', message })
+  }
 }
 
 watch(qDebounced, () => {

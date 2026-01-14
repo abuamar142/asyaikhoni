@@ -55,6 +55,7 @@ import {
   type Amalan,
   downloadMarkdown,
 } from '@/services/amalanService'
+import { useToast } from '@/composables/useToast'
 
 const route = useRoute()
 const router = useRouter()
@@ -69,6 +70,7 @@ const error = ref('')
 const slugTouched = ref(false)
 const isAutoSlugUpdate = ref(false)
 const { data: categories } = useCategoryListQuery()
+const { showToast } = useToast()
 
 const categoryOptions = computed<Category[]>(() => categories?.value ?? [])
 
@@ -130,6 +132,7 @@ async function onSubmit() {
         kategoriIds: form.value.kategori_ids || [],
         mdFile: file,
       })
+      showToast({ type: 'success', title: 'Tersimpan', message: 'Perubahan amalan disimpan.' })
     } else {
       await createAmalan({
         judul: (form.value.judul as string) || '',
@@ -141,11 +144,13 @@ async function onSubmit() {
         kategoriIds: form.value.kategori_ids || [],
         mdFile: file,
       })
+      showToast({ type: 'success', title: 'Tersimpan', message: 'Amalan baru berhasil dibuat.' })
     }
     await queryClient.invalidateQueries({ queryKey: amalanKeys.lists(), refetchType: 'all' })
     router.push({ name: 'admin-amalan' })
   } catch (e: unknown) {
     error.value = e instanceof Error ? e.message : 'Gagal menyimpan'
+    showToast({ type: 'error', title: 'Gagal menyimpan', message: error.value })
   } finally {
     loading.value = false
   }
