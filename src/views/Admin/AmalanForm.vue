@@ -39,7 +39,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AmalanFormFields from '@/components/admin/AmalanFormFields.vue'
 import AdminLayout from '@/components/admin/AdminLayout.vue'
@@ -66,11 +66,17 @@ const form = ref<Partial<Amalan>>({ aktif: true, kategori_ids: [] })
 const mdContent = ref('')
 const loading = ref(false)
 const error = ref('')
+const slugTouched = ref(false)
+const isAutoSlugUpdate = ref(false)
 const { data: categories } = useCategoryListQuery()
 
 const categoryOptions = computed<Category[]>(() => categories?.value ?? [])
 
 const onUpdateModel = (payload: Partial<Amalan>) => {
+  const slugUpdated = Object.prototype.hasOwnProperty.call(payload, 'slug')
+  if (slugUpdated && !isAutoSlugUpdate.value) {
+    slugTouched.value = true
+  }
   form.value = { ...form.value, ...payload }
 }
 
@@ -84,6 +90,7 @@ onMounted(async () => {
     if (data) {
       form.value = { ...data }
       form.value.kategori_ids = data.kategori_ids || []
+      slugTouched.value = true
       try {
         const md = await downloadMarkdown(data.md_bucket_id, data.md_path)
         mdContent.value = md
@@ -93,6 +100,18 @@ onMounted(async () => {
     }
   }
 })
+
+watch(
+  () => form.value.judul,
+  (judul) => {
+    const currentSlug = form.value.slug ?? ''
+    if (slugTouched.value && currentSlug) return
+    const next = slugify(judul || '')
+    isAutoSlugUpdate.value = true
+    form.value = { ...form.value, slug: next }
+    isAutoSlugUpdate.value = false
+  },
+)
 
 async function onSubmit() {
   loading.value = true
@@ -130,5 +149,15 @@ async function onSubmit() {
   } finally {
     loading.value = false
   }
+}
+
+function slugify(text: string): string {
+  return text
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
 }
 </script>
