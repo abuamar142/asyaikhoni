@@ -17,7 +17,8 @@ export const amalanKeys = {
 export function useAmalanListQuery(
   params?: MaybeRef<{
     q?: string
-    kategori?: string
+    kategori?: string | string[]
+    kategoriIds?: string[]
     limit?: number
     offset?: number
   }>,
@@ -32,7 +33,8 @@ export function useAmalanListQuery(
 export function useAdminAmalanListQuery(
   params?: MaybeRef<{
     q?: string
-    kategori?: string
+    kategori?: string | string[]
+    kategoriIds?: string[]
     limit?: number
     offset?: number
   }>,

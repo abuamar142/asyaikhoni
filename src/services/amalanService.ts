@@ -34,19 +34,25 @@ function mapAmalan(row: AmalanRow): Amalan {
 
 export async function listPublic(params?: {
   q?: string
-  kategori?: string
+  kategori?: string | string[]
+  kategoriIds?: string[]
   limit?: number
   offset?: number
 }) {
-  let query = supabase
-    .from('amalan')
-    .select('*, amalan_kategori:amalan_kategori ( kategori:kategori_id ( id, nama, deskripsi ) )')
-    .eq('aktif', true)
+  const kategoriList =
+    params?.kategoriIds ||
+    (Array.isArray(params?.kategori) ? params.kategori : params?.kategori ? [params.kategori] : [])
+
+  const relation = kategoriList.length
+    ? 'amalan_kategori:amalan_kategori!inner ( kategori:kategori_id ( id, nama, deskripsi ) )'
+    : 'amalan_kategori:amalan_kategori ( kategori:kategori_id ( id, nama, deskripsi ) )'
+
+  let query = supabase.from('amalan').select(`*, ${relation}`).eq('aktif', true)
   if (params?.q) {
     query = query.ilike('judul', `%${params.q}%`)
   }
-  if (params?.kategori) {
-    query = query.eq('amalan_kategori.kategori_id', params.kategori)
+  if (kategoriList.length) {
+    query = query.in('amalan_kategori.kategori_id', kategoriList)
   }
   query = query.order('urutan', { ascending: true })
   if (params?.limit) query = query.limit(params.limit)
@@ -59,18 +65,25 @@ export async function listPublic(params?: {
 
 export async function listAll(params?: {
   q?: string
-  kategori?: string
+  kategori?: string | string[]
+  kategoriIds?: string[]
   limit?: number
   offset?: number
 }) {
-  let query = supabase
-    .from('amalan')
-    .select('*, amalan_kategori:amalan_kategori ( kategori:kategori_id ( id, nama, deskripsi ) )')
+  const kategoriList =
+    params?.kategoriIds ||
+    (Array.isArray(params?.kategori) ? params.kategori : params?.kategori ? [params.kategori] : [])
+
+  const relation = kategoriList.length
+    ? 'amalan_kategori:amalan_kategori!inner ( kategori:kategori_id ( id, nama, deskripsi ) )'
+    : 'amalan_kategori:amalan_kategori ( kategori:kategori_id ( id, nama, deskripsi ) )'
+
+  let query = supabase.from('amalan').select(`*, ${relation}`)
   if (params?.q) {
     query = query.ilike('judul', `%${params.q}%`)
   }
-  if (params?.kategori) {
-    query = query.eq('amalan_kategori.kategori_id', params.kategori)
+  if (kategoriList.length) {
+    query = query.in('amalan_kategori.kategori_id', kategoriList)
   }
   query = query.order('created_at', { ascending: false })
   if (params?.limit) query = query.limit(params.limit)
