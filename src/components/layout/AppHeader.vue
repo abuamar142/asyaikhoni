@@ -12,6 +12,10 @@
               src="/logo.svg"
               :alt="`${pondokData.shortName} Logo`"
               class="w-10 h-10 object-contain"
+              decoding="async"
+              fetchpriority="high"
+              width="40"
+              height="40"
             />
           </div>
           <div class="hidden sm:block">

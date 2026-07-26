@@ -76,24 +76,23 @@ export const sejarahData = {
   pendiriData: [
     {
       id: 1,
-      nama: 'KH. Ahmad Syaikhu',
+      nama: 'KH. Romli Al-Hafidz',
       jabatan: 'Pendiri & Pengasuh',
       deskripsi:
         "Beliau adalah pendiri pondok pesantren yang memiliki visi besar untuk mencetak generasi penghafal Al-Qur'an.",
     },
     {
       id: 2,
-      nama: 'Nyai Hj. Siti Khadijah',
-      jabatan: 'Pengasuh Putri',
+      nama: 'Moh. Fikri Jauhar Maulana M.Pd',
+      jabatan: 'Ketua Yayasan',
       deskripsi:
-        'Beliau bertanggung jawab dalam pembinaan santri putri dan pengembangan program tahfidz.',
+        'Beliau bertanggung jawab dalam pengelolaan yayasan dan pengembangan pondok pesantren secara keseluruhan.',
     },
     {
       id: 3,
-      nama: 'Ust. Muhammad Ridwan, S.Pd.I',
+      nama: 'Ust. Munawirudin',
       jabatan: 'Direktur Pendidikan',
-      deskripsi:
-        'Beliau mengelola kurikulum dan sistem pendidikan di pondok pesantren dengan pendekatan modern.',
+      deskripsi: 'Beliau mengelola kurikulum dan program pendidikan di pondok pesantren.',
     },
   ],
 }

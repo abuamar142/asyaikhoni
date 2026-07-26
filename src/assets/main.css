@@ -1,5 +1,15 @@
 @import 'tailwindcss';
 
+/* Global Arabic text styling */
+.text-arabic {
+  font-family: 'Amiri', serif !important;
+  font-size: 1.5rem !important;
+  line-height: 2 !important;
+  text-align: right !important;
+  direction: rtl !important;
+  display: block !important;
+}
+
 /* Base Styles */
 html {
   scroll-behavior: smooth;
@@ -328,6 +338,16 @@ body {
   100% {
     opacity: 1;
   }
+}
+
+/* Arabic Text Styling in Prose */
+.prose :is(p, li, blockquote, td, th):lang(ar),
+.prose :is(p, li, blockquote, td, th) [lang='ar'] {
+  font-family: 'Amiri', 'Traditional Arabic', serif;
+  font-size: 1.5rem;
+  line-height: 2;
+  text-align: right;
+  direction: rtl;
 }
 
 @keyframes slideUp {

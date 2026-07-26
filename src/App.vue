@@ -1,9 +1,10 @@
 <template>
   <div id="app">
     <router-view />
+    <ToastContainer />
   </div>
 </template>
 
 <script setup lang="ts">
-// Router view akan handle semua halaman
+import ToastContainer from '@/components/ui/ToastContainer.vue'
 </script>
