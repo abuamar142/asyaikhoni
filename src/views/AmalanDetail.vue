@@ -21,8 +21,42 @@
       <!-- Header -->
       <div class="bg-gradient-to-r from-primary-50 to-white border-b border-green-100 py-12">
         <div class="container mx-auto px-4">
-          <h1 class="text-heading-xl text-brand mb-3">{{ amalan.judul }}</h1>
-          <p v-if="amalan.ringkasan" class="text-body-md text-muted">{{ amalan.ringkasan }}</p>
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div class="flex-1">
+              <h1 class="text-heading-xl text-brand mb-3">{{ amalan.judul }}</h1>
+              <p v-if="amalan.ringkasan" class="text-body-md text-muted">{{ amalan.ringkasan }}</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-3">
+              <!-- Save Offline Button -->
+              <button
+                @click="toggleOffline"
+                class="flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-200"
+                :class="
+                  isSaved
+                    ? 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100'
+                    : 'bg-white border-gray-200 text-gray-700 hover:border-brand hover:text-brand'
+                "
+              >
+                <component
+                  :is="isSaved ? CheckCircle : Download"
+                  class="w-5 h-5"
+                  :class="{ 'text-green-600': isSaved }"
+                />
+                <span class="font-medium">{{
+                  isSaved ? 'Tersimpan Offline' : 'Simpan Offline'
+                }}</span>
+              </button>
+
+              <button
+                v-if="isSaved && hasUpdateAvailable"
+                @click="updateOffline"
+                class="flex items-center gap-2 px-4 py-2 rounded-lg bg-orange-50 border border-orange-200 text-orange-700 hover:bg-orange-100 transition-all duration-200"
+              >
+                <RefreshCw class="w-5 h-5 text-orange-600" />
+                <span class="font-medium">Update Tersedia</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -49,13 +83,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAmalanBySlugQuery, useMarkdownQuery } from '@/composables/useAmalanQueries'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
+import { Download, CheckCircle, RefreshCw } from 'lucide-vue-next'
+import { db, type LocalSavedAmalan } from '@/utils/localDb'
+import { useToast } from '@/composables/useToast'
 
 const route = useRoute()
+const toast = useToast()
 
 const slug = computed(() => route.params.slug as string)
 
@@ -78,6 +116,84 @@ const {
   computed(() => amalan.value?.md_bucket_id || ''),
   computed(() => amalan.value?.md_path || ''),
 )
+
+// Offline Logic
+const isSaved = ref(false)
+const hasUpdateAvailable = ref(false)
+const localData = ref<LocalSavedAmalan | null>(null)
+
+async function checkOfflineStatus() {
+  if (!amalan.value?.id) return
+  const local = await db.saved_amalan.where('amalan_id').equals(amalan.value.id).first()
+  if (local) {
+    isSaved.value = true
+    localData.value = local
+    hasUpdateAvailable.value = local.content_version < (amalan.value.content_version || 1)
+  } else {
+    isSaved.value = false
+    localData.value = null
+    hasUpdateAvailable.value = false
+  }
+}
+
+onMounted(() => {
+  checkOfflineStatus()
+})
+
+watch(amalan, () => {
+  checkOfflineStatus()
+})
+
+async function toggleOffline() {
+  if (!amalan.value || !markdownText.value) {
+    toast.error('Konten belum siap untuk disimpan offline.')
+    return
+  }
+
+  if (isSaved.value) {
+    // Remove from offline
+    await db.saved_amalan.where('amalan_id').equals(amalan.value.id).delete()
+    isSaved.value = false
+    localData.value = null
+    toast.success('Dihapus dari koleksi offline.')
+  } else {
+    // Save to offline
+    await db.saved_amalan.add({
+      amalan_id: amalan.value.id,
+      judul: amalan.value.judul,
+      slug: amalan.value.slug,
+      ringkasan: amalan.value.ringkasan,
+      content: markdownText.value,
+      content_version: amalan.value.content_version || 1,
+      server_updated_at: amalan.value.updated_at || new Date().toISOString(),
+      saved_at: Date.now(),
+      last_synced_at: Date.now(),
+      has_update_available: false,
+      folder_id: 0,
+    })
+    isSaved.value = true
+    toast.success('Berhasil disimpan offline.')
+    checkOfflineStatus()
+  }
+}
+
+async function updateOffline() {
+  if (!amalan.value || !markdownText.value) return
+
+  await db.saved_amalan
+    .where('amalan_id')
+    .equals(amalan.value.id)
+    .modify({
+      content: markdownText.value,
+      content_version: amalan.value.content_version || 1,
+      server_updated_at: amalan.value.updated_at || new Date().toISOString(),
+      last_synced_at: Date.now(),
+      has_update_available: false,
+    })
+
+  hasUpdateAvailable.value = false
+  toast.success('Konten offline diperbarui.')
+}
 
 const html = ref('')
 const loadingPage = computed(
@@ -152,47 +268,41 @@ watch(
     fetchingAmalanVal,
     amalanErrVal,
   ]) => {
-    // If amalan failed to load
-    if (amalanErrVal) {
+    // Determine source
+    let finalMd = newMd
+    let finalAmalan = amalanVal
+
+    // If network fails or is loading, and we have local data, use it!
+    if ((amalanErrVal || isErrorMd || isLoadingMd || loadingAmalanVal) && localData.value) {
+      finalMd = localData.value.content
+      finalAmalan = {
+        judul: localData.value.judul,
+        ringkasan: localData.value.ringkasan,
+      } as any
+    }
+
+    // If no amalan at all (neither network nor local)
+    if (!finalAmalan && !loadingAmalanVal && !fetchingAmalanVal) {
       html.value = ''
       return
     }
 
-    // Waiting amalan
-    if (loadingAmalanVal || fetchingAmalanVal || !amalanVal) {
-      html.value = ''
+    // Waiting for either network or local check
+    if (!finalAmalan) {
       return
     }
 
-    // No markdown path
-    if (!hasMarkdownPath.value) {
-      html.value = ''
-      return
-    }
-
-    // Markdown error
-    if (isErrorMd) {
-      html.value = ''
-      return
-    }
-
-    // Still loading markdown
-    if (isLoadingMd || isFetchingMd) {
-      return
-    }
-
-    // Markdown finished but empty
-    if (!newMd || newMd.trim().length === 0) {
-      html.value = ''
-      return
-    }
-
-    try {
-      const markedHtml = await marked(newMd)
-      const processedHtml = wrapArabicText(markedHtml)
-      html.value = DOMPurify.sanitize(processedHtml, purifyConfig)
-    } catch (error) {
-      console.error('Error processing markdown:', error)
+    // Process if we have MD
+    if (finalMd && finalMd.trim().length > 0) {
+      try {
+        const markedHtml = await marked(finalMd)
+        const processedHtml = wrapArabicText(markedHtml)
+        html.value = DOMPurify.sanitize(processedHtml, purifyConfig)
+      } catch (error) {
+        console.error('Error processing markdown:', error)
+        html.value = ''
+      }
+    } else if (!isLoadingMd && !loadingAmalanVal) {
       html.value = ''
     }
   },
