@@ -104,7 +104,7 @@ const {
   isError: amalanError,
 } = useAmalanBySlugQuery(slug)
 
-const hasMarkdownPath = computed(() => !!amalan.value?.md_bucket_id && !!amalan.value?.md_path)
+const hasMarkdownPath = computed(() => !!amalan.value?.id)
 
 const {
   data: markdownText,
@@ -113,8 +113,7 @@ const {
   isFetching: fetchingMarkdown,
   refetch: refetchMarkdown,
 } = useMarkdownQuery(
-  computed(() => amalan.value?.md_bucket_id || ''),
-  computed(() => amalan.value?.md_path || ''),
+  computed(() => amalan.value?.id || ''),
 )
 
 // Offline Logic

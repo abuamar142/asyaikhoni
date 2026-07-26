@@ -1,4 +1,4 @@
-import { requireSupabase } from '@/utils/supabaseClient'
+import { api } from '@/utils/httpClient'
 
 export type Category = {
   id: string
@@ -8,55 +8,29 @@ export type Category = {
   updated_at?: string
 }
 
+type KategoriResponse = { kategori: Category }
+
 export async function listCategories(params?: { q?: string }) {
-  const supabase = requireSupabase()
-  let query = supabase.from('kategori').select('*')
-  if (params?.q) {
-    query = query.ilike('nama', `%${params.q}%`)
-  }
-  const { data, error } = await query.order('nama', { ascending: true })
-  if (error) throw error
-  return (data || []) as Category[]
+  const query = params?.q ? `?q=${encodeURIComponent(params.q)}` : ''
+  const result = await api.get<{ kategori: Category[] }>(`/api/v1/asyaikhoni/kategori${query}`)
+  return result.kategori
 }
 
 export async function getCategory(id: string) {
-  const supabase = requireSupabase()
-  const { data, error } = await supabase.from('kategori').select('*').eq('id', id).maybeSingle()
-  if (error) throw error
-  return data as Category | null
+  const result = await api.get<{ kategori: Category }>(`/api/v1/asyaikhoni/kategori/${id}`)
+  return result.kategori
 }
 
 export async function createCategory(payload: { nama: string; deskripsi?: string | null }) {
-  const supabase = requireSupabase()
-  const { data, error } = await supabase
-    .from('kategori')
-    .insert({
-      nama: payload.nama,
-      deskripsi: payload.deskripsi ?? null,
-    })
-    .select('*')
-    .single()
-  if (error) throw error
-  return data as Category
+  const result = await api.post<KategoriResponse>('/api/v1/asyaikhoni/kategori', payload)
+  return result.kategori
 }
 
 export async function updateCategory(id: string, payload: Partial<Category>) {
-  const supabase = requireSupabase()
-  const { data, error } = await supabase
-    .from('kategori')
-    .update({
-      nama: payload.nama,
-      deskripsi: payload.deskripsi ?? null,
-    })
-    .eq('id', id)
-    .select('*')
-    .single()
-  if (error) throw error
-  return data as Category
+  const result = await api.put<KategoriResponse>(`/api/v1/asyaikhoni/kategori/${id}`, payload)
+  return result.kategori
 }
 
 export async function deleteCategory(id: string) {
-  const supabase = requireSupabase()
-  const { error } = await supabase.from('kategori').delete().eq('id', id)
-  if (error) throw error
+  await api.delete(`/api/v1/asyaikhoni/kategori/${id}`)
 }

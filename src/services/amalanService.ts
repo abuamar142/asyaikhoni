@@ -1,4 +1,4 @@
-import { requireSupabase, AMALAN_BUCKET_ID } from '@/utils/supabaseClient'
+import { api } from '@/utils/httpClient'
 import type { Category } from '@/services/categoryService'
 
 export type Amalan = {
@@ -6,9 +6,7 @@ export type Amalan = {
   judul: string
   slug: string
   ringkasan?: string | null
-  md_path: string
-  md_bucket_id: string
-  kategori?: string | null
+  md_content?: string | null
   kategori_ids?: string[]
   categories?: Category[]
   ikon_url?: string | null
@@ -20,18 +18,15 @@ export type Amalan = {
   updated_at?: string
 }
 
-type AmalanRow = Amalan & {
-  amalan_kategori?: { kategori: Category | null; kategori_id: string }[]
+type AmalanResponse = {
+  amalan: Amalan
 }
 
-function mapAmalan(row: AmalanRow): Amalan {
-  const categories = (row.amalan_kategori || [])
-    .map((rel) => rel.kategori)
-    .filter(Boolean) as Category[]
-  const kategori_ids = categories.map((c) => c.id)
-  const { amalan_kategori: _relations, ...rest } = row
-  void _relations
-  return { ...rest, categories, kategori_ids }
+type AmalanListResponse = {
+  amalan: Amalan[]
+  total: number
+  limit: number
+  offset: number
 }
 
 export async function listPublic(params?: {
@@ -41,34 +36,17 @@ export async function listPublic(params?: {
   limit?: number
   offset?: number
 }) {
-  const supabase = requireSupabase()
-  const kategoriList =
-    params?.kategoriIds ||
-    (Array.isArray(params?.kategori) ? params.kategori : params?.kategori ? [params.kategori] : [])
+  const searchParams = new URLSearchParams()
+  if (params?.q) searchParams.set('q', params.q)
+  if (params?.kategoriIds?.length) searchParams.set('kategoriIds', params.kategoriIds.join(','))
+  if (params?.limit) searchParams.set('limit', String(params.limit))
+  if (params?.offset) searchParams.set('offset', String(params.offset))
 
-  const relation = kategoriList.length
-    ? 'amalan_kategori:amalan_kategori!inner ( kategori:kategori_id ( id, nama, deskripsi ) )'
-    : 'amalan_kategori:amalan_kategori ( kategori:kategori_id ( id, nama, deskripsi ) )'
-
-  let query = supabase
-    .from('amalan')
-    .select(`*, ${relation}`)
-    .eq('aktif', true)
-    .is('deleted_at', null)
-
-  if (params?.q) {
-    query = query.ilike('judul', `%${params.q}%`)
-  }
-  if (kategoriList.length) {
-    query = query.in('amalan_kategori.kategori_id', kategoriList)
-  }
-  query = query.order('urutan', { ascending: true })
-  if (params?.limit) query = query.limit(params.limit)
-  if (params?.offset)
-    query = query.range(params.offset, (params.offset || 0) + (params?.limit || 10) - 1)
-  const { data, error } = await query
-  if (error) throw error
-  return (data || []).map((row) => mapAmalan(row as AmalanRow))
+  const query = searchParams.toString()
+  const result = await api.get<AmalanListResponse>(
+    `/api/v1/asyaikhoni/amalan${query ? `?${query}` : ''}`,
+  )
+  return result.amalan
 }
 
 export async function listAll(params?: {
@@ -79,67 +57,40 @@ export async function listAll(params?: {
   offset?: number
   includeDeleted?: boolean
 }) {
-  const supabase = requireSupabase()
-  const kategoriList =
-    params?.kategoriIds ||
-    (Array.isArray(params?.kategori) ? params.kategori : params?.kategori ? [params.kategori] : [])
+  const searchParams = new URLSearchParams()
+  if (params?.q) searchParams.set('q', params.q)
+  if (params?.kategoriIds?.length) searchParams.set('kategoriIds', params.kategoriIds.join(','))
+  if (params?.limit) searchParams.set('limit', String(params.limit))
+  if (params?.offset) searchParams.set('offset', String(params.offset))
 
-  const relation = kategoriList.length
-    ? 'amalan_kategori:amalan_kategori!inner ( kategori:kategori_id ( id, nama, deskripsi ) )'
-    : 'amalan_kategori:amalan_kategori ( kategori:kategori_id ( id, nama, deskripsi ) )'
-
-  let query = supabase.from('amalan').select(`*, ${relation}`)
-
-  if (!params?.includeDeleted) {
-    query = query.is('deleted_at', null)
-  }
-
-  if (params?.q) {
-    query = query.ilike('judul', `%${params.q}%`)
-  }
-  if (kategoriList.length) {
-    query = query.in('amalan_kategori.kategori_id', kategoriList)
-  }
-  query = query.order('created_at', { ascending: false })
-  if (params?.limit) query = query.limit(params.limit)
-  if (params?.offset)
-    query = query.range(params.offset, (params.offset || 0) + (params?.limit || 10) - 1)
-  const { data, error } = await query
-  if (error) throw error
-  return (data || []).map((row) => mapAmalan(row as AmalanRow))
+  const query = searchParams.toString()
+  const result = await api.get<AmalanListResponse>(
+    `/api/v1/asyaikhoni/amalan${query ? `?${query}` : ''}`,
+  )
+  return result.amalan
 }
 
 export async function getBySlug(slug: string) {
-  const supabase = requireSupabase()
-  const { data, error } = await supabase
-    .from('amalan')
-    .select('*, amalan_kategori:amalan_kategori ( kategori:kategori_id ( id, nama, deskripsi ) )')
-    .eq('slug', slug)
-    .is('deleted_at', null)
-    .limit(1)
-    .maybeSingle()
-  if (error) throw error
-  return data ? mapAmalan(data as AmalanRow) : null
+  try {
+    const result = await api.get<AmalanResponse>(`/api/v1/asyaikhoni/amalan/slug/${slug}`)
+    return result.amalan
+  } catch {
+    return null
+  }
 }
 
 export async function getById(id: string) {
-  const supabase = requireSupabase()
-  const { data, error } = await supabase
-    .from('amalan')
-    .select('*, amalan_kategori:amalan_kategori ( kategori:kategori_id ( id, nama, deskripsi ) )')
-    .eq('id', id)
-    .limit(1)
-    .maybeSingle()
-  if (error) throw error
-  return data ? mapAmalan(data as AmalanRow) : null
+  try {
+    const result = await api.get<AmalanResponse>(`/api/v1/asyaikhoni/amalan/${id}`)
+    return result.amalan
+  } catch {
+    return null
+  }
 }
 
-export async function downloadMarkdown(bucketId: string, mdPath: string): Promise<string> {
-  const supabase = requireSupabase()
-  const { data, error } = await supabase.storage.from(bucketId).download(mdPath)
-  if (error) throw error
-  const text = await data.text()
-  return text
+export async function downloadMarkdown(id: string): Promise<string> {
+  const result = await api.get<{ md_content: string }>(`/api/v1/asyaikhoni/amalan/markdown/${id}`)
+  return result.md_content
 }
 
 export async function createAmalan(payload: {
@@ -150,178 +101,63 @@ export async function createAmalan(payload: {
   urutan?: number
   aktif?: boolean
   kategoriIds?: string[]
-  mdFile: File
+  mdContent: string
 }) {
-  const supabase = requireSupabase()
-  const path = `amalan/${payload.slug}.md`
-  const bucket = AMALAN_BUCKET_ID
-
-  const { error: uploadErr } = await supabase.storage.from(bucket).upload(path, payload.mdFile, {
-    contentType: 'text/markdown',
-    upsert: true,
+  const result = await api.post<AmalanResponse>('/api/v1/asyaikhoni/amalan', {
+    judul: payload.judul,
+    slug: payload.slug,
+    ringkasan: payload.ringkasan || null,
+    md_content: payload.mdContent,
+    kategori_ids: payload.kategoriIds,
+    ikon_url: payload.ikon_url || null,
+    urutan: payload.urutan ?? null,
+    aktif: payload.aktif ?? true,
   })
-  if (uploadErr) throw uploadErr
-
-  const { data, error } = await supabase
-    .from('amalan')
-    .insert({
-      judul: payload.judul,
-      slug: payload.slug,
-      ringkasan: payload.ringkasan || null,
-      md_path: path,
-      md_bucket_id: bucket,
-      ikon_url: payload.ikon_url || null,
-      urutan: payload.urutan ?? null,
-      aktif: payload.aktif ?? true,
-      content_version: 1,
-    })
-    .select('*')
-    .single()
-  if (error) throw error
-  const created = data as Amalan
-  if (payload.kategoriIds?.length) {
-    await setAmalanCategories(created.id, payload.kategoriIds)
-    return (await getById(created.id)) as Amalan
-  }
-  return created
+  return result.amalan
 }
 
 export async function updateAmalan(
   id: string,
-  payload: Partial<Omit<Amalan, 'id' | 'md_path' | 'md_bucket_id' | 'content_version'>> & {
+  payload: {
+    judul?: string
     slug?: string
+    ringkasan?: string
+    md_content?: string
+    kategori_ids?: string[]
     kategoriIds?: string[]
-    mdFile?: File
-    incrementVersion?: boolean
+    ikon_url?: string
+    urutan?: number
+    aktif?: boolean
   },
 ) {
-  const supabase = requireSupabase()
-  const existing = await getById(id)
-  if (!existing) throw new Error('Amalan tidak ditemukan')
+  const body: Record<string, unknown> = {}
+  if (payload.judul !== undefined) body.judul = payload.judul
+  if (payload.slug !== undefined) body.slug = payload.slug
+  if (payload.ringkasan !== undefined) body.ringkasan = payload.ringkasan
+  if (payload.md_content !== undefined) body.md_content = payload.md_content
+  if (payload.ikon_url !== undefined) body.ikon_url = payload.ikon_url
+  if (payload.urutan !== undefined) body.urutan = payload.urutan
+  if (payload.aktif !== undefined) body.aktif = payload.aktif
+  if (payload.kategoriIds !== undefined) body.kategori_ids = payload.kategoriIds
+  if (payload.kategori_ids !== undefined) body.kategori_ids = payload.kategori_ids
 
-  let md_path = existing.md_path
-  const md_bucket_id = existing.md_bucket_id
-
-  // Handle slug change: upload to new path and delete old
-  const newSlug = payload.slug ?? existing.slug
-  const desiredPath = `amalan/${newSlug}.md`
-  if (payload.mdFile) {
-    const { error: uploadErr } = await supabase.storage
-      .from(md_bucket_id)
-      .upload(desiredPath, payload.mdFile, {
-        contentType: 'text/markdown',
-        upsert: true,
-      })
-    if (uploadErr) throw uploadErr
-    if (existing.md_path && existing.md_path !== desiredPath) {
-      await supabase.storage.from(md_bucket_id).remove([existing.md_path])
-    }
-    md_path = desiredPath
-  } else if (existing.md_path !== desiredPath) {
-    // If slug changed but no new file, copy then remove old
-    const { data: file, error: dlErr } = await supabase.storage
-      .from(md_bucket_id)
-      .download(existing.md_path)
-    if (!dlErr && file) {
-      const { error: upErr } = await supabase.storage.from(md_bucket_id).upload(desiredPath, file, {
-        contentType: 'text/markdown',
-        upsert: true,
-      })
-      if (!upErr) {
-        await supabase.storage.from(md_bucket_id).remove([existing.md_path])
-        md_path = desiredPath
-      }
-    }
-  }
-
-  const { error } = await supabase
-    .from('amalan')
-    .update({
-      judul: payload.judul ?? existing.judul,
-      slug: newSlug,
-      ringkasan: payload.ringkasan ?? existing.ringkasan,
-      md_path,
-      ikon_url: payload.ikon_url ?? existing.ikon_url,
-      urutan: payload.urutan ?? existing.urutan,
-      aktif: payload.aktif ?? existing.aktif,
-      content_version: payload.incrementVersion
-        ? existing.content_version + 1
-        : existing.content_version,
-    })
-    .eq('id', id)
-    .select('*')
-    .single()
-  if (error) throw error
-  if (payload.kategoriIds) {
-    await setAmalanCategories(id, payload.kategoriIds)
-  }
-  return (await getById(id)) as Amalan
+  const result = await api.put<AmalanResponse>(`/api/v1/asyaikhoni/amalan/${id}`, body)
+  return result.amalan
 }
 
-export async function deleteAmalan(id: string, options?: { deleteFile?: boolean; permanent?: boolean }) {
-  const supabase = requireSupabase()
-  const existing = await getById(id)
-  if (!existing) return
-
-  if (options?.permanent) {
-    const { error } = await supabase.from('amalan').delete().eq('id', id)
-    if (error) throw error
-    if (options?.deleteFile && existing.md_path) {
-      await supabase.storage.from(existing.md_bucket_id).remove([existing.md_path])
-    }
-  } else {
-    // Soft delete
-    const { error } = await supabase
-      .from('amalan')
-      .update({ deleted_at: new Date().toISOString() })
-      .eq('id', id)
-    if (error) throw error
-  }
+export async function deleteAmalan(
+  id: string,
+  options?: { deleteFile?: boolean; permanent?: boolean },
+) {
+  const query = options?.permanent ? '?permanent=true' : ''
+  await api.delete(`/api/v1/asyaikhoni/amalan/${id}${query}`)
 }
 
 export async function restoreAmalan(id: string) {
-  const supabase = requireSupabase()
-  const { error } = await supabase.from('amalan').update({ deleted_at: null }).eq('id', id)
-  if (error) throw error
+  await api.delete(`/api/v1/asyaikhoni/amalan/${id}?action=restore`)
 }
 
 export async function toggleAktif(id: string, aktif: boolean) {
-  const supabase = requireSupabase()
-  const { data, error } = await supabase
-    .from('amalan')
-    .update({ aktif })
-    .eq('id', id)
-    .select('*')
-    .single()
-  if (error) throw error
-  return data ? mapAmalan(data as AmalanRow) : (data as Amalan)
-}
-
-async function setAmalanCategories(amalanId: string, categoryIds: string[]) {
-  const supabase = requireSupabase()
-  // Fetch existing links
-  const { data: existing } = await supabase
-    .from('amalan_kategori')
-    .select('kategori_id')
-    .eq('amalan_id', amalanId)
-
-  const existingIds = new Set((existing || []).map((row) => row.kategori_id))
-  const nextIds = new Set(categoryIds)
-
-  const toInsert = Array.from(nextIds).filter((id) => !existingIds.has(id))
-  const toDelete = Array.from(existingIds).filter((id) => !nextIds.has(id))
-
-  if (toInsert.length) {
-    await supabase
-      .from('amalan_kategori')
-      .insert(toInsert.map((kategori_id) => ({ amalan_id: amalanId, kategori_id })))
-  }
-
-  if (toDelete.length) {
-    await supabase
-      .from('amalan_kategori')
-      .delete()
-      .eq('amalan_id', amalanId)
-      .in('kategori_id', toDelete)
-  }
+  const result = await api.put<AmalanResponse>(`/api/v1/asyaikhoni/amalan/${id}`, { aktif })
+  return result.amalan
 }

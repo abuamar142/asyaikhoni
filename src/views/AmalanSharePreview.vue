@@ -78,7 +78,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getShareBundle } from '@/services/shareService'
-import { downloadMarkdown } from '@/services/amalanService'
+import { downloadMarkdown, getById } from '@/services/amalanService'
 import { db, type LocalFolder } from '@/utils/localDb'
 import { 
   Download, BookOpen, Calendar, FileText, Folder, AlertCircle 
@@ -154,16 +154,10 @@ async function importBundle() {
       }
       
       // Download and save amalan content
-      const { requireSupabase } = await import('@/utils/supabaseClient')
-      const client = requireSupabase()
-      const { data: fullAmalan } = await client
-        .from('amalan')
-        .select('*')
-        .eq('id', item.amalan_id)
-        .single()
+      const fullAmalan = await getById(item.amalan_id)
         
       if (fullAmalan) {
-        const content = await downloadMarkdown(fullAmalan.md_bucket_id, fullAmalan.md_path)
+        const content = await downloadMarkdown(fullAmalan.id)
         
         // Check if already saved
         const existingLocal = await db.saved_amalan.where('amalan_id').equals(fullAmalan.id).first()
@@ -172,7 +166,7 @@ async function importBundle() {
             folder_id,
             content,
             content_version: fullAmalan.content_version,
-            server_updated_at: fullAmalan.updated_at,
+            server_updated_at: fullAmalan.updated_at || new Date().toISOString(),
             last_synced_at: Date.now()
           })
         } else {
@@ -183,7 +177,7 @@ async function importBundle() {
             ringkasan: fullAmalan.ringkasan,
             content,
             content_version: fullAmalan.content_version,
-            server_updated_at: fullAmalan.updated_at,
+            server_updated_at: fullAmalan.updated_at || new Date().toISOString(),
             saved_at: Date.now(),
             last_synced_at: Date.now(),
             has_update_available: false,

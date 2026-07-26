@@ -1,6 +1,6 @@
 import { ref, onMounted } from 'vue'
 import { db } from '@/utils/localDb'
-import { requireSupabase } from '@/utils/supabaseClient'
+import { api } from '@/utils/httpClient'
 
 export function useOfflineSync() {
   const isSyncing = ref(false)
@@ -11,7 +11,6 @@ export function useOfflineSync() {
     isSyncing.value = true
     
     try {
-      const supabase = requireSupabase()
       const savedItems = await db.saved_amalan.toArray()
       if (savedItems.length === 0) {
         isSyncing.value = false
@@ -20,14 +19,11 @@ export function useOfflineSync() {
 
       const ids = savedItems.map(item => item.amalan_id)
       
-      // Fetch latest versions from server
-      const { data: serverItems, error } = await supabase
-        .from('amalan')
-        .select('id, content_version, updated_at')
-        .in('id', ids)
-        .is('deleted_at', null)
-
-      if (error) throw error
+      // Fetch latest versions from server via REST API
+      const result = await api.get<{ amalan: { id: string; content_version: number; updated_at: string }[] }>(
+        `/api/v1/asyaikhoni/amalan?limit=9999`,
+      )
+      const serverItems = result.amalan.filter((item) => ids.includes(item.id))
 
       let count = 0
       const serverMap = new Map(serverItems.map(item => [item.id, item]))
