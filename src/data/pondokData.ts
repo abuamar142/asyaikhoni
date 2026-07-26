@@ -165,10 +165,10 @@ export const pondokData = {
 }
 
 export const navigationMenu = [
-  { name: 'Beranda', href: '#home', id: 'home' },
-  { name: 'Tentang', href: '#about', id: 'about' },
-  { name: 'Program', href: '#programs', id: 'programs' },
-  { name: 'Fasilitas', href: '#facilities', id: 'facilities' },
-  { name: 'Testimoni', href: '#testimonials', id: 'testimonials' },
-  { name: 'Kontak', href: '#contact', id: 'contact' },
+  { name: 'Beranda', href: '/', id: 'home' },
+  { name: 'Tentang', href: '/#about', id: 'about' },
+  { name: 'Amalan', href: '/amalan', id: 'amalan' },
+  { name: 'Koleksi', href: '/amalan/koleksi', id: 'koleksi' },
+  { name: 'Testimoni', href: '/#testimonials', id: 'testimonials' },
+  { name: 'Kontak', href: '/#contact', id: 'contact' },
 ]

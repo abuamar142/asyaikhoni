@@ -62,5 +62,9 @@ export function useToast() {
     toasts: computed(() => toasts.value),
     showToast,
     removeToast,
+    success: (message: string, title?: string) => showToast({ message, title, type: 'success' }),
+    error: (message: string, title?: string) => showToast({ message, title, type: 'error' }),
+    warning: (message: string, title?: string) => showToast({ message, title, type: 'warning' }),
+    info: (message: string, title?: string) => showToast({ message, title, type: 'info' }),
   }
 }
