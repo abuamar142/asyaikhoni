@@ -155,7 +155,7 @@ import { useAmalanListQuery } from '@/composables/useAmalanQueries'
 import { useCategoryListQuery } from '@/composables/useCategoryQueries'
 import { useDebouncedRef } from '@/composables/useDebouncedRef'
 import SearchInput from '@/components/ui/SearchInput.vue'
-import type { Category } from '@/services/categoryService'
+import type { Category } from '@/services/amalanService'
 
 const q = ref('')
 const qDebounced = useDebouncedRef(q, 400)

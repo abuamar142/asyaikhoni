@@ -47,7 +47,7 @@ const router = createRouter({
       component: () => import('@/views/AmalanDetail.vue'),
       meta: {
         title: 'Detail Amalan - PPTQ Asy-Syaikhoni',
-        description: 'Konten amalan dalam format Markdown dari Supabase Storage',
+        description: 'Konten amalan dalam format Markdown',
       },
     },
     // Redirect any unknown routes to home

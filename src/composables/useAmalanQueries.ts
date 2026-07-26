@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
+import { useQuery, useQueryClient } from '@tanstack/vue-query'
 import type { MaybeRef } from 'vue'
 import { unref } from 'vue'
 import * as amalanService from '@/services/amalanService'
@@ -29,22 +29,6 @@ export function useAmalanListQuery(
   }))
 }
 
-// Admin amalan list query
-export function useAdminAmalanListQuery(
-  params?: MaybeRef<{
-    q?: string
-    kategori?: string | string[]
-    kategoriIds?: string[]
-    limit?: number
-    offset?: number
-  }>,
-) {
-  return useQuery(() => ({
-    queryKey: amalanKeys.list({ scope: 'admin', ...unref(params) }),
-    queryFn: () => amalanService.listAll(unref(params)),
-  }))
-}
-
 // Amalan by slug query
 export function useAmalanBySlugQuery(slug: MaybeRef<string>) {
   return useQuery({
@@ -64,68 +48,10 @@ export function useAmalanByIdQuery(id: MaybeRef<string>) {
 }
 
 // Markdown download query
-export function useMarkdownQuery(bucketId: MaybeRef<string>, path: MaybeRef<string>) {
+export function useMarkdownQuery(amalanId: MaybeRef<string>) {
   return useQuery({
-    queryKey: ['markdown', unref(bucketId), unref(path)] as const,
-    queryFn: () => amalanService.downloadMarkdown(unref(bucketId), unref(path)),
-    enabled: !!unref(bucketId) && !!unref(path),
-  })
-}
-
-// Create amalan mutation
-export function useCreateAmalanMutation() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: amalanService.createAmalan,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: amalanKeys.lists(), refetchType: 'active' })
-    },
-  })
-}
-
-// Update amalan mutation
-export function useUpdateAmalanMutation() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: ({
-      id,
-      data,
-    }: {
-      id: string
-      data: Parameters<typeof amalanService.updateAmalan>[1]
-    }) => amalanService.updateAmalan(id, data),
-    onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: amalanKeys.detail(id) })
-      queryClient.invalidateQueries({ queryKey: amalanKeys.lists(), refetchType: 'active' })
-    },
-  })
-}
-
-// Delete amalan mutation
-export function useDeleteAmalanMutation() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: ({ id, deleteFile }: { id: string; deleteFile?: boolean }) =>
-      amalanService.deleteAmalan(id, { deleteFile }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: amalanKeys.lists(), refetchType: 'active' })
-    },
-  })
-}
-
-// Toggle aktif mutation
-export function useToggleAktifMutation() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: ({ id, aktif }: { id: string; aktif: boolean }) =>
-      amalanService.toggleAktif(id, aktif),
-    onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: amalanKeys.detail(id) })
-      queryClient.invalidateQueries({ queryKey: amalanKeys.lists(), refetchType: 'active' })
-    },
+    queryKey: ['markdown', unref(amalanId)] as const,
+    queryFn: () => amalanService.downloadMarkdown(unref(amalanId)),
+    enabled: !!unref(amalanId),
   })
 }

@@ -13,10 +13,6 @@
             <FolderPlus class="w-5 h-5" />
             <span>Folder Baru</span>
           </button>
-          <button @click="startShare(null)" class="btn-primary flex items-center gap-2">
-            <Share2 class="w-5 h-5" />
-            <span>Bagikan Semua</span>
-          </button>
         </div>
       </div>
 
@@ -44,9 +40,6 @@
               <p class="text-body-sm text-muted">Folder</p>
             </div>
             <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button @click.stop="startShare(folder)" class="p-2 hover:bg-green-50 rounded-lg text-green-600" title="Bagikan folder">
-                <Share2 class="w-4 h-4" />
-              </button>
               <button @click.stop="editFolder(folder)" class="p-2 hover:bg-gray-100 rounded-lg text-gray-500">
                 <Edit2 class="w-4 h-4" />
               </button>
@@ -162,50 +155,6 @@
       @confirm="deleteFolder"
       @cancel="isConfirmingDelete = false"
     />
-
-    <!-- Share Modal -->
-    <div v-if="sharingData" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-      <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-8">
-        <div v-if="!shareResult">
-          <h2 class="text-heading-md text-brand mb-2">Bagikan Koleksi</h2>
-          <p class="text-body-sm text-muted mb-6">
-            {{ sharingData.folder ? `Bagikan folder '${sharingData.folder.name}' beserta seluruh isinya.` : 'Bagikan seluruh koleksi amalan offline Anda.' }}
-          </p>
-          <div class="space-y-4 mb-8">
-            <div>
-              <label class="block text-body-sm font-semibold text-brand mb-2">Judul Koleksi</label>
-              <input v-model="shareForm.title" type="text" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-brand" placeholder="Koleksi Sholawat Saya" />
-            </div>
-            <div>
-              <label class="block text-body-sm font-semibold text-brand mb-2">Deskripsi (Opsional)</label>
-              <textarea v-model="shareForm.description" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-brand" rows="3" placeholder="Kumpulan doa dan sholawat..."></textarea>
-            </div>
-          </div>
-          <div class="flex items-center gap-3 justify-end">
-            <button @click="sharingData = null" class="btn-secondary">Batal</button>
-            <button @click="generateShare" class="btn-primary flex items-center gap-2" :disabled="!shareForm.title || generatingShare">
-              <Share2 v-if="!generatingShare" class="w-5 h-5" />
-              <div v-else class="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
-              <span>{{ generatingShare ? 'Memproses...' : 'Buat Link Share' }}</span>
-            </button>
-          </div>
-        </div>
-        <div v-else class="text-center">
-          <div class="w-20 h-20 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle class="w-10 h-10" />
-          </div>
-          <h2 class="text-heading-md text-brand mb-2">Link Share Berhasil Dibuat!</h2>
-          <p class="text-body-sm text-muted mb-8">Salin link di bawah ini dan bagikan ke teman atau kerabat Anda.</p>
-          <div class="flex items-center gap-2 p-2 bg-gray-50 rounded-xl border border-gray-200 mb-8">
-            <input readonly :value="shareResult.share_url" class="bg-transparent border-none focus:ring-0 flex-1 px-2 text-body-sm text-muted overflow-hidden overflow-ellipsis" />
-            <button @click="copyShareLink" class="p-3 bg-brand text-white rounded-lg hover:bg-brand-dark transition-colors">
-              <Copy class="w-5 h-5" />
-            </button>
-          </div>
-          <button @click="sharingData = null" class="btn-secondary w-full">Tutup</button>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -213,11 +162,10 @@
 import { ref, onMounted } from 'vue'
 import { db, type LocalSavedAmalan, type LocalFolder } from '@/utils/localDb'
 import { 
-  Folder, FolderPlus, FolderX, Edit2, Trash2, Move, RefreshCw, BookOpen, Share2, ChevronRight, Copy, CheckCircle
+  Folder, FolderPlus, FolderX, Edit2, Trash2, Move, RefreshCw, BookOpen, ChevronRight
 } from 'lucide-vue-next'
 import { useToast } from '@/composables/useToast'
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
-import { createShareBundle } from '@/services/shareService'
 
 const toast = useToast()
 
@@ -328,75 +276,5 @@ async function removeFromOffline(item: LocalSavedAmalan) {
   await db.saved_amalan.delete(item.id)
   toast.success('Dihapus dari koleksi offline.')
   loadData()
-}
-
-// Sharing Logic
-const sharingData = ref<{ folder: LocalFolder | null } | null>(null)
-const shareForm = ref({ title: '', description: '' })
-const generatingShare = ref(false)
-const shareResult = ref<{ share_url: string } | null>(null)
-
-function startShare(folder: LocalFolder | null) {
-  sharingData.value = { folder }
-  shareForm.value = {
-    title: folder ? folder.name : 'Koleksi Amalan Saya',
-    description: ''
-  }
-  shareResult.value = null
-}
-
-async function generateShare() {
-  if (!sharingData.value) return
-  generatingShare.value = true
-  
-  try {
-    let itemsToShare: LocalSavedAmalan[] = []
-    
-    if (sharingData.value.folder) {
-      // Share one folder
-      itemsToShare = await db.saved_amalan.where('folder_id').equals(sharingData.value.folder.id!).toArray()
-    } else {
-      // Share EVERYTHING
-      itemsToShare = await db.saved_amalan.toArray()
-    }
-
-    if (itemsToShare.length === 0) {
-      toast.error('Koleksi kosong, tidak ada yang bisa dibagikan.')
-      generatingShare.value = false
-      return
-    }
-
-    const payload = {
-      title: shareForm.value.title,
-      description: shareForm.value.description,
-      items: itemsToShare.map(item => ({
-        amalan_id: item.amalan_id,
-        folder_path: null as string | null,
-        sort_order: 0,
-        version_at_share: item.content_version
-      }))
-    }
-    
-    // If sharing folder, items inside get the folder name as path
-    if (sharingData.value.folder) {
-      const folderName = sharingData.value.folder.name
-      payload.items.forEach(item => {
-        item.folder_path = folderName
-      })
-    }
-
-    shareResult.value = await createShareBundle(payload)
-  } catch (err) {
-    console.error('Error generating share bundle:', err)
-    toast.error('Gagal membuat link share. Pastikan Anda online.')
-  } finally {
-    generatingShare.value = false
-  }
-}
-
-function copyShareLink() {
-  if (!shareResult.value) return
-  navigator.clipboard.writeText(shareResult.value.share_url)
-  toast.success('Link berhasil disalin!')
 }
 </script>
