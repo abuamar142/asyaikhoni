@@ -32,7 +32,15 @@ const router = createRouter({
         description: 'Daftar amalan (tahlil, doa, dll) yang aktif di PPTQ Asy-Syaikhoni',
       },
     },
-
+    {
+      path: '/amalan/koleksi',
+      name: 'amalan-offline',
+      component: () => import('@/views/AmalanOffline.vue'),
+      meta: {
+        title: 'Koleksi Saya - PPTQ Asy-Syaikhoni',
+        description: 'Kelola amalan yang telah Anda simpan untuk akses offline',
+      },
+    },
     {
       path: '/amalan/:slug',
       name: 'amalan-detail',
