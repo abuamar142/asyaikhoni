@@ -1,10 +1,11 @@
 import { queryClient } from '@/utils/queryClient'
-import { supabase } from '@/utils/supabaseClient'
+import { requireSupabase } from '@/utils/supabaseClient'
 
 const adminQueryKey = ['auth', 'is-admin'] as const
 const ADMIN_CACHE_TTL = 60 * 1000 // 1 menit
 
 export async function login(email: string, password: string) {
+  const supabase = requireSupabase()
   const { data, error } = await supabase.auth.signInWithPassword({ email, password })
   if (error) throw error
   await invalidateAdminCache()
@@ -12,12 +13,14 @@ export async function login(email: string, password: string) {
 }
 
 export async function logout() {
+  const supabase = requireSupabase()
   const { error } = await supabase.auth.signOut()
   if (error) throw error
   await invalidateAdminCache()
 }
 
 export async function getSession() {
+  const supabase = requireSupabase()
   const { data, error } = await supabase.auth.getSession()
   if (error) throw error
   return data.session
@@ -30,6 +33,7 @@ export async function isAdmin(): Promise<boolean> {
     staleTime: ADMIN_CACHE_TTL,
     gcTime: ADMIN_CACHE_TTL * 2,
     queryFn: async () => {
+      const supabase = requireSupabase()
       const session = await getSession()
       if (!session?.user?.id) return false
       const { data, error } = await supabase

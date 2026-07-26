@@ -1,13 +1,22 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  // Warn early in dev if envs are missing
-  console.warn('Supabase env vars missing: VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY')
+export const supabase: SupabaseClient | null =
+  supabaseUrl && supabaseAnonKey
+    ? createClient(supabaseUrl, supabaseAnonKey)
+    : null
+
+export function requireSupabase(): SupabaseClient {
+  if (!supabase) {
+    throw new Error(
+      'Database tidak tersedia. VITE_SUPABASE_URL atau VITE_SUPABASE_ANON_KEY belum dikonfigurasi.',
+    )
+  }
+  return supabase
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const isSupabaseAvailable = () => supabase !== null
 
 export const AMALAN_BUCKET_ID = 'amalan-md'

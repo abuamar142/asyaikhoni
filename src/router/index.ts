@@ -34,6 +34,24 @@ const router = createRouter({
       },
     },
     {
+      path: '/amalan/koleksi',
+      name: 'amalan-offline',
+      component: () => import('@/views/AmalanOffline.vue'),
+      meta: {
+        title: 'Koleksi Saya - PPTQ Asy-Syaikhoni',
+        description: 'Kelola amalan yang telah Anda simpan untuk akses offline',
+      },
+    },
+    {
+      path: '/amalan/share/:share_id',
+      name: 'amalan-share',
+      component: () => import('@/views/AmalanSharePreview.vue'),
+      meta: {
+        title: 'Koleksi Dibagikan - PPTQ Asy-Syaikhoni',
+        description: 'Lihat dan impor koleksi amalan yang dibagikan',
+      },
+    },
+    {
       path: '/amalan/:slug',
       name: 'amalan-detail',
       component: () => import('@/views/AmalanDetail.vue'),
@@ -138,7 +156,7 @@ router.beforeEach(async (to, from, next) => {
       return next({ name: 'admin-login', query: { redirect: to.fullPath } })
     }
     if (requiresAdmin) {
-      const admin = await isAdmin()
+      const admin = await isAdmin().catch(() => false)
       if (!admin) {
         return next({ name: 'home' })
       }

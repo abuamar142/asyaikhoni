@@ -1,4 +1,4 @@
-import { supabase, AMALAN_BUCKET_ID } from '@/utils/supabaseClient'
+import { requireSupabase, AMALAN_BUCKET_ID } from '@/utils/supabaseClient'
 import type { Category } from '@/services/categoryService'
 
 export type Amalan = {
@@ -14,6 +14,8 @@ export type Amalan = {
   ikon_url?: string | null
   urutan?: number | null
   aktif: boolean
+  content_version: number
+  deleted_at?: string | null
   created_at?: string
   updated_at?: string
 }
@@ -39,6 +41,7 @@ export async function listPublic(params?: {
   limit?: number
   offset?: number
 }) {
+  const supabase = requireSupabase()
   const kategoriList =
     params?.kategoriIds ||
     (Array.isArray(params?.kategori) ? params.kategori : params?.kategori ? [params.kategori] : [])
@@ -47,7 +50,12 @@ export async function listPublic(params?: {
     ? 'amalan_kategori:amalan_kategori!inner ( kategori:kategori_id ( id, nama, deskripsi ) )'
     : 'amalan_kategori:amalan_kategori ( kategori:kategori_id ( id, nama, deskripsi ) )'
 
-  let query = supabase.from('amalan').select(`*, ${relation}`).eq('aktif', true)
+  let query = supabase
+    .from('amalan')
+    .select(`*, ${relation}`)
+    .eq('aktif', true)
+    .is('deleted_at', null)
+
   if (params?.q) {
     query = query.ilike('judul', `%${params.q}%`)
   }
@@ -69,7 +77,9 @@ export async function listAll(params?: {
   kategoriIds?: string[]
   limit?: number
   offset?: number
+  includeDeleted?: boolean
 }) {
+  const supabase = requireSupabase()
   const kategoriList =
     params?.kategoriIds ||
     (Array.isArray(params?.kategori) ? params.kategori : params?.kategori ? [params.kategori] : [])
@@ -79,6 +89,11 @@ export async function listAll(params?: {
     : 'amalan_kategori:amalan_kategori ( kategori:kategori_id ( id, nama, deskripsi ) )'
 
   let query = supabase.from('amalan').select(`*, ${relation}`)
+
+  if (!params?.includeDeleted) {
+    query = query.is('deleted_at', null)
+  }
+
   if (params?.q) {
     query = query.ilike('judul', `%${params.q}%`)
   }
@@ -95,10 +110,12 @@ export async function listAll(params?: {
 }
 
 export async function getBySlug(slug: string) {
+  const supabase = requireSupabase()
   const { data, error } = await supabase
     .from('amalan')
     .select('*, amalan_kategori:amalan_kategori ( kategori:kategori_id ( id, nama, deskripsi ) )')
     .eq('slug', slug)
+    .is('deleted_at', null)
     .limit(1)
     .maybeSingle()
   if (error) throw error
@@ -106,6 +123,7 @@ export async function getBySlug(slug: string) {
 }
 
 export async function getById(id: string) {
+  const supabase = requireSupabase()
   const { data, error } = await supabase
     .from('amalan')
     .select('*, amalan_kategori:amalan_kategori ( kategori:kategori_id ( id, nama, deskripsi ) )')
@@ -117,6 +135,7 @@ export async function getById(id: string) {
 }
 
 export async function downloadMarkdown(bucketId: string, mdPath: string): Promise<string> {
+  const supabase = requireSupabase()
   const { data, error } = await supabase.storage.from(bucketId).download(mdPath)
   if (error) throw error
   const text = await data.text()
@@ -133,6 +152,7 @@ export async function createAmalan(payload: {
   kategoriIds?: string[]
   mdFile: File
 }) {
+  const supabase = requireSupabase()
   const path = `amalan/${payload.slug}.md`
   const bucket = AMALAN_BUCKET_ID
 
@@ -153,6 +173,7 @@ export async function createAmalan(payload: {
       ikon_url: payload.ikon_url || null,
       urutan: payload.urutan ?? null,
       aktif: payload.aktif ?? true,
+      content_version: 1,
     })
     .select('*')
     .single()
@@ -167,12 +188,14 @@ export async function createAmalan(payload: {
 
 export async function updateAmalan(
   id: string,
-  payload: Partial<Omit<Amalan, 'id' | 'md_path' | 'md_bucket_id'>> & {
+  payload: Partial<Omit<Amalan, 'id' | 'md_path' | 'md_bucket_id' | 'content_version'>> & {
     slug?: string
     kategoriIds?: string[]
     mdFile?: File
+    incrementVersion?: boolean
   },
 ) {
+  const supabase = requireSupabase()
   const existing = await getById(id)
   if (!existing) throw new Error('Amalan tidak ditemukan')
 
@@ -221,6 +244,9 @@ export async function updateAmalan(
       ikon_url: payload.ikon_url ?? existing.ikon_url,
       urutan: payload.urutan ?? existing.urutan,
       aktif: payload.aktif ?? existing.aktif,
+      content_version: payload.incrementVersion
+        ? existing.content_version + 1
+        : existing.content_version,
     })
     .eq('id', id)
     .select('*')
@@ -232,17 +258,35 @@ export async function updateAmalan(
   return (await getById(id)) as Amalan
 }
 
-export async function deleteAmalan(id: string, options?: { deleteFile?: boolean }) {
+export async function deleteAmalan(id: string, options?: { deleteFile?: boolean; permanent?: boolean }) {
+  const supabase = requireSupabase()
   const existing = await getById(id)
   if (!existing) return
-  const { error } = await supabase.from('amalan').delete().eq('id', id)
-  if (error) throw error
-  if (options?.deleteFile && existing.md_path) {
-    await supabase.storage.from(existing.md_bucket_id).remove([existing.md_path])
+
+  if (options?.permanent) {
+    const { error } = await supabase.from('amalan').delete().eq('id', id)
+    if (error) throw error
+    if (options?.deleteFile && existing.md_path) {
+      await supabase.storage.from(existing.md_bucket_id).remove([existing.md_path])
+    }
+  } else {
+    // Soft delete
+    const { error } = await supabase
+      .from('amalan')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', id)
+    if (error) throw error
   }
 }
 
+export async function restoreAmalan(id: string) {
+  const supabase = requireSupabase()
+  const { error } = await supabase.from('amalan').update({ deleted_at: null }).eq('id', id)
+  if (error) throw error
+}
+
 export async function toggleAktif(id: string, aktif: boolean) {
+  const supabase = requireSupabase()
   const { data, error } = await supabase
     .from('amalan')
     .update({ aktif })
@@ -254,6 +298,7 @@ export async function toggleAktif(id: string, aktif: boolean) {
 }
 
 async function setAmalanCategories(amalanId: string, categoryIds: string[]) {
+  const supabase = requireSupabase()
   // Fetch existing links
   const { data: existing } = await supabase
     .from('amalan_kategori')
