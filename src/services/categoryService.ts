@@ -1,4 +1,4 @@
-import { supabase } from '@/utils/supabaseClient'
+import { requireSupabase } from '@/utils/supabaseClient'
 
 export type Category = {
   id: string
@@ -9,6 +9,7 @@ export type Category = {
 }
 
 export async function listCategories(params?: { q?: string }) {
+  const supabase = requireSupabase()
   let query = supabase.from('kategori').select('*')
   if (params?.q) {
     query = query.ilike('nama', `%${params.q}%`)
@@ -19,12 +20,14 @@ export async function listCategories(params?: { q?: string }) {
 }
 
 export async function getCategory(id: string) {
+  const supabase = requireSupabase()
   const { data, error } = await supabase.from('kategori').select('*').eq('id', id).maybeSingle()
   if (error) throw error
   return data as Category | null
 }
 
 export async function createCategory(payload: { nama: string; deskripsi?: string | null }) {
+  const supabase = requireSupabase()
   const { data, error } = await supabase
     .from('kategori')
     .insert({
@@ -38,6 +41,7 @@ export async function createCategory(payload: { nama: string; deskripsi?: string
 }
 
 export async function updateCategory(id: string, payload: Partial<Category>) {
+  const supabase = requireSupabase()
   const { data, error } = await supabase
     .from('kategori')
     .update({
@@ -52,6 +56,7 @@ export async function updateCategory(id: string, payload: Partial<Category>) {
 }
 
 export async function deleteCategory(id: string) {
+  const supabase = requireSupabase()
   const { error } = await supabase.from('kategori').delete().eq('id', id)
   if (error) throw error
 }
