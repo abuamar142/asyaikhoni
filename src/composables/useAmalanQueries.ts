@@ -64,11 +64,11 @@ export function useAmalanByIdQuery(id: MaybeRef<string>) {
 }
 
 // Markdown download query
-export function useMarkdownQuery(bucketId: MaybeRef<string>, path: MaybeRef<string>) {
+export function useMarkdownQuery(id: MaybeRef<string>) {
   return useQuery({
-    queryKey: ['markdown', unref(bucketId), unref(path)] as const,
-    queryFn: () => amalanService.downloadMarkdown(unref(bucketId), unref(path)),
-    enabled: !!unref(bucketId) && !!unref(path),
+    queryKey: ['markdown', unref(id)] as const,
+    queryFn: () => amalanService.downloadMarkdown(unref(id)),
+    enabled: !!unref(id),
   })
 }
 

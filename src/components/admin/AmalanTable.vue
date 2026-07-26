@@ -28,7 +28,7 @@
                 {{ cat.nama }}
               </span>
             </div>
-            <span v-else>{{ item.kategori || '-' }}</span>
+            <span v-else>-</span>
           </td>
           <td class="px-6 py-4 text-center">
             <label class="inline-flex items-center gap-2 cursor-pointer">

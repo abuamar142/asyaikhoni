@@ -131,11 +131,6 @@
                   class="text-caption px-3 py-1 rounded-full bg-primary-100 text-primary-700 font-medium"
                   >{{ cat.nama }}</span
                 >
-                <span
-                  v-if="!item.categories?.length && item.kategori"
-                  class="text-caption px-3 py-1 rounded-full bg-primary-100 text-primary-700 font-medium"
-                  >{{ item.kategori }}</span
-                >
               </div>
             </div>
             <p v-if="item.ringkasan" class="text-body-sm text-muted leading-relaxed">

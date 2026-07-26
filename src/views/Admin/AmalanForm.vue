@@ -94,7 +94,7 @@ onMounted(async () => {
       form.value.kategori_ids = data.kategori_ids || []
       slugTouched.value = true
       try {
-        const md = await downloadMarkdown(data.md_bucket_id, data.md_path)
+        const md = await downloadMarkdown(data.id)
         mdContent.value = md
       } catch (err) {
         console.error('Gagal memuat markdown', err)
@@ -122,15 +122,16 @@ async function onSubmit() {
     const content = mdContent.value?.trim()
     if (!content) throw new Error('Konten Markdown wajib diisi')
 
-    const fileName = `${(form.value.slug || 'amalan').toString()}.md`
-    const blob = new Blob([content], { type: 'text/markdown' })
-    const file = new File([blob], fileName, { type: 'text/markdown' })
-
     if (isEdit.value && id) {
       await updateAmalan(id, {
-        ...form.value,
+        judul: form.value.judul ?? undefined,
+        slug: form.value.slug ?? undefined,
+        ringkasan: form.value.ringkasan ?? undefined,
+        ikon_url: form.value.ikon_url ?? undefined,
+        urutan: form.value.urutan ?? undefined,
+        aktif: form.value.aktif,
         kategoriIds: form.value.kategori_ids || [],
-        mdFile: file,
+        md_content: content,
       })
       showToast({ type: 'success', title: 'Tersimpan', message: 'Perubahan amalan disimpan.' })
     } else {
@@ -142,7 +143,7 @@ async function onSubmit() {
         urutan: (form.value.urutan as number) || undefined,
         aktif: Boolean(form.value.aktif),
         kategoriIds: form.value.kategori_ids || [],
-        mdFile: file,
+        mdContent: content,
       })
       showToast({ type: 'success', title: 'Tersimpan', message: 'Amalan baru berhasil dibuat.' })
     }
