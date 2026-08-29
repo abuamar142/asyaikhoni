@@ -63,7 +63,7 @@ export function useAmalanByIdQuery(id: MaybeRef<string>) {
   })
 }
 
-// Markdown download query
+// DEPRECATED: markdown download - kept for backwards compat only, new system uses lyrics field directly
 export function useMarkdownQuery(id: MaybeRef<string>) {
   return useQuery({
     queryKey: ['markdown', unref(id)] as const,

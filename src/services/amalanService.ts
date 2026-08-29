@@ -1,12 +1,19 @@
 import { api } from '@/utils/httpClient'
 import type { Category } from '@/services/categoryService'
 
+export type LyricRow = {
+  id?: string
+  arab: string
+  latin?: string | null
+}
+
 export type Amalan = {
   id: string
   judul: string
   slug: string
   ringkasan?: string | null
-  md_content?: string | null
+  md_content?: string | null // DEPRECATED
+  lyrics?: LyricRow[]
   kategori_ids?: string[]
   categories?: Category[]
   ikon_url?: string | null
@@ -88,6 +95,7 @@ export async function getById(id: string) {
   }
 }
 
+// DEPRECATED - kept for backwards compat, returns md_content (not used for lyrics)
 export async function downloadMarkdown(id: string): Promise<string> {
   const result = await api.get<{ md_content: string }>(`/api/v1/asyaikhoni/amalan/markdown/${id}`)
   return result.md_content
@@ -101,13 +109,15 @@ export async function createAmalan(payload: {
   urutan?: number
   aktif?: boolean
   kategoriIds?: string[]
-  mdContent: string
+  mdContent?: string
+  lyrics?: LyricRow[]
 }) {
   const result = await api.post<AmalanResponse>('/api/v1/asyaikhoni/amalan', {
     judul: payload.judul,
     slug: payload.slug,
     ringkasan: payload.ringkasan || null,
     md_content: payload.mdContent,
+    lyrics: payload.lyrics,
     kategori_ids: payload.kategoriIds,
     ikon_url: payload.ikon_url || null,
     urutan: payload.urutan ?? null,
@@ -123,6 +133,7 @@ export async function updateAmalan(
     slug?: string
     ringkasan?: string
     md_content?: string
+    lyrics?: LyricRow[]
     kategori_ids?: string[]
     kategoriIds?: string[]
     ikon_url?: string
@@ -135,6 +146,7 @@ export async function updateAmalan(
   if (payload.slug !== undefined) body.slug = payload.slug
   if (payload.ringkasan !== undefined) body.ringkasan = payload.ringkasan
   if (payload.md_content !== undefined) body.md_content = payload.md_content
+  if (payload.lyrics !== undefined) body.lyrics = payload.lyrics
   if (payload.ikon_url !== undefined) body.ikon_url = payload.ikon_url
   if (payload.urutan !== undefined) body.urutan = payload.urutan
   if (payload.aktif !== undefined) body.aktif = payload.aktif
