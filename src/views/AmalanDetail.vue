@@ -73,23 +73,20 @@
               >
                 <BookmarkCheck class="w-3.5 h-3.5" /> Tersimpan
               </span>
+              <!-- Gear settings button (replaces Latin pill) — visible on all breakpoints -->
               <button
                 type="button"
-                class="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full border text-[13px] font-medium transition-colors shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30"
+                class="inline-flex items-center justify-center w-9 h-9 rounded-full border transition-all duration-200 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30"
                 :class="
-                  showLatin
-                    ? 'bg-emerald-700 border-emerald-700 text-white hover:bg-emerald-800 shadow-[0_6px_16px_rgba(21,128,61,0.18)]'
-                    : 'bg-white border-[#e7e5e0] text-stone-700 hover:border-stone-300 hover:bg-stone-50'
+                  showSettings
+                    ? 'bg-emerald-700 border-emerald-700 text-white shadow-[0_6px_16px_rgba(21,128,61,0.22)]'
+                    : 'bg-white border-[#e7e5e0] text-stone-600 hover:border-stone-300 hover:bg-stone-50'
                 "
-                :aria-pressed="showLatin ? 'true' : 'false'"
-                :aria-label="showLatin ? 'Sembunyikan transliterasi Latin' : 'Tampilkan transliterasi Latin'"
-                :title="showLatin ? 'Sembunyikan transliterasi Latin' : 'Tampilkan transliterasi Latin'"
-                @click="toggleLatin"
+                aria-label="Pengaturan tampilan"
+                title="Pengaturan tampilan"
+                @click="showSettings = true"
               >
-                <component :is="showLatin ? Eye : EyeOff" class="w-4 h-4" :class="showLatin ? 'text-white' : 'text-stone-500'" />
-                <span class="hidden sm:inline">Latin</span>
-                <span class="hidden sm:inline text-[11px] font-normal opacity-80">{{ showLatin ? 'Sembunyikan' : 'Tampilkan' }}</span>
-                <span class="sm:hidden text-[11px]">{{ showLatin ? 'On' : 'Off' }}</span>
+                <Settings class="w-[18px] h-[18px] transition-transform duration-300" :class="[showSettings ? 'text-white rotate-45' : 'text-stone-500', showSettings ? '' : 'hover:rotate-12']" />
               </button>
               <button
                 type="button"
@@ -229,7 +226,11 @@
 
             <!-- lyrics paper -->
             <div v-else class="relative">
-              <div class="amalan-paper">
+              <div
+                class="amalan-paper"
+                :class="{ 'dark-paper': isDark }"
+                :style="{ '--arab': fontSize + 'px', '--latin': Math.round(fontSize * 0.58) + 'px' } as any"
+              >
                 <div class="amalan-paper__texture" aria-hidden="true"></div>
                 <div class="amalan-paper__inner-border" aria-hidden="true"></div>
 
@@ -325,7 +326,7 @@
 
             <!-- latin hint when hidden -->
             <p v-if="!showLatin && hasAnyLatin" class="mt-4 text-center text-[11px] tracking-wide text-stone-400">
-              Transliterasi Latin disembunyikan — ketuk <span class="font-medium text-stone-600">Latin • Tampilkan</span> untuk melihat.
+              Transliterasi Latin disembunyikan — buka <span class="inline-flex items-center gap-1 font-medium text-stone-600"><Settings class="w-3 h-3" /> Pengaturan</span> untuk menampilkan kembali.
             </p>
           </div>
         </div>
@@ -351,6 +352,185 @@
         </div>
       </div>
     </article>
+
+    <!-- Gear Settings Modal -->
+    <Teleport to="body">
+      <Transition name="settings-fade">
+        <div
+          v-if="showSettings"
+          class="fixed inset-0 z-[70] flex items-center justify-center p-4 sm:p-6"
+          @keydown.esc="showSettings = false"
+        >
+          <!-- backdrop blur -->
+          <div
+            class="absolute inset-0 bg-[#0f1a16]/45 backdrop-blur-[6px]"
+            @click="showSettings = false"
+            aria-hidden="true"
+          ></div>
+
+          <!-- card -->
+          <div
+            ref="settingsCardRef"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="settings-title"
+            class="relative w-full max-w-[360px] rounded-[20px] bg-[#fdfcf8] border border-[#e8e6de] shadow-[0_20px_60px_rgba(15,35,24,0.18),0_1px_0_rgba(255,255,255,0.9)_inset] overflow-hidden flex flex-col max-h-[90vh]"
+            @click.stop
+          >
+            <!-- header -->
+            <div class="flex items-center justify-between px-5 pt-5 pb-4 border-b border-[#e8e6de]/70 shrink-0">
+              <div class="flex items-center gap-3">
+                <span class="w-8 h-8 rounded-full bg-emerald-700 inline-flex items-center justify-center shadow-[0_2px_8px_rgba(21,128,61,0.25)]">
+                  <Settings class="w-4 h-4 text-white" />
+                </span>
+                <h2 id="settings-title" class="text-[14px] font-semibold tracking-[-0.01em] text-[#0f2318]">Pengaturan Tampilan</h2>
+              </div>
+              <button
+                type="button"
+                class="w-8 h-8 rounded-full bg-white border border-[#e7e5e0] inline-flex items-center justify-center text-stone-500 hover:bg-stone-50 hover:text-stone-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30 shrink-0"
+                aria-label="Tutup pengaturan"
+                @click="showSettings = false"
+              >
+                <X class="w-4 h-4" />
+              </button>
+            </div>
+
+            <!-- rows -->
+            <div class="p-5 space-y-3 overflow-y-auto overscroll-contain">
+              <!-- Row1: Tampilkan Latin Switch -->
+              <div class="flex items-center justify-between gap-4 p-3.5 rounded-2xl bg-white border border-[#e8e6de] shadow-sm">
+                <div class="flex items-center gap-3 min-w-0">
+                  <span class="w-9 h-9 rounded-full bg-emerald-50 border border-emerald-100 inline-flex items-center justify-center shrink-0">
+                    <component :is="showLatin ? Eye : EyeOff" class="w-4 h-4 text-emerald-700" />
+                  </span>
+                  <div class="min-w-0">
+                    <div class="text-[13px] font-semibold text-[#0f2318] leading-none">Tampilkan Latin</div>
+                    <div class="text-[11px] text-stone-500 mt-1 leading-none">Transliterasi di bawah Arab</div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  :aria-checked="showLatin ? 'true' : 'false'"
+                  :aria-label="showLatin ? 'Sembunyikan Latin' : 'Tampilkan Latin'"
+                  class="relative inline-flex h-[28px] w-[48px] shrink-0 cursor-pointer items-center rounded-full border transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30"
+                  :class="showLatin ? 'bg-emerald-700 border-emerald-700' : 'bg-stone-200 border-stone-200'"
+                  @click="toggleLatin"
+                >
+                  <span
+                    class="inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition duration-200"
+                    :class="showLatin ? 'translate-x-[22px]' : 'translate-x-[3px]'"
+                  ></span>
+                </button>
+              </div>
+
+              <!-- Row2: Ukuran Huruf -->
+              <div class="p-3.5 rounded-2xl bg-white border border-[#e8e6de] shadow-sm">
+                <div class="flex items-center justify-between gap-3 mb-3">
+                  <div class="flex items-center gap-3">
+                    <span class="w-9 h-9 rounded-full bg-amber-50 border border-amber-100 inline-flex items-center justify-center shrink-0">
+                      <Type class="w-4 h-4 text-amber-700" />
+                    </span>
+                    <div>
+                      <div class="text-[13px] font-semibold text-[#0f2318] leading-none">Ukuran Huruf</div>
+                      <div class="text-[11px] text-stone-500 mt-1">
+                        <span class="font-semibold text-stone-700">{{ fontSize }}px</span> • Arab
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    class="text-[11px] font-semibold tracking-wide px-2.5 py-1 rounded-full bg-stone-50 border border-stone-200 text-stone-600 hover:bg-white hover:border-stone-300 hover:text-stone-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/20 inline-flex items-center gap-1"
+                    @click="resetFontSize"
+                    aria-label="Reset ukuran huruf"
+                  >
+                    <RotateCcw class="w-3 h-3" /> Reset
+                  </button>
+                </div>
+
+                <div class="flex items-center gap-2">
+                  <button
+                    type="button"
+                    class="w-8 h-8 rounded-full bg-white border border-[#e7e5e0] inline-flex items-center justify-center text-stone-700 hover:bg-stone-50 hover:border-stone-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/20 shrink-0"
+                    :disabled="fontSize <= 18"
+                    aria-label="Kecilkan huruf"
+                    @click="decrease"
+                  >
+                    <span class="text-[12px] font-bold leading-none">A-</span>
+                  </button>
+
+                  <input
+                    type="range"
+                    min="18"
+                    max="36"
+                    step="1"
+                    :value="fontSize"
+                    class="lyric-range flex-1 accent-emerald-700 h-1 cursor-pointer"
+                    aria-label="Ukuran huruf Arab"
+                    @input="setFontSize(Number(($event.target as HTMLInputElement).value))"
+                  />
+
+                  <button
+                    type="button"
+                    class="w-8 h-8 rounded-full bg-white border border-[#e7e5e0] inline-flex items-center justify-center text-stone-700 hover:bg-stone-50 hover:border-stone-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/20 shrink-0"
+                    :disabled="fontSize >= 36"
+                    aria-label="Besarkan huruf"
+                    @click="increase"
+                  >
+                    <span class="text-[13px] font-bold leading-none">A+</span>
+                  </button>
+                </div>
+
+                <!-- live preview -->
+                <div class="mt-3 rounded-xl bg-[#fdfcf8] border border-[#e8e6de]/70 px-3 py-2.5 flex items-center justify-between gap-3">
+                  <span class="text-[11px] tracking-wide font-medium text-stone-500 shrink-0">Pratinjau</span>
+                  <span dir="rtl" lang="ar" class="font-amiri text-[#0f2318] leading-none text-center flex-1" :style="{ fontSize: fontSize + 'px' }" style="font-family: 'Amiri', serif">اَللّٰهُ</span>
+                  <span class="text-[11px] italic text-stone-500 shrink-0" :style="{ fontSize: Math.round(fontSize * 0.58) + 'px' }">Allāh</span>
+                </div>
+              </div>
+
+              <!-- Row3: Mode Switch -->
+              <div class="flex items-center justify-between gap-4 p-3.5 rounded-2xl bg-white border border-[#e8e6de] shadow-sm">
+                <div class="flex items-center gap-3 min-w-0">
+                  <span
+                    class="w-9 h-9 rounded-full border inline-flex items-center justify-center shrink-0 transition-colors"
+                    :class="isDark ? 'bg-[#1a2420] border-[#2a3a32]' : 'bg-amber-50 border-amber-100'"
+                  >
+                    <component :is="isDark ? Moon : Sun" class="w-4 h-4" :class="isDark ? 'text-amber-300' : 'text-amber-600'" />
+                  </span>
+                  <div class="min-w-0">
+                    <div class="text-[13px] font-semibold text-[#0f2318] leading-none">Mode</div>
+                    <div class="text-[11px] text-stone-500 mt-1 leading-none">
+                      {{ isDark ? 'Gelap' : 'Terang' }} • {{ isDark ? 'Nyaman di malam' : 'Kertas terang' }}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  :aria-checked="isDark ? 'true' : 'false'"
+                  aria-label="Toggle mode gelap"
+                  class="relative inline-flex h-[28px] w-[48px] shrink-0 cursor-pointer items-center rounded-full border transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30"
+                  :class="isDark ? 'bg-[#1a2420] border-[#1a2420]' : 'bg-stone-200 border-stone-200'"
+                  @click="toggleDark"
+                >
+                  <span
+                    class="inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition duration-200 flex items-center justify-center"
+                    :class="isDark ? 'translate-x-[22px]' : 'translate-x-[3px]'"
+                  >
+                    <component :is="isDark ? Moon : Sun" class="w-3 h-3" :class="isDark ? 'text-[#1a2420]' : 'text-amber-600'" />
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            <div class="px-5 pb-4 pt-2 shrink-0">
+              <p class="text-[11px] leading-relaxed text-stone-400 text-center">Pengaturan disimpan otomatis di perangkat ini.</p>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -372,14 +552,23 @@ import {
   FileText,
   Eye,
   EyeOff,
+  Settings,
+  Sun,
+  Moon,
+  Type,
+  X,
+  RotateCcw,
 } from 'lucide-vue-next'
 import { db, type LocalSavedAmalan } from '@/utils/localDb'
 import { useToast } from '@/composables/useToast'
-import { useLatinToggle } from '@/composables/useLatinToggle'
+import { useLyricSettings } from '@/composables/useLyricSettings'
 
 const route = useRoute()
 const toast = useToast()
-const { showLatin, toggleLatin } = useLatinToggle()
+const { showLatin, toggleLatin, fontSize, isDark, increase, decrease, setFontSize, resetFontSize, toggleDark } = useLyricSettings()
+
+const showSettings = ref(false)
+const settingsCardRef = ref<HTMLElement | null>(null)
 
 const slug = computed(() => route.params.slug as string)
 
@@ -469,6 +658,23 @@ async function checkOfflineStatus() {
   }
 }
 
+function onKeydown(e: KeyboardEvent) {
+  if (e.key === 'Escape' && showSettings.value) {
+    showSettings.value = false
+  }
+}
+
+watch(showSettings, (open) => {
+  if (open) {
+    document.addEventListener('keydown', onKeydown)
+    // prevent background scroll on mobile
+    document.documentElement.style.overflow = 'hidden'
+  } else {
+    document.removeEventListener('keydown', onKeydown)
+    document.documentElement.style.overflow = ''
+  }
+})
+
 onMounted(() => {
   checkOfflineStatus()
   window.addEventListener('scroll', onScroll, { passive: true })
@@ -477,6 +683,8 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('scroll', onScroll)
+  document.removeEventListener('keydown', onKeydown)
+  document.documentElement.style.overflow = ''
 })
 
 watch(amalan, () => {
@@ -641,6 +849,10 @@ const loadingPage = computed(
     0 8px 24px rgba(31, 33, 26, 0.06),
     0 1px 0 rgba(255, 255, 255, 0.9) inset;
   overflow: hidden;
+  transition:
+    background-color 260ms ease,
+    border-color 260ms ease,
+    box-shadow 260ms ease;
 }
 .amalan-paper__texture {
   position: absolute;
@@ -656,6 +868,7 @@ const loadingPage = computed(
   background-position:
     0 0,
     11px 11px;
+  transition: opacity 260ms ease;
 }
 .amalan-paper__inner-border {
   position: absolute;
@@ -663,6 +876,7 @@ const loadingPage = computed(
   border: 1.35px dotted #e6ddd0;
   border-radius: 14px;
   pointer-events: none;
+  transition: border-color 260ms ease;
 }
 .amalan-paper__content {
   position: relative;
@@ -677,6 +891,49 @@ const loadingPage = computed(
   .amalan-paper__content {
     padding: 44px 48px 40px;
   }
+}
+
+/* ── Dark paper ── */
+.amalan-paper.dark-paper {
+  background: #1a2420;
+  border-color: #2a3a32;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.14),
+    0 12px 32px rgba(0, 0, 0, 0.22),
+    0 1px 0 rgba(255, 255, 255, 0.04) inset;
+}
+.amalan-paper.dark-paper .amalan-paper__inner-border {
+  border-color: rgba(232, 230, 222, 0.1);
+}
+.amalan-paper.dark-paper .amalan-paper__texture {
+  opacity: 0.045;
+}
+.amalan-paper.dark-paper .title-ar,
+.amalan-paper.dark-paper .lyric-arab {
+  color: #e8e6d8;
+}
+.amalan-paper.dark-paper .title-latin,
+.amalan-paper.dark-paper .lyric-latin {
+  color: #9bb0a5;
+}
+.amalan-paper.dark-paper .lyric-title-ornament span:first-child,
+.amalan-paper.dark-paper .lyric-title-ornament span:last-child {
+  background: #2a3a32 !important;
+}
+.amalan-paper.dark-paper .lyric-title-ornament span:nth-child(2) {
+  background: rgba(52, 211, 153, 0.85) !important;
+  box-shadow: 0 0 0 4px #1a2420 !important;
+}
+.amalan-paper.dark-paper .lyric-row:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+.amalan-paper.dark-paper .bullet {
+  color: #34d399;
+  opacity: 0.65;
+}
+.amalan-paper.dark-paper .bullet--latin {
+  color: #9bb0a5;
+  opacity: 0.5;
 }
 
 /* ── Lyrics: 1 baris = 1 row, selalu center, • = 2 kolom center ── */
@@ -706,7 +963,7 @@ const loadingPage = computed(
   }
 }
 
-/* Arab: Amiri, 24px, rtl, center */
+/* Arab: uses CSS var --arab (18-36px), rtl, center */
 .lyric-arab {
   width: 100%;
   display: flex;
@@ -714,16 +971,14 @@ const loadingPage = computed(
   align-items: center;
   text-align: center;
   font-family: 'Amiri', serif;
-  font-size: 1.5rem;
+  font-size: var(--arab, 24px);
   line-height: 1.95;
   color: #0f2318;
   font-weight: 400;
   direction: rtl;
-}
-@media (min-width: 640px) {
-  .lyric-arab {
-    font-size: 1.55rem;
-  }
+  transition:
+    font-size 180ms ease,
+    color 260ms ease;
 }
 .arab-single {
   display: block;
@@ -761,9 +1016,10 @@ const loadingPage = computed(
   font-size: 1.1rem;
   line-height: 1;
   user-select: none;
+  transition: color 260ms ease;
 }
 
-/* Latin: DM Sans 14px italic muted, center */
+/* Latin: uses CSS var --latin (58% of --arab), DM Sans italic muted, center */
 .lyric-latin {
   width: 100%;
   display: flex;
@@ -771,13 +1027,16 @@ const loadingPage = computed(
   align-items: center;
   text-align: center;
   font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
-  font-size: 14px;
+  font-size: var(--latin, 14px);
   line-height: 1.65;
   font-style: italic;
   font-weight: 400;
   color: #6e7d71;
   letter-spacing: 0.006em;
   margin-top: 2px;
+  transition:
+    font-size 180ms ease,
+    color 260ms ease;
 }
 .latin-single {
   display: block;
@@ -819,12 +1078,14 @@ const loadingPage = computed(
 .title-ar {
   font-family: 'Amiri', serif;
   text-wrap: balance;
+  transition: color 260ms ease;
 }
 .title-latin {
   text-wrap: balance;
   transition:
     opacity 200ms ease,
-    transform 200ms ease;
+    transform 200ms ease,
+    color 260ms ease;
 }
 /* when Latin is hidden via v-show (display:none), margin collapses automatically;
    this ensures no extra gap remains */
@@ -843,5 +1104,69 @@ const loadingPage = computed(
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* ── Settings modal transition ── */
+.settings-fade-enter-active,
+.settings-fade-leave-active {
+  transition: opacity 220ms ease;
+}
+.settings-fade-enter-active .relative,
+.settings-fade-leave-active .relative {
+  transition:
+    opacity 260ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 260ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.settings-fade-enter-from,
+.settings-fade-leave-to {
+  opacity: 0;
+}
+.settings-fade-enter-from .relative {
+  opacity: 0;
+  transform: translateY(10px) scale(0.98);
+}
+.settings-fade-leave-to .relative {
+  opacity: 0;
+  transform: translateY(8px) scale(0.99);
+}
+
+/* ── Range slider polish ── */
+.lyric-range {
+  -webkit-appearance: none;
+  appearance: none;
+  background: #e7e5e0;
+  height: 4px;
+  border-radius: 9999px;
+}
+.lyric-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  background: #15803d;
+  border: 2px solid white;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease;
+}
+.lyric-range::-webkit-slider-thumb:hover {
+  transform: scale(1.08);
+  box-shadow: 0 2px 8px rgba(21, 128, 61, 0.25);
+}
+.lyric-range::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  background: #15803d;
+  border: 2px solid white;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+}
+.lyric-range::-moz-range-track {
+  background: #e7e5e0;
+  height: 4px;
+  border-radius: 9999px;
 }
 </style>
