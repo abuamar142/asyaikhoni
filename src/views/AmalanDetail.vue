@@ -162,7 +162,9 @@
             <div class="mt-7 flex flex-wrap items-center justify-center gap-3">
               <button
                 type="button"
-                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border text-[13px] font-semibold transition-all duration-200 shadow-sm focus:outline-none focus-visible:ring-4 focus-visible:ring-emerald-500/15"
+                :disabled="isSaving"
+                :aria-busy="isSaving ? 'true' : 'false'"
+                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border text-[13px] font-semibold transition-all duration-200 shadow-sm focus:outline-none focus-visible:ring-4 focus-visible:ring-emerald-500/15 touch-manipulation min-h-[44px] relative z-10 disabled:opacity-60 disabled:cursor-not-allowed active:scale-[0.98] select-none"
                 :class="
                   isSaved
                     ? 'bg-emerald-700 border-emerald-700 text-white hover:bg-emerald-800 shadow-[0_6px_16px_rgba(21,128,61,0.22)]'
@@ -170,17 +172,33 @@
                 "
                 @click="toggleOffline"
               >
-                <component :is="isSaved ? CheckCircle2 : Download" class="w-[18px] h-[18px]" :class="isSaved ? 'text-white' : 'text-emerald-700'" />
-                {{ isSaved ? 'Tersimpan offline' : 'Simpan offline' }}
+                <span
+                  v-if="isSaving"
+                  class="w-[18px] h-[18px] rounded-full border-2 border-current border-t-transparent animate-spin shrink-0"
+                  aria-hidden="true"
+                ></span>
+                <component
+                  v-else
+                  :is="isSaved ? CheckCircle2 : Download"
+                  class="w-[18px] h-[18px] shrink-0"
+                  :class="isSaved ? 'text-white' : 'text-emerald-700'"
+                />
+                {{ isSaving ? 'Menyimpan…' : isSaved ? 'Tersimpan offline' : 'Simpan offline' }}
               </button>
 
               <button
                 v-if="isSaved && hasUpdateAvailable"
                 type="button"
-                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-amber-300 border border-amber-300 text-[#14532d] text-[13px] font-semibold hover:bg-amber-200 shadow-sm transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-400/30"
+                :disabled="isSaving"
+                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-amber-300 border border-amber-300 text-[#14532d] text-[13px] font-semibold hover:bg-amber-200 shadow-sm transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-400/30 touch-manipulation min-h-[44px] disabled:opacity-60 disabled:cursor-not-allowed active:scale-[0.98]"
                 @click="updateOffline"
               >
-                <RefreshCw class="w-4 h-4" /> Update tersedia
+                <span
+                  v-if="isSaving"
+                  class="w-4 h-4 rounded-full border-2 border-current border-t-transparent animate-spin"
+                  aria-hidden="true"
+                ></span>
+                <RefreshCw v-else class="w-4 h-4" /> {{ isSaving ? 'Memperbarui…' : 'Update tersedia' }}
               </button>
 
               <button
@@ -560,7 +578,7 @@ import {
   X,
   RotateCcw,
 } from 'lucide-vue-next'
-import { db, type LocalSavedAmalan } from '@/utils/localDb'
+import { db, type LocalSavedAmalan, ensureDbReady, isIndexedDBAvailable } from '@/utils/localDb'
 import { useToast } from '@/composables/useToast'
 import { useLyricSettings } from '@/composables/useLyricSettings'
 
@@ -580,8 +598,21 @@ const {
   isError: amalanError,
 } = useAmalanBySlugQuery(slug)
 
-// effective amalan: online or offline fallback
-const hasOfflineFallback = computed(() => !!localData.value && !!localData.value.lyrics?.length)
+// effective amalan: online or offline fallback — also checks content JSON for old v1 records (HP)
+const hasOfflineFallback = computed(() => {
+  if (!localData.value) return false
+  if (localData.value.lyrics?.length) return true
+  // fallback for v1 DB records that only have content (JSON string)
+  if (localData.value.content) {
+    try {
+      const parsed = JSON.parse(localData.value.content)
+      return Array.isArray(parsed) && parsed.length > 0 && !!parsed[0]?.arab
+    } catch {
+      return false
+    }
+  }
+  return false
+})
 const effectiveAmalan = computed(() => {
   if (amalan.value) return amalan.value
   if (localData.value) {
@@ -642,20 +673,53 @@ const hasAnyLatin = computed(() => effectiveLyrics.value.some((r) => !!r.latin))
 const isSaved = ref(false)
 const hasUpdateAvailable = ref(false)
 const localData = ref<LocalSavedAmalan | null>(null)
+const isSaving = ref(false)
 
 async function checkOfflineStatus() {
-  const id = amalan.value?.id || effectiveAmalan.value?.id
-  if (!id) return
-  const local = await db.saved_amalan.where('amalan_id').equals(id).first()
-  if (local) {
-    isSaved.value = true
-    localData.value = local
-    const serverVer = amalan.value?.content_version ?? local.content_version
-    hasUpdateAvailable.value = local.content_version < serverVer
-  } else {
-    isSaved.value = false
-    localData.value = null
-    hasUpdateAvailable.value = false
+  try {
+    if (!isIndexedDBAvailable()) {
+      console.warn('[offline] IndexedDB not available (private mode / insecure context)')
+      return
+    }
+    try {
+      await ensureDbReady()
+    } catch (e) {
+      console.error('[offline] ensureDbReady failed', e)
+      // continue — db may still be usable, or will throw below and be caught
+    }
+
+    let local: LocalSavedAmalan | undefined
+    const id = amalan.value?.id || (effectiveAmalan.value as any)?.id
+    if (id) {
+      try {
+        local = await db.saved_amalan.where('amalan_id').equals(id).first()
+      } catch (e) {
+        console.error('[offline] where amalan_id failed', e)
+      }
+    }
+    // Fallback by slug — critical for offline first load (amalan.value is null, chicken-egg)
+    if (!local && slug.value) {
+      try {
+        local = await db.saved_amalan.where('slug').equals(slug.value).first()
+      } catch (e) {
+        console.error('[offline] where slug failed', e)
+      }
+    }
+
+    if (local) {
+      isSaved.value = true
+      localData.value = local
+      const serverVer = (amalan.value as any)?.content_version ?? local.content_version ?? 1
+      hasUpdateAvailable.value = (local.content_version ?? 1) < (serverVer ?? 1)
+    } else {
+      isSaved.value = false
+      localData.value = null
+      hasUpdateAvailable.value = false
+    }
+  } catch (err) {
+    console.error('[offline] checkOfflineStatus failed', err)
+    // Don't spam toast on every check; only if we had expected data
+    // toast.error('Gagal memeriksa status offline.')
   }
 }
 
@@ -676,8 +740,8 @@ watch(showSettings, (open) => {
   }
 })
 
-onMounted(() => {
-  checkOfflineStatus()
+onMounted(async () => {
+  await checkOfflineStatus()
   window.addEventListener('scroll', onScroll, { passive: true })
   onScroll()
 })
@@ -688,63 +752,176 @@ onBeforeUnmount(() => {
   document.documentElement.style.overflow = ''
 })
 
-watch(amalan, () => {
-  checkOfflineStatus()
+watch(amalan, async () => {
+  await checkOfflineStatus()
+})
+watch(slug, async () => {
+  await checkOfflineStatus()
 })
 
 async function toggleOffline() {
-  const src = effectiveAmalan.value
+  if (isSaving.value) return
+  const src = effectiveAmalan.value as any
   const lyricsToSave = effectiveLyrics.value
   if (!src || !lyricsToSave.length) {
     toast.error('Konten belum siap untuk disimpan offline.')
     return
   }
+  if (!isIndexedDBAvailable()) {
+    toast.error('Penyimpanan offline tidak tersedia di browser ini. Coba gunakan Chrome terbaru dan pastikan bukan mode private.')
+    return
+  }
 
-  if (isSaved.value) {
-    await db.saved_amalan.where('amalan_id').equals(src.id).delete()
-    isSaved.value = false
-    localData.value = null
-    toast.success('Dihapus dari koleksi offline.')
-  } else {
-    await db.saved_amalan.add({
-      amalan_id: src.id,
-      judul: src.judul,
-      slug: src.slug,
-      ringkasan: src.ringkasan,
-      content: JSON.stringify(lyricsToSave),
-      lyrics: lyricsToSave,
-      content_version: (src as any).content_version || 1,
-      server_updated_at: (src as any).updated_at || (src as any).updatedAt || new Date().toISOString(),
-      saved_at: Date.now(),
-      last_synced_at: Date.now(),
-      has_update_available: false,
-      folder_id: 0,
-    })
-    isSaved.value = true
-    toast.success('Berhasil disimpan offline.')
-    checkOfflineStatus()
+  isSaving.value = true
+  try {
+    try {
+      await ensureDbReady()
+    } catch (e) {
+      console.error('[offline] ensureDbReady in toggle failed', e)
+    }
+
+    if (isSaved.value) {
+      // Delete — support both amalan_id and slug lookup (offline entry may have been found via slug)
+      try {
+        if (src.id) {
+          await db.saved_amalan.where('amalan_id').equals(src.id).delete()
+        } else if (src.slug) {
+          await db.saved_amalan.where('slug').equals(src.slug).delete()
+        }
+        // fallback: if no id/slug matched, try by localData id
+        if (localData.value?.id) {
+          const stillExists = src.id
+            ? await db.saved_amalan.where('amalan_id').equals(src.id).first()
+            : null
+          if (stillExists) await db.saved_amalan.delete(stillExists.id!)
+        }
+      } catch (e) {
+        console.error('[offline] delete failed', e)
+        throw e
+      }
+      isSaved.value = false
+      localData.value = null
+      hasUpdateAvailable.value = false
+      toast.success('Dihapus dari koleksi offline.')
+    } else {
+      // Prevent double-tap duplicate: check exists first
+      let existing: LocalSavedAmalan | undefined
+      try {
+        if (src.id) existing = await db.saved_amalan.where('amalan_id').equals(src.id).first()
+        if (!existing && src.slug) existing = await db.saved_amalan.where('slug').equals(src.slug).first()
+      } catch {}
+      if (existing) {
+        isSaved.value = true
+        localData.value = existing
+        toast.success('Sudah tersimpan offline.')
+        return
+      }
+
+      const payload: LocalSavedAmalan = {
+        amalan_id: src.id,
+        judul: src.judul,
+        slug: src.slug,
+        ringkasan: src.ringkasan,
+        content: JSON.stringify(lyricsToSave),
+        lyrics: lyricsToSave,
+        content_version: (src as any).content_version || 1,
+        server_updated_at: (src as any).updated_at || (src as any).updatedAt || new Date().toISOString(),
+        saved_at: Date.now(),
+        last_synced_at: Date.now(),
+        has_update_available: false,
+        folder_id: 0,
+      }
+      await db.saved_amalan.add(payload)
+      isSaved.value = true
+      toast.success('Berhasil disimpan offline.')
+      await checkOfflineStatus()
+    }
+  } catch (err: any) {
+    console.error('[offline] toggleOffline failed', err)
+    const name = err?.name || ''
+    const msg = err?.message || ''
+    // Dexie VersionError on old HP DB — try one-time delete & retry
+    if (/VersionError|SchemaError|UpgradeError/i.test(name + ' ' + msg)) {
+      try {
+        toast.warning('Memperbaiki penyimpanan offline, coba lagi…')
+        db.close()
+        await db.delete()
+        await db.open()
+        toast.error('Penyimpanan telah diperbaiki — ketuk Simpan offline lagi.')
+      } catch (e2) {
+        console.error('[offline] recovery failed', e2)
+        toast.error('Gagal memperbaiki penyimpanan offline. Coba hapus data situs di pengaturan browser.')
+      }
+      return
+    }
+    // Quota exceeded, SecurityError (iOS private), etc.
+    if (/QuotaExceeded|Storage/i.test(name + ' ' + msg)) {
+      toast.error('Penyimpanan penuh — hapus beberapa amalan offline atau bersihkan cache browser.')
+      return
+    }
+    if (/SecurityError|NotAllowedError/i.test(name)) {
+      toast.error('Browser memblokir penyimpanan offline (mode private atau izin ditolak).')
+      return
+    }
+    toast.error(msg || 'Gagal menyimpan offline.')
+  } finally {
+    isSaving.value = false
   }
 }
 
 async function updateOffline() {
-  const src = amalan.value
+  if (isSaving.value) return
+  const src = amalan.value as any
   const lyricsToSave = effectiveLyrics.value
-  if (!src || !lyricsToSave.length) return
-
-  await db.saved_amalan
-    .where('amalan_id')
-    .equals(src.id)
-    .modify({
-      content: JSON.stringify(lyricsToSave),
-      lyrics: lyricsToSave,
-      content_version: src.content_version || 1,
-      server_updated_at: src.updated_at || (src as any).updatedAt || new Date().toISOString(),
-      last_synced_at: Date.now(),
-      has_update_available: false,
-    })
-
-  hasUpdateAvailable.value = false
-  toast.success('Konten offline diperbarui.')
+  if (!src || !lyricsToSave.length) {
+    toast.error('Konten belum siap untuk diperbarui.')
+    return
+  }
+  if (!isIndexedDBAvailable()) {
+    toast.error('Penyimpanan offline tidak tersedia.')
+    return
+  }
+  isSaving.value = true
+  try {
+    try {
+      await ensureDbReady()
+    } catch {}
+    const updated = await db.saved_amalan
+      .where('amalan_id')
+      .equals(src.id)
+      .modify({
+        content: JSON.stringify(lyricsToSave),
+        lyrics: lyricsToSave,
+        content_version: src.content_version || 1,
+        server_updated_at: src.updated_at || (src as any).updatedAt || new Date().toISOString(),
+        last_synced_at: Date.now(),
+        has_update_available: false,
+      })
+    if (!updated) {
+      // fallback by slug if amalan_id modify matched 0
+      if (src.slug) {
+        await db.saved_amalan
+          .where('slug')
+          .equals(src.slug)
+          .modify({
+            content: JSON.stringify(lyricsToSave),
+            lyrics: lyricsToSave,
+            content_version: src.content_version || 1,
+            server_updated_at: src.updated_at || (src as any).updatedAt || new Date().toISOString(),
+            last_synced_at: Date.now(),
+            has_update_available: false,
+          })
+      }
+    }
+    hasUpdateAvailable.value = false
+    await checkOfflineStatus()
+    toast.success('Konten offline diperbarui.')
+  } catch (err: any) {
+    console.error('[offline] updateOffline failed', err)
+    toast.error(err?.message || 'Gagal memperbarui offline.')
+  } finally {
+    isSaving.value = false
+  }
 }
 
 const progress = ref(0)
@@ -834,7 +1011,9 @@ async function handleShare() {
 }
 
 const loadingPage = computed(
-  () => loadingAmalan.value || fetchingAmalan.value || (!effectiveAmalan.value && !amalanError.value && !hasOfflineFallback.value),
+  // fetchingAmalan alone should not hide article when effectiveAmalan already exists (offline fallback or cached).
+  // Only show skeleton while initial load is pending and no fallback available.
+  () => loadingAmalan.value || (!effectiveAmalan.value && !amalanError.value && !hasOfflineFallback.value),
 )
 </script>
 
