@@ -1,156 +1,260 @@
 <template>
-  <div class="min-h-screen bg-white py-12">
-    <div class="container mx-auto px-4">
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
-        <div>
-          <h1 class="text-heading-xl text-brand mb-2">Koleksi Amalan Saya</h1>
-          <p class="text-body-md text-muted">
-            Kelola amalan yang telah Anda simpan untuk akses offline.
-          </p>
+  <div class="min-h-screen bg-[#fdfcf8] selection:bg-emerald-100 selection:text-emerald-900">
+    <div aria-hidden="true" class="pointer-events-none fixed inset-0">
+      <div class="absolute inset-0 opacity-[0.025]" style="background-image: radial-gradient(circle at 1px 1px, #0f2e1c 1px, transparent 0); background-size: 22px 22px"></div>
+    </div>
+
+    <!-- Header -->
+    <div class="relative border-b border-[#e8e6de] bg-white/85 backdrop-blur-[8px]">
+      <div aria-hidden="true" class="absolute inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute -right-16 -top-16 w-[360px] h-[360px] rounded-full border border-emerald-100/60 hidden lg:block"></div>
+        <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-200/40 to-transparent"></div>
+      </div>
+      <div class="relative container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="py-10 md:py-12 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+          <div class="max-w-2xl">
+            <div class="inline-flex items-center gap-3 mb-3">
+              <span class="h-px w-8 bg-emerald-700 hidden sm:block"></span>
+              <span class="text-[11px] tracking-[0.18em] font-semibold text-emerald-800 uppercase">Koleksi Pribadi · Offline</span>
+              <span class="w-1 h-1 rounded-full bg-amber-400 hidden sm:block"></span>
+              <span class="text-[11px] tracking-[0.12em] font-medium text-stone-500 uppercase hidden sm:block">Tersimpan di perangkat</span>
+            </div>
+            <h1 class="font-serif text-[30px] sm:text-[36px] font-[600] tracking-[-0.02em] leading-[1] text-[#0f2318]" style="font-family: 'Fraunces', Georgia, serif">
+              Koleksi <span class="font-[300] italic text-emerald-800">Amalan Saya</span>
+            </h1>
+            <p class="mt-3 text-[15px] leading-[1.7] text-[#5b6b5f] max-w-[42rem] text-pretty">
+              Kelola amalan yang telah Anda simpan untuk akses offline. Atur dalam folder, bagikan sebagai koleksi, dan baca kapan saja tanpa koneksi.
+            </p>
+            <div class="mt-5 inline-flex items-center gap-2 text-[12.5px] text-stone-600 bg-white border border-[#ece9e0] rounded-full pl-1 pr-3 py-1 shadow-sm">
+              <span class="inline-flex w-6 h-6 rounded-full bg-emerald-700 text-white items-center justify-center"><BookMarked class="w-3.5 h-3.5" /></span>
+              <span class="font-medium text-stone-800">{{ savedAmalan.length }} amalan</span>
+              <span class="w-px h-4 bg-stone-200"></span>
+              <span>{{ folders.length }} folder</span>
+            </div>
+          </div>
+          <div class="flex flex-wrap items-center gap-3 shrink-0">
+            <button
+              type="button"
+              class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white border border-[#e7e5e0] text-[13px] font-semibold text-stone-700 hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-800 shadow-sm transition-all"
+              @click="isCreatingFolder = true"
+            >
+              <FolderPlus class="w-4 h-4 text-emerald-700" />
+              Folder Baru
+            </button>
+            <button
+              type="button"
+              class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-emerald-700 text-white text-[13px] font-semibold hover:bg-emerald-800 shadow-sm transition-colors"
+              @click="startShare(null)"
+            >
+              <Share2 class="w-4 h-4" />
+              Bagikan Semua
+            </button>
+          </div>
         </div>
-        <div class="flex items-center gap-3">
-          <button @click="isCreatingFolder = true" class="btn-secondary flex items-center gap-2">
-            <FolderPlus class="w-5 h-5" />
-            <span>Folder Baru</span>
+
+        <!-- Breadcrumb -->
+        <div v-if="currentFolder" class="flex items-center gap-2 pb-4 text-[13px]">
+          <button type="button" class="inline-flex items-center gap-1.5 text-emerald-800 hover:text-emerald-900 font-medium" @click="closeFolder">
+            <ArrowLeft class="w-3.5 h-3.5" /> Koleksi
           </button>
-          <button @click="startShare(null)" class="btn-primary flex items-center gap-2">
-            <Share2 class="w-5 h-5" />
-            <span>Bagikan Semua</span>
-          </button>
+          <ChevronRight class="w-4 h-4 text-stone-400" />
+          <span class="inline-flex items-center gap-1.5 font-medium text-stone-700 bg-white border border-stone-200 px-2.5 py-1 rounded-full">
+            <Folder class="w-3.5 h-3.5 text-emerald-700" /> {{ currentFolder.name }}
+          </span>
         </div>
       </div>
+    </div>
 
-      <!-- Breadcrumbs if inside folder -->
-      <div v-if="currentFolder" class="flex items-center gap-2 mb-8 text-body-md">
-        <button @click="closeFolder" class="text-brand hover:underline">Koleksi</button>
-        <ChevronRight class="w-4 h-4 text-muted" />
-        <span class="text-muted">{{ currentFolder.name }}</span>
-      </div>
-
-      <!-- Root Level Folders -->
-      <div v-if="!currentFolder && folders.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-        <div
-          v-for="folder in folders"
-          :key="folder.id"
-          class="group p-6 rounded-xl border border-gray-200 hover:border-brand hover:shadow-lg transition-all duration-300 cursor-pointer bg-white"
-          @click="openFolder(folder)"
-        >
-          <div class="flex items-center gap-4">
-            <div class="p-3 rounded-lg bg-green-50 text-green-600 group-hover:bg-brand group-hover:text-white transition-colors duration-300">
-              <Folder class="w-8 h-8" />
-            </div>
-            <div class="flex-1">
-              <h3 class="text-heading-sm text-brand group-hover:text-brand-dark">{{ folder.name }}</h3>
-              <p class="text-body-sm text-muted">Folder</p>
-            </div>
-            <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button @click.stop="startShare(folder)" class="p-2 hover:bg-green-50 rounded-lg text-green-600" title="Bagikan folder">
-                <Share2 class="w-4 h-4" />
-              </button>
-              <button @click.stop="editFolder(folder)" class="p-2 hover:bg-gray-100 rounded-lg text-gray-500">
-                <Edit2 class="w-4 h-4" />
-              </button>
-              <button @click.stop="confirmDeleteFolder(folder)" class="p-2 hover:bg-red-50 rounded-lg text-red-500">
-                <Trash2 class="w-4 h-4" />
-              </button>
+    <div class="relative container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10">
+      <!-- Root folders -->
+      <div v-if="!currentFolder && folders.length > 0" class="mb-10">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-[11px] tracking-[0.16em] font-semibold uppercase text-stone-500">Folder Anda</h2>
+          <span class="text-[12px] text-stone-400">{{ folders.length }} folder</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
+          <div
+            v-for="folder in folders"
+            :key="folder.id"
+            class="group relative p-5 md:p-6 rounded-[18px] border border-[#e8e6de] bg-white hover:border-emerald-200 hover:shadow-[0_12px_28px_rgba(16,40,22,0.08)] hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
+            @click="openFolder(folder)"
+          >
+            <div class="absolute top-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-emerald-200/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div class="flex items-center gap-4">
+              <div class="w-11 h-11 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 inline-flex items-center justify-center group-hover:bg-emerald-700 group-hover:text-white group-hover:border-emerald-700 transition-colors">
+                <Folder class="w-5 h-5" />
+              </div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-serif text-[16px] font-semibold leading-tight text-[#12291a] truncate" style="font-family: 'Fraunces', Georgia, serif">{{ folder.name }}</h3>
+                <p class="text-[12px] text-stone-500">Folder koleksi</p>
+              </div>
+              <div class="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                <button
+                  type="button"
+                  class="w-8 h-8 rounded-full bg-white border border-stone-200 hover:border-emerald-200 hover:bg-emerald-50 text-stone-500 hover:text-emerald-700 inline-flex items-center justify-center transition-colors"
+                  title="Bagikan folder"
+                  @click.stop="startShare(folder)"
+                >
+                  <Share2 class="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  class="w-8 h-8 rounded-full bg-white border border-stone-200 hover:border-stone-300 text-stone-500 inline-flex items-center justify-center transition-colors"
+                  @click.stop="editFolder(folder)"
+                >
+                  <Edit2 class="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  class="w-8 h-8 rounded-full bg-white border border-red-200 hover:bg-red-50 text-red-600 inline-flex items-center justify-center transition-colors"
+                  @click.stop="confirmDeleteFolder(folder)"
+                >
+                  <Trash2 class="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Saved Amalan (Ungrouped or Root) -->
-      <h2 v-if="savedAmalan.length > 0" class="text-heading-md text-brand mb-6">Amalan Tersimpan</h2>
-      <div v-if="savedAmalan.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Saved amalan heading -->
+      <div v-if="savedAmalan.length > 0" class="flex items-center justify-between mb-4">
+        <h2 class="text-[11px] tracking-[0.16em] font-semibold uppercase text-stone-500">
+          Amalan tersimpan <span class="normal-case tracking-normal font-medium text-stone-400">· {{ savedAmalan.length }}</span>
+        </h2>
+        <div class="h-px flex-1 mx-4 bg-[#ece9e0] hidden sm:block"></div>
+      </div>
+
+      <div v-if="savedAmalan.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
         <div
           v-for="item in savedAmalan"
           :key="item.id"
-          class="flex flex-col p-6 rounded-xl border border-gray-200 hover:border-brand hover:shadow-lg transition-all duration-300 bg-white"
+          class="group flex flex-col rounded-[18px] border border-[#e8e6de] bg-white p-6 hover:border-emerald-200 hover:shadow-[0_12px_28px_rgba(16,40,22,0.08)] hover:-translate-y-0.5 transition-all duration-300"
         >
-          <div class="flex items-start justify-between gap-4 mb-4">
-            <router-link :to="{ name: 'amalan-detail', params: { slug: item.slug } }" class="flex-1 group">
-              <h3 class="text-heading-sm text-brand group-hover:text-brand-dark mb-2">{{ item.judul }}</h3>
-              <p v-if="item.ringkasan" class="text-body-sm text-muted line-clamp-2">{{ item.ringkasan }}</p>
+          <div class="flex items-start justify-between gap-4 mb-3">
+            <router-link :to="{ name: 'amalan-detail', params: { slug: item.slug } }" class="flex-1 min-w-0 group/link">
+              <h3 class="font-serif text-[17px] leading-[1.35] font-semibold tracking-[-0.015em] text-[#12291a] group-hover/link:text-emerald-800 line-clamp-2 transition-colors" style="font-family: 'Fraunces', Georgia, serif">{{ item.judul }}</h3>
+              <p v-if="item.ringkasan" class="mt-1.5 text-[13px] leading-[1.6] text-[#5a6d5f] line-clamp-2">{{ item.ringkasan }}</p>
             </router-link>
-            <div class="flex items-center gap-2">
-              <button @click="showMoveToFolder(item)" class="p-2 hover:bg-gray-100 rounded-lg text-gray-500" title="Pindahkan ke folder">
-                <Move class="w-4 h-4" />
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button
+                type="button"
+                class="w-8 h-8 rounded-full bg-white border border-stone-200 hover:border-emerald-200 hover:bg-emerald-50 text-stone-500 hover:text-emerald-700 inline-flex items-center justify-center transition-colors"
+                title="Pindahkan ke folder"
+                @click="showMoveToFolder(item)"
+              >
+                <Move class="w-3.5 h-3.5" />
               </button>
-              <button @click="removeFromOffline(item)" class="p-2 hover:bg-red-50 rounded-lg text-red-500" title="Hapus dari offline">
-                <Trash2 class="w-4 h-4" />
+              <button
+                type="button"
+                class="w-8 h-8 rounded-full bg-white border border-stone-200 hover:border-red-200 hover:bg-red-50 text-stone-500 hover:text-red-600 inline-flex items-center justify-center transition-colors"
+                title="Hapus dari offline"
+                @click="removeFromOffline(item)"
+              >
+                <Trash2 class="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
-          <div class="flex items-center justify-between mt-auto pt-4 border-t border-gray-100">
-            <span class="text-xs text-muted">Disimpan pada {{ new Date(item.saved_at).toLocaleDateString() }}</span>
-            <div v-if="item.has_update_available" class="flex items-center gap-1 text-orange-600 bg-orange-50 px-2 py-1 rounded-full text-xs font-medium">
-              <RefreshCw class="w-3 h-3" />
-              <span>Update Tersedia</span>
-            </div>
+          <div class="mt-auto pt-4 border-t border-[#f0ede8] flex items-center justify-between">
+            <span class="inline-flex items-center gap-1.5 text-[11px] text-stone-500">
+              <Calendar class="w-3 h-3" /> {{ new Date(item.saved_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) }}
+            </span>
+            <span v-if="item.has_update_available" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-[11px] font-semibold">
+              <RefreshCw class="w-3 h-3" /> Update tersedia
+            </span>
+            <span v-else class="text-[11px] tracking-[0.08em] uppercase font-medium text-stone-400">Tersimpan</span>
           </div>
         </div>
       </div>
 
-      <!-- Empty State -->
-      <div v-if="folders.length === 0 && savedAmalan.length === 0" class="flex flex-col items-center justify-center py-20 text-center">
-        <div class="w-24 h-24 bg-gray-50 text-gray-300 rounded-full flex items-center justify-center mb-6">
-          <BookOpen class="w-12 h-12" />
+      <!-- Empty state -->
+      <div v-if="folders.length === 0 && savedAmalan.length === 0" class="flex flex-col items-center justify-center py-16 md:py-20 text-center">
+        <div class="w-[88px] h-[88px] rounded-[22px] bg-white border border-[#e8e6de] shadow-[0_8px_24px_rgba(16,40,22,0.06)] inline-flex items-center justify-center relative">
+          <BookHeart class="w-9 h-9 text-emerald-700" :stroke-width="1.6" />
+          <span class="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-amber-300 border-2 border-white flex items-center justify-center">
+            <Bookmark class="w-3 h-3 text-[#14532d]" />
+          </span>
         </div>
-        <h2 class="text-heading-md text-brand mb-2">Belum ada amalan tersimpan</h2>
-        <p class="text-body-md text-muted mb-8 max-w-md mx-auto">
-          Cari amalan yang Anda sukai dan klik "Simpan Offline" untuk membacanya kapan saja tanpa koneksi internet.
+        <h2 class="mt-6 font-serif text-[20px] font-semibold tracking-[-0.015em] text-[#12291a]" style="font-family: 'Fraunces', Georgia, serif">Belum ada amalan tersimpan</h2>
+        <p class="mt-2 text-[14px] leading-[1.7] text-stone-500 max-w-[42ch] mx-auto text-pretty">
+          Jelajahi katalog dan ketuk “Simpan offline” pada halaman detail amalan untuk membacanya kapan saja tanpa koneksi.
         </p>
-        <router-link :to="{ name: 'amalan-list' }" class="btn-primary">Jelajahi Amalan</router-link>
+        <router-link :to="{ name: 'amalan-list' }" class="mt-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-emerald-700 text-white text-[13px] font-semibold hover:bg-emerald-800 shadow-sm transition-colors">
+          <Library class="w-4 h-4" /> Jelajahi Amalan
+        </router-link>
       </div>
     </div>
 
     <!-- Create/Edit Folder Modal -->
-    <div v-if="isCreatingFolder || editingFolderData" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-      <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-8">
-        <h2 class="text-heading-md text-brand mb-6">{{ editingFolderData ? 'Edit Folder' : 'Folder Baru' }}</h2>
-        <div class="mb-6">
-          <label class="block text-body-sm font-semibold text-brand mb-2">Nama Folder</label>
+    <div v-if="isCreatingFolder || editingFolderData" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-[#0f2318]/40 backdrop-blur-sm" @click="closeFolderModal"></div>
+      <div class="relative bg-white rounded-[20px] shadow-[0_20px_60px_rgba(15,35,20,0.22)] w-full max-w-md overflow-hidden border border-[#e8e6de]">
+        <div class="h-1 bg-gradient-to-r from-emerald-700 via-emerald-600 to-amber-300"></div>
+        <div class="p-6 sm:p-7">
+          <div class="flex items-start justify-between gap-4 mb-5">
+            <div>
+              <h2 class="font-serif text-[18px] font-semibold text-[#12291a]" style="font-family: 'Fraunces', Georgia, serif">{{ editingFolderData ? 'Edit Folder' : 'Folder Baru' }}</h2>
+              <p class="text-[13px] text-stone-500 mt-1">Beri nama yang mudah dikenali.</p>
+            </div>
+            <button type="button" class="w-8 h-8 rounded-full bg-stone-50 border border-stone-200 inline-flex items-center justify-center text-stone-500 hover:bg-stone-100" @click="closeFolderModal">
+              <X class="w-4 h-4" />
+            </button>
+          </div>
+          <label class="block text-[12px] font-semibold tracking-[0.08em] uppercase text-stone-600 mb-2">Nama Folder</label>
           <input
             v-model="folderForm.name"
             type="text"
-            placeholder="Contoh: Majelis Sholawat"
-            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand"
+            placeholder="Contoh: Wirid Harian"
+            class="w-full px-4 py-3 rounded-xl border border-[#d7ddd7] bg-white text-[14px] text-[#12291a] placeholder:text-stone-400 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-300 transition-all"
             @keyup.enter="saveFolder"
           />
-        </div>
-        <div class="flex items-center gap-3 justify-end">
-          <button @click="closeFolderModal" class="btn-secondary px-6">Batal</button>
-          <button @click="saveFolder" class="btn-primary px-6" :disabled="!folderForm.name">Simpan</button>
+          <div class="mt-6 flex items-center justify-end gap-3">
+            <button type="button" class="px-5 py-2.5 rounded-full bg-white border border-stone-200 text-[13px] font-medium text-stone-700 hover:bg-stone-50" @click="closeFolderModal">Batal</button>
+            <button type="button" class="px-6 py-2.5 rounded-full bg-emerald-700 text-white text-[13px] font-semibold hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm" :disabled="!folderForm.name.trim()" @click="saveFolder">Simpan</button>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Move to Folder Modal -->
-    <div v-if="movingItem" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-      <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-8">
-        <h2 class="text-heading-md text-brand mb-2">Pindahkan ke Folder</h2>
-        <p class="text-body-sm text-muted mb-6">Pilih folder tujuan untuk "{{ movingItem.judul }}"</p>
-        <div class="space-y-3 max-h-64 overflow-y-auto mb-6 pr-2">
-          <button
-            @click="moveToFolder(0)"
-            class="w-full flex items-center gap-3 p-4 rounded-xl border border-gray-100 hover:border-brand hover:bg-green-50 text-left transition-all"
-            :class="{ 'border-brand bg-green-50': movingItem.folder_id === 0 }"
-          >
-            <FolderX class="w-5 h-5 text-muted" />
-            <span class="font-medium text-brand">Tanpa Folder (Root)</span>
-          </button>
-          <button
-            v-for="folder in folders"
-            :key="folder.id"
-            @click="moveToFolder(folder.id!)"
-            class="w-full flex items-center gap-3 p-4 rounded-xl border border-gray-100 hover:border-brand hover:bg-green-50 text-left transition-all"
-            :class="{ 'border-brand bg-green-50': movingItem.folder_id === folder.id }"
-          >
-            <Folder class="w-5 h-5 text-brand" />
-            <span class="font-medium text-brand">{{ folder.name }}</span>
-          </button>
-        </div>
-        <div class="flex justify-end">
-          <button @click="movingItem = null" class="btn-secondary">Tutup</button>
+    <div v-if="movingItem" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-[#0f2318]/40 backdrop-blur-sm" @click="movingItem = null"></div>
+      <div class="relative bg-white rounded-[20px] shadow-[0_20px_60px_rgba(15,35,20,0.22)] w-full max-w-md overflow-hidden border border-[#e8e6de]">
+        <div class="h-1 bg-gradient-to-r from-emerald-700 via-emerald-600 to-amber-300"></div>
+        <div class="p-6 sm:p-7">
+          <h2 class="font-serif text-[18px] font-semibold text-[#12291a]" style="font-family: 'Fraunces', Georgia, serif">Pindahkan ke Folder</h2>
+          <p class="text-[13px] text-stone-500 mt-1">Pilih tujuan untuk “{{ movingItem.judul }}”</p>
+          <div class="mt-5 space-y-2 max-h-64 overflow-auto pr-1 custom-scroll">
+            <button
+              type="button"
+              class="w-full flex items-center gap-3 p-3.5 rounded-xl border text-left transition-all"
+              :class="movingItem.folder_id === 0 ? 'border-emerald-300 bg-emerald-50/70' : 'border-stone-200 bg-white hover:border-emerald-200 hover:bg-emerald-50/50'"
+              @click="moveToFolder(0)"
+            >
+              <span class="w-9 h-9 rounded-xl bg-stone-100 border border-stone-200 inline-flex items-center justify-center shrink-0">
+                <FolderX class="w-4 h-4 text-stone-500" />
+              </span>
+              <span class="text-[13.5px] font-medium" :class="movingItem.folder_id === 0 ? 'text-emerald-900' : 'text-stone-700'">Tanpa Folder (Root)</span>
+              <Check v-if="movingItem.folder_id === 0" class="w-4 h-4 text-emerald-700 ml-auto" />
+            </button>
+            <button
+              v-for="folder in folders"
+              :key="folder.id"
+              type="button"
+              class="w-full flex items-center gap-3 p-3.5 rounded-xl border text-left transition-all"
+              :class="movingItem.folder_id === folder.id ? 'border-emerald-300 bg-emerald-50/70' : 'border-stone-200 bg-white hover:border-emerald-200 hover:bg-emerald-50/50'"
+              @click="moveToFolder(folder.id!)"
+            >
+              <span class="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 inline-flex items-center justify-center shrink-0">
+                <Folder class="w-4 h-4" />
+              </span>
+              <span class="text-[13.5px] font-medium" :class="movingItem.folder_id === folder.id ? 'text-emerald-900' : 'text-stone-700'">{{ folder.name }}</span>
+              <Check v-if="movingItem.folder_id === folder.id" class="w-4 h-4 text-emerald-700 ml-auto" />
+            </button>
+          </div>
+          <div class="mt-6 flex justify-end">
+            <button type="button" class="px-5 py-2.5 rounded-full bg-white border border-stone-200 text-[13px] font-medium text-stone-700 hover:bg-stone-50" @click="movingItem = null">Tutup</button>
+          </div>
         </div>
       </div>
     </div>
@@ -164,56 +268,86 @@
     />
 
     <!-- Share Modal -->
-    <div v-if="sharingData" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-      <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-8">
-        <div v-if="!shareResult">
-          <h2 class="text-heading-md text-brand mb-2">Bagikan Koleksi</h2>
-          <p class="text-body-sm text-muted mb-6">
-            {{ sharingData.folder ? `Bagikan folder '${sharingData.folder.name}' beserta seluruh isinya.` : 'Bagikan seluruh koleksi amalan offline Anda.' }}
-          </p>
-          <div class="space-y-4 mb-8">
-            <div>
-              <label class="block text-body-sm font-semibold text-brand mb-2">Judul Koleksi</label>
-              <input v-model="shareForm.title" type="text" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-brand" placeholder="Koleksi Sholawat Saya" />
+    <div v-if="sharingData" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-[#0f2318]/40 backdrop-blur-sm" @click="sharingData = null"></div>
+      <div class="relative bg-white rounded-[20px] shadow-[0_20px_60px_rgba(15,35,20,0.22)] w-full max-w-lg overflow-hidden border border-[#e8e6de]">
+        <div class="h-1 bg-gradient-to-r from-emerald-700 via-emerald-600 to-amber-300"></div>
+        <div class="p-6 sm:p-8">
+          <div v-if="!shareResult">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <h2 class="font-serif text-[18px] font-semibold text-[#12291a]" style="font-family: 'Fraunces', Georgia, serif">Bagikan Koleksi</h2>
+                <p class="text-[13px] text-stone-500 mt-1 max-w-[36ch]">
+                  {{ sharingData.folder ? `Bagikan folder '${sharingData.folder.name}' beserta seluruh isinya.` : 'Bagikan seluruh koleksi amalan offline Anda.' }}
+                </p>
+              </div>
+              <button type="button" class="w-8 h-8 rounded-full bg-stone-50 border border-stone-200 inline-flex items-center justify-center text-stone-500 hover:bg-stone-100" @click="sharingData = null">
+                <X class="w-4 h-4" />
+              </button>
             </div>
-            <div>
-              <label class="block text-body-sm font-semibold text-brand mb-2">Deskripsi (Opsional)</label>
-              <textarea v-model="shareForm.description" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-brand" rows="3" placeholder="Kumpulan doa dan sholawat..."></textarea>
+            <div class="mt-6 space-y-4">
+              <div>
+                <label class="block text-[12px] font-semibold tracking-[0.08em] uppercase text-stone-600 mb-2">Judul Koleksi</label>
+                <input v-model="shareForm.title" type="text" class="w-full px-4 py-3 rounded-xl border border-[#d7ddd7] bg-white text-[14px] focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-300 placeholder:text-stone-400" placeholder="Koleksi Wirid Saya" />
+              </div>
+              <div>
+                <label class="block text-[12px] font-semibold tracking-[0.08em] uppercase text-stone-600 mb-2">Deskripsi (Opsional)</label>
+                <textarea v-model="shareForm.description" class="w-full px-4 py-3 rounded-xl border border-[#d7ddd7] bg-white text-[14px] focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-300 placeholder:text-stone-400" rows="3" placeholder="Kumpulan doa dan wirid pilihan…"></textarea>
+              </div>
+            </div>
+            <div class="mt-6 flex items-center gap-3 justify-end">
+              <button type="button" class="px-5 py-2.5 rounded-full bg-white border border-stone-200 text-[13px] font-medium text-stone-700 hover:bg-stone-50" @click="sharingData = null">Batal</button>
+              <button type="button" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-emerald-700 text-white text-[13px] font-semibold hover:bg-emerald-800 disabled:opacity-50 shadow-sm" :disabled="!shareForm.title.trim() || generatingShare" @click="generateShare">
+                <Share2 v-if="!generatingShare" class="w-4 h-4" />
+                <span v-else class="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"></span>
+                <span>{{ generatingShare ? 'Memproses…' : 'Buat Link Share' }}</span>
+              </button>
             </div>
           </div>
-          <div class="flex items-center gap-3 justify-end">
-            <button @click="sharingData = null" class="btn-secondary">Batal</button>
-            <button @click="generateShare" class="btn-primary flex items-center gap-2" :disabled="!shareForm.title || generatingShare">
-              <Share2 v-if="!generatingShare" class="w-5 h-5" />
-              <div v-else class="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
-              <span>{{ generatingShare ? 'Memproses...' : 'Buat Link Share' }}</span>
-            </button>
+          <div v-else class="text-center">
+            <div class="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-700 inline-flex items-center justify-center mx-auto mb-4">
+              <CheckCircle class="w-8 h-8" />
+            </div>
+            <h2 class="font-serif text-[18px] font-semibold text-[#12291a]" style="font-family: 'Fraunces', Georgia, serif">Link share berhasil dibuat!</h2>
+            <p class="text-[13px] text-stone-500 mt-1">Salin tautan di bawah ini dan bagikan.</p>
+            <div class="mt-6 flex items-center gap-2 p-2 bg-stone-50 rounded-xl border border-stone-200">
+              <input readonly :value="shareResult.share_url" class="bg-transparent border-none focus:ring-0 flex-1 px-3 text-[13px] text-stone-700 truncate" />
+              <button type="button" class="w-10 h-10 rounded-xl bg-emerald-700 text-white inline-flex items-center justify-center hover:bg-emerald-800 shrink-0" @click="copyShareLink">
+                <Copy class="w-4 h-4" />
+              </button>
+            </div>
+            <button type="button" class="mt-6 w-full px-5 py-2.5 rounded-full bg-white border border-stone-200 text-[13px] font-medium text-stone-700 hover:bg-stone-50" @click="sharingData = null">Tutup</button>
           </div>
-        </div>
-        <div v-else class="text-center">
-          <div class="w-20 h-20 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle class="w-10 h-10" />
-          </div>
-          <h2 class="text-heading-md text-brand mb-2">Link Share Berhasil Dibuat!</h2>
-          <p class="text-body-sm text-muted mb-8">Salin link di bawah ini dan bagikan ke teman atau kerabat Anda.</p>
-          <div class="flex items-center gap-2 p-2 bg-gray-50 rounded-xl border border-gray-200 mb-8">
-            <input readonly :value="shareResult.share_url" class="bg-transparent border-none focus:ring-0 flex-1 px-2 text-body-sm text-muted overflow-hidden overflow-ellipsis" />
-            <button @click="copyShareLink" class="p-3 bg-brand text-white rounded-lg hover:bg-brand-dark transition-colors">
-              <Copy class="w-5 h-5" />
-            </button>
-          </div>
-          <button @click="sharingData = null" class="btn-secondary w-full">Tutup</button>
         </div>
       </div>
     </div>
+
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { db, type LocalSavedAmalan, type LocalFolder } from '@/utils/localDb'
-import { 
-  Folder, FolderPlus, FolderX, Edit2, Trash2, Move, RefreshCw, BookOpen, Share2, ChevronRight, Copy, CheckCircle
+import {
+  Folder,
+  FolderPlus,
+  FolderX,
+  Edit2,
+  Trash2,
+  Move,
+  RefreshCw,
+  BookHeart,
+  BookMarked,
+  Bookmark,
+  Share2,
+  ChevronRight,
+  Copy,
+  CheckCircle,
+  Check,
+  X,
+  ArrowLeft,
+  Calendar,
+  Library,
 } from 'lucide-vue-next'
 import { useToast } from '@/composables/useToast'
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
@@ -250,23 +384,23 @@ function closeFolderModal() {
 }
 
 async function saveFolder() {
-  if (!folderForm.value.name) return
+  if (!folderForm.value.name.trim()) return
 
   if (editingFolderData.value) {
     await db.folders.update(editingFolderData.value.id!, {
-      name: folderForm.value.name,
-      updated_at: Date.now()
+      name: folderForm.value.name.trim(),
+      updated_at: Date.now(),
     })
     toast.success('Folder diperbarui.')
   } else {
     await db.folders.add({
-      name: folderForm.value.name,
+      name: folderForm.value.name.trim(),
       created_at: Date.now(),
-      updated_at: Date.now()
+      updated_at: Date.now(),
     })
     toast.success('Folder dibuat.')
   }
-  
+
   closeFolderModal()
   loadData()
 }
@@ -286,10 +420,9 @@ function confirmDeleteFolder(folder: LocalFolder) {
 
 async function deleteFolder() {
   if (!folderToDelete.value?.id) return
-  
-  // Update items in this folder to be at root (0)
+
   await db.saved_amalan.where('folder_id').equals(folderToDelete.value.id).modify({ folder_id: 0 })
-  
+
   await db.folders.delete(folderToDelete.value.id)
   isConfirmingDelete.value = false
   folderToDelete.value = null
@@ -316,7 +449,7 @@ function showMoveToFolder(item: LocalSavedAmalan) {
 
 async function moveToFolder(folderId: number) {
   if (!movingItem.value?.id) return
-  
+
   await db.saved_amalan.update(movingItem.value.id, { folder_id: folderId })
   toast.success('Berhasil dipindahkan.')
   movingItem.value = null
@@ -340,7 +473,7 @@ function startShare(folder: LocalFolder | null) {
   sharingData.value = { folder }
   shareForm.value = {
     title: folder ? folder.name : 'Koleksi Amalan Saya',
-    description: ''
+    description: '',
   }
   shareResult.value = null
 }
@@ -348,15 +481,13 @@ function startShare(folder: LocalFolder | null) {
 async function generateShare() {
   if (!sharingData.value) return
   generatingShare.value = true
-  
+
   try {
     let itemsToShare: LocalSavedAmalan[] = []
-    
+
     if (sharingData.value.folder) {
-      // Share one folder
       itemsToShare = await db.saved_amalan.where('folder_id').equals(sharingData.value.folder.id!).toArray()
     } else {
-      // Share EVERYTHING
       itemsToShare = await db.saved_amalan.toArray()
     }
 
@@ -369,18 +500,17 @@ async function generateShare() {
     const payload = {
       title: shareForm.value.title,
       description: shareForm.value.description,
-      items: itemsToShare.map(item => ({
+      items: itemsToShare.map((item) => ({
         amalan_id: item.amalan_id,
         folder_path: null as string | null,
         sort_order: 0,
-        version_at_share: item.content_version
-      }))
+        version_at_share: item.content_version,
+      })),
     }
-    
-    // If sharing folder, items inside get the folder name as path
+
     if (sharingData.value.folder) {
       const folderName = sharingData.value.folder.name
-      payload.items.forEach(item => {
+      payload.items.forEach((item) => {
         item.folder_path = folderName
       })
     }
@@ -400,3 +530,13 @@ function copyShareLink() {
   toast.success('Link berhasil disalin!')
 }
 </script>
+
+<style scoped>
+.custom-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scroll::-webkit-scrollbar-thumb {
+  background: #d6d3c4;
+  border-radius: 999px;
+}
+</style>

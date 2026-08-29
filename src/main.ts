@@ -19,7 +19,7 @@ if (typeof window !== 'undefined') {
   persistQueryClient({
     queryClient,
     persister,
-    buster: 'v1',
+    buster: 'v2', // bumped from v1 to invalidate stale empty cache after amalan insert (2026-08-29)
     maxAge: 1000 * 60 * 10, // align with gcTime
   })
 }
