@@ -817,21 +817,37 @@ async function toggleOffline() {
         return
       }
 
-      const payload: LocalSavedAmalan = {
-        amalan_id: src.id,
-        judul: src.judul,
-        slug: src.slug,
-        ringkasan: src.ringkasan,
-        content: JSON.stringify(lyricsToSave),
-        lyrics: lyricsToSave,
-        content_version: (src as any).content_version || 1,
-        server_updated_at: (src as any).updated_at || (src as any).updatedAt || new Date().toISOString(),
-        saved_at: Date.now(),
-        last_synced_at: Date.now(),
-        has_update_available: false,
-        folder_id: 0,
-      }
-      await db.saved_amalan.add(payload)
+      // FIX DataCloneError: Dexie/IDB requires structured-cloneable plain objects.
+      // effectiveAmalan / effectiveLyrics are Vue reactive proxies (TanStack Query cache).
+      // Proxies, refs, functions, or undefined cannot be cloned by IDB — deep-clone to plain JSON.
+      const plainLyrics: LocalSavedAmalan['lyrics'] = JSON.parse(
+        JSON.stringify(
+          (lyricsToSave as any[]).map((r: any) => ({
+            ...(r?.id != null ? { id: String(r.id) } : {}),
+            arab: String(r?.arab ?? ''),
+            latin: r?.latin == null ? null : String(r.latin),
+          })),
+        ),
+      )
+      const plainPayload: LocalSavedAmalan = JSON.parse(
+        JSON.stringify({
+          amalan_id: String(src.id ?? (src as any).amalan_id ?? ''),
+          judul: String(src.judul ?? ''),
+          slug: String(src.slug ?? ''),
+          ringkasan: src.ringkasan == null ? null : String(src.ringkasan),
+          content: JSON.stringify(plainLyrics),
+          lyrics: plainLyrics,
+          content_version: Number((src as any).content_version ?? 1),
+          server_updated_at: String(
+            (src as any).updated_at ?? (src as any).updatedAt ?? new Date().toISOString(),
+          ),
+          saved_at: Date.now(),
+          last_synced_at: Date.now(),
+          has_update_available: false,
+          folder_id: 0,
+        }),
+      )
+      await db.saved_amalan.add(plainPayload)
       isSaved.value = true
       toast.success('Berhasil disimpan offline.')
       await checkOfflineStatus()
@@ -886,31 +902,31 @@ async function updateOffline() {
     try {
       await ensureDbReady()
     } catch {}
-    const updated = await db.saved_amalan
-      .where('amalan_id')
-      .equals(src.id)
-      .modify({
-        content: JSON.stringify(lyricsToSave),
-        lyrics: lyricsToSave,
-        content_version: src.content_version || 1,
-        server_updated_at: src.updated_at || (src as any).updatedAt || new Date().toISOString(),
+    // FIX DataCloneError: same plain-clone sanitization as toggleOffline — modify() also structured-clones
+    const plainLyricsUpd: LocalSavedAmalan['lyrics'] = JSON.parse(
+      JSON.stringify(
+        (lyricsToSave as any[]).map((r: any) => ({
+          ...(r?.id != null ? { id: String(r.id) } : {}),
+          arab: String(r?.arab ?? ''),
+          latin: r?.latin == null ? null : String(r.latin),
+        })),
+      ),
+    )
+    const plainModify = JSON.parse(
+      JSON.stringify({
+        content: JSON.stringify(plainLyricsUpd),
+        lyrics: plainLyricsUpd,
+        content_version: Number(src.content_version ?? 1),
+        server_updated_at: String(src.updated_at ?? (src as any).updatedAt ?? new Date().toISOString()),
         last_synced_at: Date.now(),
         has_update_available: false,
-      })
+      }),
+    )
+    const updated = await db.saved_amalan.where('amalan_id').equals(String(src.id)).modify(plainModify)
     if (!updated) {
       // fallback by slug if amalan_id modify matched 0
       if (src.slug) {
-        await db.saved_amalan
-          .where('slug')
-          .equals(src.slug)
-          .modify({
-            content: JSON.stringify(lyricsToSave),
-            lyrics: lyricsToSave,
-            content_version: src.content_version || 1,
-            server_updated_at: src.updated_at || (src as any).updatedAt || new Date().toISOString(),
-            last_synced_at: Date.now(),
-            has_update_available: false,
-          })
+        await db.saved_amalan.where('slug').equals(String(src.slug)).modify(plainModify)
       }
     }
     hasUpdateAvailable.value = false
