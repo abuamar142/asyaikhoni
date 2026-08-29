@@ -319,6 +319,7 @@
             <!-- outside bottom ornament -->
             <div class="mt-8 flex items-center justify-center gap-3">
               <span class="h-px w-10 bg-stone-200"></span>
+              <span class="w-1 h-1 rounded-full bg-emerald-600"></span>
               <span class="text-stone-400 text-[10px] tracking-[0.16em] uppercase font-semibold">selesai</span>
               <span class="w-1 h-1 rounded-full bg-emerald-600"></span>
               <span class="h-px w-10 bg-stone-200"></span>
