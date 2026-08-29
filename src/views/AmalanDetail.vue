@@ -16,7 +16,7 @@
     <div v-if="loadingPage" class="min-h-[70vh] flex flex-col">
       <div class="h-[52px] border-b border-[#e8e6de] bg-white/70"></div>
       <div class="flex-1 container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div class="max-w-[720px] mx-auto animate-pulse space-y-6">
+        <div class="max-w-[640px] mx-auto animate-pulse space-y-6">
           <div class="flex gap-2 justify-center"><div class="h-6 w-20 bg-stone-100 rounded-full"></div><div class="h-6 w-16 bg-stone-100 rounded-full"></div></div>
           <div class="h-10 bg-stone-100 rounded w-3/4 mx-auto"></div>
           <div class="h-4 bg-stone-50 rounded w-full"></div>
@@ -51,7 +51,7 @@
 
     <!-- Article -->
     <article v-else class="relative">
-      <!-- top breadcrumb bar -->
+      <!-- top breadcrumb bar - unchanged toolbar -->
       <div class="sticky top-0 z-30 border-b border-[#e8e6de] bg-white/80 backdrop-blur-xl">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
           <div class="flex items-center justify-between h-[52px] gap-3">
@@ -73,6 +73,24 @@
               >
                 <BookmarkCheck class="w-3.5 h-3.5" /> Tersimpan
               </span>
+              <button
+                type="button"
+                class="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full border text-[13px] font-medium transition-colors shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30"
+                :class="
+                  showLatin
+                    ? 'bg-emerald-700 border-emerald-700 text-white hover:bg-emerald-800 shadow-[0_6px_16px_rgba(21,128,61,0.18)]'
+                    : 'bg-white border-[#e7e5e0] text-stone-700 hover:border-stone-300 hover:bg-stone-50'
+                "
+                :aria-pressed="String(showLatin)"
+                :aria-label="showLatin ? 'Sembunyikan transliterasi Latin' : 'Tampilkan transliterasi Latin'"
+                :title="showLatin ? 'Sembunyikan transliterasi Latin' : 'Tampilkan transliterasi Latin'"
+                @click="toggleLatin"
+              >
+                <component :is="showLatin ? Eye : EyeOff" class="w-4 h-4" :class="showLatin ? 'text-white' : 'text-stone-500'" />
+                <span class="hidden sm:inline">Latin</span>
+                <span class="hidden sm:inline text-[11px] font-normal opacity-80">{{ showLatin ? 'Sembunyikan' : 'Tampilkan' }}</span>
+                <span class="sm:hidden text-[11px]">{{ showLatin ? 'On' : 'Off' }}</span>
+              </button>
               <button
                 type="button"
                 class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-[#e7e5e0] text-[13px] font-medium text-stone-700 hover:border-stone-300 hover:bg-stone-50 transition-colors shadow-sm"
@@ -97,7 +115,7 @@
         </div>
 
         <div class="relative container mx-auto px-4 sm:px-6 lg:px-8">
-          <div class="max-w-[720px] mx-auto pt-10 sm:pt-12 md:pt-14 pb-10 md:pb-12 text-center">
+          <div class="max-w-[640px] mx-auto pt-10 sm:pt-12 md:pt-14 pb-10 md:pb-12 text-center">
             <!-- meta pills -->
             <div class="flex flex-wrap items-center justify-center gap-2 mb-5">
               <span
@@ -121,7 +139,7 @@
             </div>
 
             <h1
-              class="font-serif text-[30px] sm:text-[36px] md:text-[42px] font-[600] tracking-[-0.025em] leading-[1.05] text-[#0f2318] text-balance"
+              class="font-serif text-[30px] sm:text-[36px] md:text-[40px] font-[600] tracking-[-0.025em] leading-[1.05] text-[#0f2318] text-balance"
               style="font-family: 'Fraunces', 'Cormorant Garamond', Georgia, serif"
             >
               {{ amalan.judul }}
@@ -188,9 +206,9 @@
         </div>
       </div>
 
-      <!-- Body -->
-      <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
-        <div class="max-w-[720px] mx-auto">
+      <!-- Body — Paper centered stacked layout -->
+      <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10">
+        <div class="max-w-[640px] mx-auto">
           <!-- error / empty -->
           <div v-if="markdownError" class="rounded-2xl border border-red-200 bg-red-50 p-8 text-center">
             <div class="w-10 h-10 rounded-full bg-white border border-red-200 inline-flex items-center justify-center mb-3">
@@ -210,43 +228,65 @@
           </div>
 
           <div v-else-if="loadingMarkdown" class="py-8 space-y-4 animate-pulse">
-            <div class="h-4 bg-stone-100 rounded w-3/4"></div>
+            <div class="h-4 bg-stone-100 rounded w-3/4 mx-auto"></div>
             <div class="h-4 bg-stone-100 rounded w-full"></div>
-            <div class="h-4 bg-stone-100 rounded w-5/6"></div>
+            <div class="h-4 bg-stone-100 rounded w-5/6 mx-auto"></div>
             <div class="h-32 bg-stone-50 rounded-xl border border-stone-100 mt-6"></div>
             <div class="h-4 bg-stone-100 rounded w-full"></div>
-            <div class="h-4 bg-stone-100 rounded w-4/5"></div>
+            <div class="h-4 bg-stone-100 rounded w-4/5 mx-auto"></div>
           </div>
 
           <div v-else-if="html" class="relative">
-            <!-- decorative side line on desktop -->
-            <div aria-hidden="true" class="hidden lg:block absolute -left-8 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-stone-200 to-transparent"></div>
+            <!-- paper card -->
+            <div class="amalan-paper">
+              <!-- subtle paper texture overlay -->
+              <div class="amalan-paper__texture" aria-hidden="true"></div>
+              <!-- inner dotted border -->
+              <div class="amalan-paper__inner-border" aria-hidden="true"></div>
 
-            <div
-              class="prose prose-stone max-w-none
-                prose-headings:font-serif prose-headings:tracking-[-0.015em] prose-headings:text-[#0f2318]
-                prose-h1:text-[26px] prose-h1:leading-tight prose-h1:font-semibold
-                prose-h2:text-[22px] prose-h2:leading-tight prose-h2:mt-10 prose-h2:mb-4 prose-h2:pb-3 prose-h2:border-b prose-h2:border-[#eee9dd]
-                prose-h3:text-[18px] prose-h3:font-semibold prose-h3:mt-8 prose-h3:mb-3
-                prose-p:text-[15.6px] prose-p:leading-[1.88] prose-p:text-[#2b3a2e] prose-p:tracking-[-0.01em]
-                prose-a:text-emerald-700 prose-a:font-medium prose-a:underline prose-a:decoration-emerald-200 prose-a:underline-offset-4 hover:prose-a:decoration-emerald-700 hover:prose-a:text-emerald-800
-                prose-strong:text-[#0f2318] prose-strong:font-semibold
-                prose-blockquote:border-l-[3px] prose-blockquote:border-emerald-600 prose-blockquote:bg-emerald-50/40 prose-blockquote:rounded-r-xl prose-blockquote:py-3 prose-blockquote:px-5 prose-blockquote:my-6 prose-blockquote:text-[#2b3a2e] prose-blockquote:not-italic
-                prose-ul:my-6 prose-ol:my-6 prose-li:text-[15.2px] prose-li:leading-[1.75] prose-li:text-[#2b3a2e] prose-li:marker:text-emerald-700
-                prose-code:text-[13px] prose-code:bg-stone-100 prose-code:text-stone-800 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:font-medium prose-code:before:content-none prose-code:after:content-none
-                prose-pre:bg-[#0f2318] prose-pre:text-stone-100 prose-pre:rounded-xl prose-pre:border prose-pre:border-white/10
-                prose-img:rounded-xl prose-img:border prose-img:border-stone-200 prose-img:shadow-sm
-                prose-table:text-[14px] prose-th:bg-stone-50 prose-th:text-stone-700 prose-th:font-semibold prose-td:border-stone-200 prose-th:border-stone-200"
-              v-html="html"
-            ></div>
+              <div class="amalan-paper__content">
+                <!-- top ornament inside paper -->
+                <div class="flex items-center justify-center gap-2 mb-6 sm:mb-7" aria-hidden="true">
+                  <span class="h-px w-8 bg-[#e8ddd0]"></span>
+                  <span class="w-[18px] h-[1.5px] bg-emerald-700/30 rounded-full"></span>
+                  <span class="w-1.5 h-1.5 rotate-45 bg-emerald-700/80"></span>
+                  <span class="w-[18px] h-[1.5px] bg-emerald-700/30 rounded-full"></span>
+                  <span class="h-px w-8 bg-[#e8ddd0]"></span>
+                </div>
 
-            <!-- bottom ornament -->
-            <div class="mt-12 flex items-center justify-center gap-3">
+                <div
+                  ref="contentRef"
+                  :class="[
+                    'prose-amalan prose prose-stone max-w-none',
+                    !showLatin && 'hide-latin',
+                  ]"
+                  v-html="html"
+                ></div>
+
+                <!-- bottom ornament inside paper -->
+                <div class="mt-8 sm:mt-10 flex flex-col items-center gap-3" aria-hidden="true">
+                  <div class="flex items-center justify-center gap-2">
+                    <span class="h-px w-10 bg-[#e8ddd0]"></span>
+                    <span class="w-1.5 h-1.5 rotate-45 bg-emerald-700/50"></span>
+                    <span class="h-px w-10 bg-[#e8ddd0]"></span>
+                  </div>
+                  <span class="text-[10px] tracking-[0.18em] uppercase font-semibold text-stone-400">— PPTQ Asy-Syaikhoni —</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- outside bottom ornament — subtle -->
+            <div class="mt-8 flex items-center justify-center gap-3">
               <span class="h-px w-10 bg-stone-200"></span>
-              <span class="text-stone-400 text-[11px] tracking-[0.16em] uppercase font-semibold">selesai</span>
+              <span class="text-stone-400 text-[10px] tracking-[0.16em] uppercase font-semibold">selesai</span>
               <span class="w-1 h-1 rounded-full bg-emerald-600"></span>
               <span class="h-px w-10 bg-stone-200"></span>
             </div>
+
+            <!-- latin hint when hidden -->
+            <p v-if="!showLatin" class="mt-4 text-center text-[11px] tracking-wide text-stone-400">
+              Transliterasi Latin disembunyikan — ketuk <span class="font-medium text-stone-600">Latin • Tampilkan</span> untuk melihat.
+            </p>
           </div>
 
           <div v-else class="rounded-2xl border border-stone-200 bg-white p-10 text-center text-stone-500">Konten belum tersedia.</div>
@@ -256,7 +296,7 @@
       <!-- bottom bar -->
       <div class="border-t border-[#e8e6de] bg-white">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div class="max-w-[720px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div class="max-w-[640px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
             <router-link
               :to="{ name: 'amalan-list' }"
               class="inline-flex items-center gap-2 text-[13px] font-medium text-stone-600 hover:text-emerald-800 transition-colors"
@@ -273,12 +313,11 @@
         </div>
       </div>
     </article>
-
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAmalanBySlugQuery, useMarkdownQuery } from '@/composables/useAmalanQueries'
 import { marked } from 'marked'
@@ -295,12 +334,17 @@ import {
   SearchX,
   AlertTriangle,
   FileText,
+  Eye,
+  EyeOff,
 } from 'lucide-vue-next'
 import { db, type LocalSavedAmalan } from '@/utils/localDb'
 import { useToast } from '@/composables/useToast'
+import { useLatinToggle } from '@/composables/useLatinToggle'
 
 const route = useRoute()
 const toast = useToast()
+const { showLatin, toggleLatin, annotateLatin } = useLatinToggle()
+const contentRef = ref<HTMLElement | null>(null)
 
 const slug = computed(() => route.params.slug as string)
 
@@ -477,6 +521,7 @@ const purifyConfig = {
     'th',
     'td',
     'span',
+    'div',
   ],
   ALLOWED_ATTR: ['href', 'title', 'alt', 'src', 'lang', 'style', 'class', 'id'],
   KEEP_CONTENT: true,
@@ -535,10 +580,8 @@ watch(
 
     if (finalMd && finalMd.trim().length > 0) {
       try {
-        // add ids to headings for TOC before purify? marked can generate ids via headerIds, but we do simple
         const markedHtml = await marked(finalMd)
         const processedHtml = wrapArabicText(markedHtml as string)
-        // add heading ids if missing
         const withIds = addHeadingIds(processedHtml)
         html.value = DOMPurify.sanitize(withIds, purifyConfig)
       } catch (error) {
@@ -551,6 +594,14 @@ watch(
   },
   { immediate: true },
 )
+
+// Latin toggle + couplet annotation after each html render
+watch(html, async () => {
+  await nextTick()
+  if (!contentRef.value) return
+  annotateLatin(contentRef.value)
+  annotateCouplets(contentRef.value)
+})
 
 function addHeadingIds(htmlString: string): string {
   const temp = document.createElement('div')
@@ -590,44 +641,574 @@ function wrapArabicText(htmlString: string): string {
 
   return temp.innerHTML
 }
+
+/**
+ * After render: tag each paragraph that contains Arabic as a couplet.
+ * Adds `couplet` class to p containing .ar-text so CSS can style stacked center.
+ * Also splits h1 title "Arabic — Latin" (either order, em/en/hyphen dash) into
+ * two stacked centered rows: Arabic (Amiri) on row 1 and Latin (DM Sans) on row 2
+ * with class `latin` so existing `.hide-latin .latin{display:none}` hides the Latin row.
+ */
+function annotateCouplets(container: HTMLElement) {
+  // headings that are titles — split into 2 rows when title contains " — "
+  container.querySelectorAll('h1').forEach((h) => {
+    h.classList.add('couplet-title')
+    const raw = (h.textContent || '').trim()
+    if (!raw) return
+    const hasAr = hasArabicRegex.test(raw)
+    const hasLatin = /[A-Za-z]/.test(raw)
+    let arabicPart = ''
+    let latinPart = ''
+    let splitFound = false
+    const dashRes: RegExp[] = [/\s*—\s*/, /\s*–\s*/, /\s+-\s+/]
+    for (const re of dashRes) {
+      if (re.test(raw)) {
+        const parts = raw.split(re)
+        if (parts.length >= 2) {
+          let foundForThisRe = false
+          for (let i = 1; i < parts.length; i++) {
+            const left = parts.slice(0, i).join(' — ').trim()
+            const right = parts.slice(i).join(' — ').trim()
+            const lHasAr = hasArabicRegex.test(left)
+            const rHasAr = hasArabicRegex.test(right)
+            if (lHasAr !== rHasAr) {
+              if (lHasAr) {
+                arabicPart = left
+                latinPart = right
+              } else {
+                arabicPart = right
+                latinPart = left
+              }
+              splitFound = true
+              foundForThisRe = true
+              break
+            }
+          }
+          if (foundForThisRe) break
+          const first = parts[0].trim()
+          const rest = parts.slice(1).join(' — ').trim()
+          const fAr = hasArabicRegex.test(first)
+          const rAr = hasArabicRegex.test(rest)
+          if (fAr && !rAr) {
+            arabicPart = first
+            latinPart = rest
+            splitFound = true
+            break
+          }
+          if (!fAr && rAr) {
+            arabicPart = rest
+            latinPart = first
+            splitFound = true
+            break
+          }
+        }
+      }
+    }
+    if (!splitFound && hasAr && hasLatin) {
+      const firstArIdx = raw.search(hasArabicRegex)
+      const firstLatinIdx = raw.search(/[A-Za-z]/)
+      if (firstArIdx !== -1 && firstLatinIdx !== -1) {
+        if (firstArIdx < firstLatinIdx) {
+          const a = raw.slice(0, firstLatinIdx).trim()
+          const l = raw.slice(firstLatinIdx).trim()
+          if (hasArabicRegex.test(a) && /[A-Za-z]/.test(l) && !hasArabicRegex.test(l)) {
+            arabicPart = a
+            latinPart = l
+            splitFound = true
+          }
+        } else {
+          const l = raw.slice(0, firstArIdx).trim()
+          const a = raw.slice(firstArIdx).trim()
+          if (hasArabicRegex.test(a) && /[A-Za-z]/.test(l)) {
+            arabicPart = a
+            latinPart = l
+            splitFound = true
+          }
+        }
+      }
+    }
+    if (splitFound && arabicPart && latinPart) {
+      h.textContent = ''
+      h.classList.add('couplet-title--split')
+      const arSpan = document.createElement('span')
+      arSpan.className = 'ar-text title-ar'
+      arSpan.lang = 'ar'
+      arSpan.textContent = arabicPart
+      const laSpan = document.createElement('span')
+      laSpan.className = 'latin title-latin'
+      laSpan.textContent = latinPart
+      h.appendChild(arSpan)
+      h.appendChild(laSpan)
+    } else if (hasAr && !hasLatin) {
+      const txt = raw
+      h.textContent = ''
+      const arSpan = document.createElement('span')
+      arSpan.className = 'ar-text title-ar'
+      arSpan.lang = 'ar'
+      arSpan.textContent = txt
+      h.appendChild(arSpan)
+    } else if (!hasAr && hasLatin) {
+      const txt = raw
+      h.textContent = ''
+      const laSpan = document.createElement('span')
+      laSpan.className = 'title-latin-plain'
+      laSpan.textContent = txt
+      h.appendChild(laSpan)
+    }
+  })
+  const allPs = Array.from(container.querySelectorAll('p'))
+  const hrs = Array.from(container.querySelectorAll('hr'))
+  const hasHr = hrs.length > 0
+
+  allPs.forEach((p, idx) => {
+    const hasAr = !!p.querySelector('.ar-text')
+    const hasLatinEm = !!p.querySelector('em.latin')
+    const hasAnyEm = !!p.querySelector('em')
+    const txt = (p.textContent || '').trim()
+    const isLast = idx === allPs.length - 1
+    const afterHr = hasHr && hrs.some((hr) => {
+      // check if this p follows an hr in DOM order
+      let n: Element | null = hr.nextElementSibling
+      while (n) {
+        if (n === p) return true
+        // skip over non-p? but footer is first p after hr normally
+        if (n.tagName === 'P') break
+        n = n.nextElementSibling
+      }
+      return false
+    })
+
+    if (hasAr) {
+      p.classList.add('couplet')
+      if (hasLatinEm) p.classList.add('couplet--with-latin')
+      else p.classList.add('couplet--arab-only')
+      return
+    }
+
+    // Non-arab paragraphs after hr or at the end are treated as footer attribution
+    // even when they contain Latin (e.g., "*Al-Musthafa pembawa cahaya hidayah...*")
+    if (hasAnyEm && (afterHr || (isLast && txt.length > 18 && txt.length < 320))) {
+      // Distinguish true footer from stray Latin orphan that is immediate follow-up to Arabic
+      // If this p immediately follows a couplet and is short, keep as orphan; else footer
+      const prev = idx > 0 ? allPs[idx - 1] : null
+      const prevIsCouplet = prev?.classList.contains('couplet')
+      if (afterHr || !prevIsCouplet || txt.length > 60 || !hasLatinEm) {
+        p.classList.add('couplet-footer')
+        return
+      }
+    }
+
+    if (hasLatinEm) {
+      p.classList.add('couplet-latin-orphan')
+    } else if (hasAnyEm && txt.length > 20 && txt.length < 240) {
+      // fallback footer for non-latin italic
+      p.classList.add('couplet-footer')
+    }
+  })
+
+  // hr separators -> style as dotted
+  container.querySelectorAll('hr').forEach((hr) => hr.classList.add('couplet-hr'))
+}
 </script>
 
 <style scoped>
+/* ── Paper card ── */
+.amalan-paper {
+  position: relative;
+  background: #fdfcf8;
+  border: 1px solid #e8e6de;
+  border-radius: 20px;
+  box-shadow:
+    0 1px 2px rgba(31, 33, 26, 0.04),
+    0 8px 24px rgba(31, 33, 26, 0.06),
+    0 1px 0 rgba(255, 255, 255, 0.9) inset;
+  overflow: hidden;
+}
+.amalan-paper__texture {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.028;
+  background-image:
+    radial-gradient(circle at 1px 1px, #8a7a5a 1.2px, transparent 0),
+    radial-gradient(circle at 1px 1px, #c2b59b 0.9px, transparent 0);
+  background-size:
+    22px 22px,
+    22px 22px;
+  background-position:
+    0 0,
+    11px 11px;
+}
+.amalan-paper__inner-border {
+  position: absolute;
+  inset: 10px;
+  border: 1.35px dotted #e6ddd0;
+  border-radius: 14px;
+  pointer-events: none;
+}
+.amalan-paper__content {
+  position: relative;
+  padding: 28px 20px 26px;
+}
+@media (min-width: 640px) {
+  .amalan-paper__content {
+    padding: 40px 40px 36px;
+  }
+}
+@media (min-width: 768px) {
+  .amalan-paper__content {
+    padding: 44px 48px 40px;
+  }
+}
+
+/* ── Prose base ── */
+:deep(.prose-amalan) {
+  color: #2b3a2e;
+  font-size: 15px;
+  line-height: 1.85;
+}
+
+/* Title: first h1 centered — two stacked rows: Arabic (Amiri 28px) + Latin (DM Sans 16px) — dash removed */
+:deep(.prose-amalan h1),
+:deep(.prose-amalan .couplet-title) {
+  font-family: 'Fraunces', 'Cormorant Garamond', Georgia, serif !important;
+  text-align: center !important;
+  font-size: 28px !important;
+  line-height: 1.22 !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.022em !important;
+  color: #0f2318 !important;
+  margin: 0 0 0.55em 0 !important;
+  padding: 0 0 0.7em 0 !important;
+  border-bottom: none !important;
+  text-wrap: balance;
+}
+@media (min-width: 640px) {
+  :deep(.prose-amalan h1),
+  :deep(.prose-amalan .couplet-title) {
+    font-size: 30px !important;
+  }
+}
+/* Split title: flex column — gap 6px, Arabic row + Latin row centered */
+:deep(.prose-amalan h1.couplet-title) {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+}
+:deep(.prose-amalan h1 .title-ar) {
+  display: block !important;
+  width: 100% !important;
+  font-family: 'Amiri', Georgia, serif !important;
+  font-size: 28px !important;
+  line-height: 1.35 !important;
+  color: #14532d !important;
+  font-weight: 400 !important;
+  direction: rtl !important;
+  text-align: center !important;
+}
+@media (min-width: 640px) {
+  :deep(.prose-amalan h1 .title-ar) {
+    font-size: 30px !important;
+  }
+}
+:deep(.prose-amalan h1 .title-latin) {
+  display: block !important;
+  width: 100% !important;
+  font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif !important;
+  font-size: 16px !important;
+  line-height: 1.5 !important;
+  font-style: italic !important;
+  font-weight: 400 !important;
+  color: #6e7d71 !important;
+  letter-spacing: 0.01em !important;
+  text-align: center !important;
+  margin-top: 0 !important;
+}
+:deep(.prose-amalan h1 .title-latin-plain) {
+  display: block !important;
+  width: 100% !important;
+  font-family: 'Fraunces', 'Cormorant Garamond', Georgia, serif !important;
+  font-size: inherit !important;
+  font-style: normal !important;
+  color: #0f2318 !important;
+  text-align: center !important;
+}
+/* when Latin hidden, gap collapses — Arabic stays centered */
+:deep(.hide-latin h1.couplet-title) {
+  gap: 0 !important;
+}
+:deep(.prose-amalan h1 em),
+:deep(.prose-amalan h1 .ar-text:not(.title-ar)) {
+  text-align: center !important;
+}
+/* fallback for h1 that wasn't split (original inline case) — keep inline if not title-ar */
+:deep(.prose-amalan h1:not(.couplet-title--split) .ar-text) {
+  display: inline !important;
+  width: auto !important;
+  font-family: 'Amiri', Georgia, serif !important;
+  font-size: 1em !important;
+  color: #14532d !important;
+  font-weight: 400 !important;
+  direction: rtl !important;
+  vertical-align: baseline;
+}
+/* when h1 is purely Arabic or mixed with dash, keep inline; if author puts Arabic on new line via markdown, br will break */
+:deep(.prose-amalan h1:not(.couplet-title--split) br + .ar-text) {
+  display: block !important;
+  width: 100% !important;
+  margin-top: 0.28em;
+  font-size: 1.05em !important;
+}
+
+/* Section headings still centered but with subtle divider */
+:deep(.prose-amalan h2) {
+  font-family: 'Fraunces', Georgia, serif !important;
+  text-align: center !important;
+  font-size: 19px !important;
+  line-height: 1.3 !important;
+  font-weight: 600 !important;
+  color: #0f2318 !important;
+  margin: 2.2em 0 0.9em 0 !important;
+  padding-bottom: 0.7em !important;
+  border-bottom: 1px solid #eee9dd !important;
+}
+:deep(.prose-amalan h3) {
+  font-family: 'Fraunces', Georgia, serif !important;
+  text-align: center !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  color: #1a3523 !important;
+  margin: 1.8em 0 0.6em 0 !important;
+}
+
+/* ── Couplet: each p containing Arabic → stacked center ── */
+:deep(.prose-amalan p) {
+  text-align: center;
+  margin: 0;
+  color: #2b3a2e;
+}
+
+:deep(.prose-amalan p.couplet) {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px !important;
+  margin: 20px 0 !important;
+  padding: 14px 10px 12px !important;
+  text-align: center !important;
+  border-radius: 12px;
+  transition: background-color 180ms ease;
+}
+:deep(.prose-amalan p.couplet br) {
+  display: none !important;
+}
+:deep(.prose-amalan p.couplet strong) {
+  display: block !important;
+  width: 100% !important;
+  font-weight: 600 !important;
+}
+:deep(.prose-amalan p.couplet:hover) {
+  background: rgba(232, 230, 222, 0.22);
+}
+@media (min-width: 640px) {
+  :deep(.prose-amalan p.couplet) {
+    margin: 22px 0 !important;
+    padding: 14px 16px 12px !important;
+  }
+}
+
+/* Arabic line — top of stack */
 :deep(.ar-text) {
   font-family: 'Amiri', serif !important;
-  font-size: 1.35em;
-  line-height: 2.05;
-  text-align: right;
-  direction: rtl;
-  display: block;
-  width: 100%;
-  background: linear-gradient(to bottom, transparent 0, transparent 100%);
-  color: #0f2a1a;
-  font-weight: 400;
-  letter-spacing: 0;
-  padding: 0.2em 0;
+  font-size: 1.5rem !important; /* 24px */
+  line-height: 1.95 !important;
+  text-align: center !important;
+  direction: rtl !important;
+  display: block !important;
+  width: 100% !important;
+  color: #0f2318 !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+  padding: 0 !important;
+}
+@media (min-width: 640px) {
+  :deep(.ar-text) {
+    font-size: 1.55rem !important;
+  }
 }
 
-:deep(.prose h2) {
-  font-family: 'Fraunces', Georgia, serif !important;
+/* Latin — directly below arabic, DM Sans 14px italic muted */
+:deep(.latin) {
+  display: block !important;
+  width: 100% !important;
+  text-align: center !important;
+  font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif !important;
+  font-size: 14px !important;
+  line-height: 1.65 !important;
+  font-style: italic !important;
+  font-weight: 400 !important;
+  color: #6e7d71 !important; /* muted */
+  letter-spacing: 0.006em !important;
+  margin-top: 2px !important;
+  transition: opacity 150ms ease;
+}
+:deep(.prose-amalan em:not(.latin)) {
+  /* keep non-latin em (maybe footer) not styled as latin */
+  font-style: italic;
 }
 
-:deep(.prose h3) {
-  font-family: 'Fraunces', Georgia, serif !important;
+/* When hide-latin, remove latin lines and tighten couplet rhythm */
+:deep(.hide-latin .latin) {
+  display: none !important;
+}
+:deep(.hide-latin p.couplet) {
+  gap: 0 !important;
+  margin: 16px 0 !important;
+  padding: 10px 10px 8px !important;
 }
 
-:deep(.prose blockquote p) {
-  margin: 0;
-  font-size: 15px;
+/* Latim orphan (separate p with only latin after arab p) — center italic muted, tucked up */
+:deep(.prose-amalan p.couplet-latin-orphan) {
+  text-align: center !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 14px !important;
+  font-style: italic !important;
+  color: #6e7d71 !important;
+  margin: -10px 0 20px 0 !important;
+  padding: 0 10px !important;
 }
 
-:deep(.prose hr) {
-  border-color: #eee9dd;
-  margin: 2.2rem 0;
+/* Footer attribution — last italic line centered emerald */
+:deep(.prose-amalan p.couplet-footer) {
+  text-align: center !important;
+  font-style: italic !important;
+  color: #4a6353 !important;
+  font-size: 14px !important;
+  line-height: 1.7 !important;
+  max-width: 36ch;
+  margin: 26px auto 0 auto !important;
+  padding: 12px 16px 0 !important;
+  border-top: 1px dashed #e6ddd0;
+  font-family: 'DM Sans', sans-serif !important;
+}
+:deep(.prose-amalan p.couplet-footer em) {
+  color: #355a44 !important;
 }
 
+/* HR — dotted, centered, short */
+:deep(.prose-amalan hr),
+:deep(.prose-amalan .couplet-hr) {
+  border: none !important;
+  border-top: 1.5px dotted #e6ddd0 !important;
+  margin: 28px auto !important;
+  width: 72% !important;
+  max-width: 320px;
+  opacity: 1;
+}
+
+/* Blockquote — centered, soft emerald wash */
+:deep(.prose-amalan blockquote) {
+  text-align: center !important;
+  border-left: none !important;
+  border: 1px solid #dfe8dc !important;
+  background: #f4f8f5 !important;
+  border-radius: 14px !important;
+  padding: 16px 20px !important;
+  margin: 24px auto !important;
+  max-width: 560px;
+  font-style: italic;
+  color: #2f4a38 !important;
+}
+:deep(.prose-amalan blockquote p) {
+  margin: 0 !important;
+  text-align: center !important;
+  font-size: 14.5px !important;
+}
+:deep(.prose-amalan blockquote .ar-text) {
+  color: #0f2318 !important;
+}
+
+/* Lists — keep centered but with left-aligned bullets inside max-w */
+:deep(.prose-amalan ul),
+:deep(.prose-amalan ol) {
+  max-width: 520px;
+  margin: 20px auto !important;
+  text-align: left;
+  color: #2b3a2e;
+}
+:deep(.prose-amalan li) {
+  font-size: 14.8px !important;
+  line-height: 1.7 !important;
+  color: #2b3a2e !important;
+  margin: 6px 0 !important;
+}
+:deep(.prose-amalan li::marker) {
+  color: #15803d !important;
+}
+
+/* Links, strong, code */
+:deep(.prose-amalan a) {
+  color: #15803d !important;
+  font-weight: 500 !important;
+  text-decoration: underline !important;
+  text-decoration-color: #bbf7d0 !important;
+  text-underline-offset: 4px !important;
+}
+:deep(.prose-amalan a:hover) {
+  color: #166534 !important;
+  text-decoration-color: #15803d !important;
+}
+:deep(.prose-amalan strong) {
+  color: #0f2318 !important;
+  font-weight: 600 !important;
+}
+:deep(.prose-amalan code) {
+  font-size: 13px !important;
+  background: #f4f2ec !important;
+  color: #3a3a2e !important;
+  padding: 1px 6px !important;
+  border-radius: 6px !important;
+  font-weight: 500 !important;
+}
+:deep(.prose-amalan code)::before,
+:deep(.prose-amalan code)::after {
+  content: none !important;
+}
+:deep(.prose-amalan pre) {
+  background: #0f2318 !important;
+  color: #eef4e8 !important;
+  border-radius: 14px !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+:deep(.prose-amalan img) {
+  border-radius: 14px !important;
+  border: 1px solid #e8e6de !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important;
+  margin: 22px auto !important;
+}
+:deep(.prose-amalan table) {
+  font-size: 14px !important;
+  margin: 22px auto !important;
+}
+:deep(.prose-amalan th) {
+  background: #f7f5f0 !important;
+  color: #33403a !important;
+  font-weight: 600 !important;
+  border-color: #e8e6de !important;
+}
+:deep(.prose-amalan td),
+:deep(.prose-amalan th) {
+  border-color: #e8e6de !important;
+}
+
+/* Reduce motion */
 @media (prefers-reduced-motion: reduce) {
-  .transition-\[width\] {
+  :deep(.latin),
+  .amalan-paper,
+  :deep(.prose-amalan p.couplet) {
     transition: none !important;
   }
 }

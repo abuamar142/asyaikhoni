@@ -10,7 +10,7 @@
         :placeholder="placeholder"
         type="text"
         :disabled="disabled"
-        class="w-full pl-10 pr-10 py-[11px] rounded-xl border bg-white text-[14px] leading-none text-[#1a2e1f] placeholder:text-stone-400 shadow-[0_1px_2px_rgba(16,30,20,0.06)] focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-300 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-200"
+        class="w-full h-11 pl-10 pr-10 rounded-xl border bg-white text-[14px] leading-none text-[#1a2e1f] placeholder:text-stone-400 shadow-[0_1px_2px_rgba(16,30,20,0.06)] focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-300 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-200"
         :class="disabled ? 'border-stone-200' : 'border-[#d7ddd7] hover:border-[#c2cdc2]'"
         @input="onInput"
         @keyup.enter="emitSearch"

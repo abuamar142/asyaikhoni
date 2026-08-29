@@ -113,7 +113,7 @@
             <div class="relative w-full md:w-[340px] shrink-0" ref="dropdownRef">
               <button
                 type="button"
-                class="w-full flex items-center justify-between gap-3 px-3.5 py-[11px] rounded-xl border bg-white text-left shadow-[0_1px_2px_rgba(16,30,20,0.06)] focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-300 transition-all"
+                class="w-full h-11 flex items-center justify-between gap-3 px-3.5 rounded-xl border bg-white text-left shadow-[0_1px_2px_rgba(16,30,20,0.06)] focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-300 transition-all"
                 :class="[
                   showCategoryDropdown ? 'border-emerald-300 ring-4 ring-emerald-500/10' : 'border-[#d7ddd7] hover:border-[#c2cdc2]',
                 ]"
