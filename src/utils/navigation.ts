@@ -36,11 +36,12 @@ export const scrollToTop = (): void => {
  * @returns boolean
  */
 export const isHomePage = (currentPath: string): boolean => {
-  return currentPath === '/'
+  return currentPath === '/' || currentPath === ''
 }
 
 /**
  * Smart navigation handler for cross-route navigation
+ * Handles hash links (/#about), absolute paths (/amalan) and plain anchors
  * @param router - Vue Router instance
  * @param item - Navigation item with href and id
  */
@@ -50,11 +51,33 @@ export const handleCrossRouteNavigation = (
 ): void => {
   const currentPath = router.currentRoute.value.path
 
-  if (isHomePage(currentPath)) {
-    // If on home page, scroll to section
-    scrollToSection(item.id)
+  if (item.href.startsWith('/#')) {
+    // hash like /#about, /#contact
+    if (isHomePage(currentPath)) {
+      scrollToSection(item.id)
+    } else {
+      router.push({ path: '/', hash: item.href.slice(1) })
+    }
+  } else if (item.href.startsWith('/')) {
+    // absolute like /amalan, /amalan/koleksi, /
+    // handle '/' specially: scroll to top when already home
+    if (item.href === '/' && isHomePage(currentPath)) {
+      scrollToTop()
+      // ensure hash cleared if any
+      if (router.currentRoute.value.hash) {
+        router.push({ path: '/', hash: '' })
+      }
+      return
+    }
+    router.push(item.href)
+  } else if (item.href.startsWith('#')) {
+    // plain hash like #contact (used by CTA buttons)
+    if (isHomePage(currentPath)) {
+      scrollToSection(item.id)
+    } else {
+      router.push({ path: '/', hash: item.href })
+    }
   } else {
-    // If on other route, navigate to home with hash
-    router.push('/' + item.href)
+    scrollToSection(item.id)
   }
 }

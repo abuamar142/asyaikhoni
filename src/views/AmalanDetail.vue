@@ -452,7 +452,7 @@
                   <button
                     type="button"
                     class="w-8 h-8 rounded-full bg-white border border-[#e7e5e0] inline-flex items-center justify-center text-stone-700 hover:bg-stone-50 hover:border-stone-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/20 shrink-0"
-                    :disabled="fontSize <= 18"
+                    :disabled="fontSize <= 8"
                     aria-label="Kecilkan huruf"
                     @click="decrease"
                   >
@@ -461,7 +461,7 @@
 
                   <input
                     type="range"
-                    min="18"
+                    min="8"
                     max="36"
                     step="1"
                     :value="fontSize"

@@ -1,12 +1,15 @@
 <template>
   <div class="min-h-screen bg-[#fdfcf8] selection:bg-emerald-100 selection:text-emerald-900">
-    <!-- subtle paper texture -->
-    <div aria-hidden="true" class="pointer-events-none fixed inset-0">
-      <div class="absolute inset-0 opacity-[0.025]" style="background-image: radial-gradient(circle at 1px 1px, #0f2e1c 1px, transparent 0); background-size: 22px 22px"></div>
-    </div>
+    <AppHeader />
+    <!-- offset for fixed header h-16 (64px) -->
+    <div class="pt-16">
+      <!-- subtle paper texture -->
+      <div aria-hidden="true" class="pointer-events-none fixed inset-0">
+        <div class="absolute inset-0 opacity-[0.025]" style="background-image: radial-gradient(circle at 1px 1px, #0f2e1c 1px, transparent 0); background-size: 22px 22px"></div>
+      </div>
 
-    <!-- Masthead -->
-    <header class="relative border-b border-[#e8e6de] bg-white/85 backdrop-blur-[8px]">
+      <!-- Masthead -->
+      <header class="relative border-b border-[#e8e6de] bg-white/85 backdrop-blur-[8px]">
       <div aria-hidden="true" class="absolute inset-0 overflow-hidden pointer-events-none">
         <div class="absolute -right-16 -top-16 w-[420px] h-[420px] rounded-full border border-emerald-100/70 hidden lg:block"></div>
         <div class="absolute -right-16 -top-16 w-[320px] h-[320px] rounded-full border border-emerald-100/50 hidden lg:block"></div>
@@ -100,9 +103,9 @@
       </div>
     </header>
 
-    <!-- Sticky toolbar -->
-    <div class="sticky top-16 z-30 -mb-px">
-      <div class="backdrop-blur-xl bg-[#fdfcf8]/85 border-y border-[#e8e6de] shadow-[0_1px_0_rgba(0,0,0,0.02)]">
+    <!-- Sticky toolbar — mentok ke header (fixed h-16) -->
+    <div class="sticky top-16 z-20 mt-0 -mb-px">
+      <div class="bg-[#fdfcf8] border-y border-[#e8e6de] shadow-[0_1px_0_rgba(0,0,0,0.02)] supports-[backdrop-filter]:backdrop-blur-xl supports-[backdrop-filter]:bg-[#fdfcf8]/95">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
           <div class="flex flex-col md:flex-row md:items-center gap-4 py-4 md:py-5">
             <div class="flex-1 min-w-0">
@@ -441,12 +444,13 @@
         <span class="h-px w-8 bg-stone-200 hidden sm:block"></span>
       </div>
     </div>
-
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import AppHeader from '@/components/layout/AppHeader.vue'
 import { useAmalanListQuery } from '@/composables/useAmalanQueries'
 import { useCategoryListQuery } from '@/composables/useCategoryQueries'
 import { useDebouncedRef } from '@/composables/useDebouncedRef'

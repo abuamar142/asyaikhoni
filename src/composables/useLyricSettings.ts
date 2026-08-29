@@ -11,7 +11,7 @@ let _initialized = false
 let _watchSetup = false
 
 function clamp(n: number): number {
-  return Math.min(36, Math.max(18, Math.round(n)))
+  return Math.min(36, Math.max(8, Math.round(n)))
 }
 
 export function useLyricSettings() {
