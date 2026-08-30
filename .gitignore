@@ -31,3 +31,11 @@ coverage
 
 # Vercel
 .vercel
+
+# Env files - secrets (never commit real env)
+.env
+.env.*
+!.env.example
+db/
+db/.env*
+.env.local
