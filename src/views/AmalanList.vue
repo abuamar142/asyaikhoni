@@ -356,80 +356,13 @@
 
       <!-- Grid -->
       <div v-else class="grid gap-5 md:gap-6 md:grid-cols-2 auto-rows-fr">
-        <article
+        <AmalanCard
           v-for="(item, idx) in itemsList"
           :key="item.id"
-          class="group relative flex flex-col rounded-[18px] border bg-white p-6 md:p-7 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_40px_-16px_rgba(16,40,22,0.16)] will-change-transform"
-          :class="[
-            idx % 5 === 0
-              ? 'border-emerald-100 shadow-[0_1px_2px_rgba(16,40,22,0.06)]'
-              : 'border-[#e8e6de] shadow-sm',
-          ]"
-          :style="{ animationDelay: `${idx * 45}ms` }"
-          style="animation: cardIn 0.5s ease both"
-        >
-          <!-- hover accent -->
-          <div
-            class="absolute top-0 left-7 right-7 h-px bg-gradient-to-r from-transparent via-emerald-200/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-          ></div>
-
-          <div class="flex items-start justify-between gap-3 mb-3.5">
-            <div class="flex flex-wrap gap-1.5">
-              <span
-                v-for="cat in item.categories"
-                :key="cat.id"
-                class="inline-flex items-center px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-[11px] font-semibold tracking-[0.08em] uppercase text-emerald-800"
-                >{{ cat.nama }}</span
-              >
-              <span
-                v-if="!item.categories?.length"
-                class="inline-flex items-center px-2.5 py-1 rounded-full bg-stone-50 border border-stone-200 text-[11px] font-medium tracking-wide text-stone-500 uppercase"
-                >Tanpa kategori</span
-              >
-            </div>
-            <span
-              v-if="item.urutan != null"
-              class="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-full border bg-stone-50 text-[11px] font-bold tracking-wide transition-colors"
-              :class="idx % 5 === 0 ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-stone-200 text-stone-600 group-hover:border-emerald-200 group-hover:bg-emerald-50 group-hover:text-emerald-800'"
-              >{{ String(item.urutan).padStart(2, '0') }}</span
-            >
-          </div>
-
-          <h2
-            class="font-serif text-[20px] md:text-[21px] leading-[1.32] font-[600] tracking-[-0.015em] text-[#13291b] group-hover:text-emerald-900 transition-colors line-clamp-2 text-pretty"
-            style="font-family: 'Fraunces', Georgia, serif"
-          >
-            {{ item.judul }}
-          </h2>
-
-          <p
-            v-if="item.ringkasan"
-            class="mt-2.5 text-[13.5px] leading-[1.72] text-[#5a6d5f] line-clamp-3 text-pretty"
-          >
-            {{ item.ringkasan }}
-          </p>
-          <p v-else class="mt-2.5 text-[13px] leading-[1.6] text-stone-400 italic">Ringkasan belum tersedia.</p>
-
-          <div class="mt-auto pt-5">
-            <div class="h-px bg-[#f0ede8] group-hover:bg-emerald-50 transition-colors"></div>
-            <router-link
-              :to="{ name: 'amalan-detail', params: { slug: item.slug } }"
-              class="mt-4 flex items-center justify-between group/link focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30 rounded-lg -mx-1 px-1 py-1"
-            >
-              <span class="inline-flex items-center gap-2 text-[13px] font-semibold text-emerald-800">
-                Baca amalan
-                <span
-                  class="inline-flex w-6 h-6 rounded-full bg-emerald-50 border border-emerald-100 items-center justify-center text-emerald-700 group-hover/link:bg-emerald-700 group-hover/link:text-white group-hover/link:border-emerald-700 transition-all duration-200"
-                >
-                  <ArrowRight class="w-3.5 h-3.5 transition-transform duration-200 group-hover/link:translate-x-0.5" />
-                </span>
-              </span>
-              <span class="text-[11px] tracking-[0.08em] uppercase font-medium text-stone-400 group-hover/link:text-stone-600 transition-colors"
-                >Lihat detail</span
-              >
-            </router-link>
-          </div>
-        </article>
+          :item="item as any"
+          :index="idx"
+          mode="list"
+        />
       </div>
 
       <!-- bottom subtle meta -->
@@ -453,9 +386,9 @@ import { useCategoryListQuery } from '@/composables/useCategoryQueries'
 import { useDebouncedRef } from '@/composables/useDebouncedRef'
 import SearchInput from '@/components/ui/SearchInput.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
+import AmalanCard from '@/components/AmalanCard.vue'
 import type { Category } from '@/services/categoryService'
 import {
-  ArrowRight,
   ArrowUpRight,
   Bookmark,
   Library,

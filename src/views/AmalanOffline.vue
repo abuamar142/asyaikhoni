@@ -168,45 +168,31 @@
       </div>
 
       <div v-if="savedAmalan.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
-        <div
+        <AmalanCard
           v-for="item in savedAmalan"
           :key="item.id"
-          class="group flex flex-col rounded-[18px] border border-[#e8e6de] bg-white p-6 hover:border-emerald-200 hover:shadow-[0_12px_28px_rgba(16,40,22,0.08)] hover:-translate-y-0.5 transition-all duration-300"
+          :item="item as any"
+          mode="offline"
         >
-          <div class="flex items-start justify-between gap-4 mb-3">
-            <router-link :to="{ name: 'amalan-detail', params: { slug: item.slug } }" class="flex-1 min-w-0 group/link">
-              <h3 class="font-serif text-[17px] leading-[1.35] font-semibold tracking-[-0.015em] text-[#12291a] group-hover/link:text-emerald-800 line-clamp-2 transition-colors" style="font-family: 'Fraunces', Georgia, serif">{{ item.judul }}</h3>
-              <p v-if="item.ringkasan" class="mt-1.5 text-[13px] leading-[1.6] text-[#5a6d5f] line-clamp-2">{{ item.ringkasan }}</p>
-            </router-link>
-            <div class="flex items-center gap-1.5 shrink-0">
-              <button
-                type="button"
-                class="w-8 h-8 rounded-full bg-white border border-stone-200 hover:border-emerald-200 hover:bg-emerald-50 text-stone-500 hover:text-emerald-700 inline-flex items-center justify-center transition-colors"
-                title="Pindahkan ke folder"
-                @click="openMoveModal(item)"
-              >
-                <Move class="w-3.5 h-3.5" />
-              </button>
-              <button
-                type="button"
-                class="w-8 h-8 rounded-full bg-white border border-stone-200 hover:border-red-200 hover:bg-red-50 text-stone-500 hover:text-red-600 inline-flex items-center justify-center transition-colors"
-                title="Hapus dari offline"
-                @click="removeFromOffline(item)"
-              >
-                <Trash2 class="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-          <div class="mt-auto pt-4 border-t border-[#f0ede8] flex items-center justify-between">
-            <span class="inline-flex items-center gap-1.5 text-[11px] text-stone-500">
-              <Calendar class="w-3 h-3" /> {{ new Date(item.saved_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) }}
-            </span>
-            <span v-if="item.has_update_available" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-[11px] font-semibold">
-              <RefreshCw class="w-3 h-3" /> Update tersedia
-            </span>
-            <span v-else class="text-[11px] tracking-[0.08em] uppercase font-medium text-stone-400">Tersimpan</span>
-          </div>
-        </div>
+          <template #actions>
+            <button
+              type="button"
+              class="w-8 h-8 rounded-full bg-white border border-stone-200 hover:border-emerald-200 hover:bg-emerald-50 text-stone-500 hover:text-emerald-700 inline-flex items-center justify-center transition-colors"
+              title="Pindahkan ke folder"
+              @click="openMoveModal(item)"
+            >
+              <Move class="w-3.5 h-3.5" />
+            </button>
+            <button
+              type="button"
+              class="w-8 h-8 rounded-full bg-white border border-stone-200 hover:border-red-200 hover:bg-red-50 text-stone-500 hover:text-red-600 inline-flex items-center justify-center transition-colors"
+              title="Hapus dari offline"
+              @click="removeFromOffline(item)"
+            >
+              <Trash2 class="w-3.5 h-3.5" />
+            </button>
+          </template>
+        </AmalanCard>
       </div>
 
       <!-- Empty state -->
@@ -361,7 +347,6 @@ import {
   Edit2,
   Trash2,
   Move,
-  RefreshCw,
   BookHeart,
   BookMarked,
   Bookmark,
@@ -371,13 +356,13 @@ import {
   CheckCircle,
   X,
   ArrowLeft,
-  Calendar,
   Library,
 } from 'lucide-vue-next'
 import { useToast } from '@/composables/useToast'
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
 import FolderPicker from '@/components/FolderPicker.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
+import AmalanCard from '@/components/AmalanCard.vue'
 import { createShareBundle } from '@/services/shareService'
 import { toPlainLyrics } from '@/utils/lyric'
 import { buildBreadcrumb, collectDescendants, type Folder as TreeFolder } from '@/utils/folderTree'
