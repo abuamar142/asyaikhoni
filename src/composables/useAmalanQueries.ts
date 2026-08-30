@@ -38,20 +38,5 @@ export function useAmalanBySlugQuery(slug: MaybeRef<string>) {
   })
 }
 
-// Amalan by ID query
-export function useAmalanByIdQuery(id: MaybeRef<string>) {
-  return useQuery({
-    queryKey: amalanKeys.detail(unref(id)),
-    queryFn: () => amalanService.getById(unref(id)),
-    enabled: !!unref(id),
-  })
-}
-
-// markdown download - kept for share preview fallback (AmalanSharePreview imports fallback via downloadMarkdown)
-export function useMarkdownQuery(id: MaybeRef<string>) {
-  return useQuery({
-    queryKey: ['markdown', unref(id)] as const,
-    queryFn: () => amalanService.downloadMarkdown(unref(id)),
-    enabled: !!unref(id),
-  })
-}
+// Note: useAmalanByIdQuery + useMarkdownQuery removed (dead code, exp-12).
+// AmalanSharePreview uses direct amalanService.downloadMarkdown() fallback, no query wrapper needed.
