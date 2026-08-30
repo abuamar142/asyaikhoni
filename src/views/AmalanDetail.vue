@@ -622,7 +622,6 @@ const slug = computed(() => route.params.slug as string)
 const {
   data: amalan,
   isLoading: loadingAmalan,
-  isFetching: fetchingAmalan,
   isError: amalanError,
 } = useAmalanBySlugQuery(slug)
 
@@ -713,8 +712,6 @@ const showSaveToFolderModal = ref(false)
 const saveTargetFolderId = ref<number | null>(0)
 const saveNavId = ref<number | null>(null)
 
-const availableFoldersForSave = computed(() => allFolders.value)
-
 const orderedFoldersForSave = computed(() => {
   return [...allFolders.value].sort((a, b) => {
     const da = a.id != null ? getFolderDepth(a.id, allFolders.value) : 0
@@ -791,50 +788,45 @@ function onScroll() {
   progress.value = Math.min(100, Math.max(0, pct))
 }
 
-// lyric title header
+// lyric title header — single split via titleParts (dedup arabTitle/latinTitle + cheap computed churn)
 const arabicRe = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/
 const latinReHeader = /[A-Za-z]/
 const titleSplitRe = /\s*[—–]\s*|\s+-\s+/
 const rawTitle = computed(() => (effectiveAmalan.value?.judul || '').trim())
-const arabTitle = computed(() => {
+const titleParts = computed(() => {
   const raw = rawTitle.value
-  if (!raw) return ''
+  if (!raw) return { arab: '', latin: '' }
   const parts = raw.split(titleSplitRe)
-  if (parts.length >= 2) {
-    const a = parts[0].trim()
-    const b = parts.slice(1).join(' — ').trim()
-    if (!a || !b) return raw
-    const aIsArab = arabicRe.test(a)
-    const bIsArab = arabicRe.test(b)
-    if (aIsArab && !bIsArab) return a
-    if (!aIsArab && bIsArab) return b
-    if (aIsArab && bIsArab) return raw
-    if (!aIsArab && !bIsArab) return raw
-    return a
-  }
-  return raw
+  if (parts.length < 2) return { arab: raw, latin: '' }
+  const a = parts[0].trim()
+  const b = parts.slice(1).join(' — ').trim()
+  if (!a || !b) return { arab: raw, latin: '' }
+  const aIsArab = arabicRe.test(a)
+  const bIsArab = arabicRe.test(b)
+  const aIsLatin = latinReHeader.test(a) && !aIsArab
+  const bIsLatin = latinReHeader.test(b) && !bIsArab
+
+  let arab = ''
+  let latin = ''
+  // arab selection (preserved)
+  if (aIsArab && !bIsArab) arab = a
+  else if (!aIsArab && bIsArab) arab = b
+  else if (aIsArab && bIsArab) arab = raw
+  else if (!aIsArab && !bIsArab) arab = raw
+  else arab = a
+  // latin selection (preserved)
+  if (aIsArab && bIsLatin) latin = b
+  else if (aIsLatin && bIsArab) latin = a
+  else if (aIsArab && bIsArab) latin = ''
+  else if (!aIsArab && !bIsArab) latin = ''
+  else if (bIsLatin) latin = b
+  else if (aIsLatin) latin = a
+  else latin = ''
+
+  return { arab, latin }
 })
-const latinTitle = computed(() => {
-  const raw = rawTitle.value
-  if (!raw) return ''
-  const parts = raw.split(titleSplitRe)
-  if (parts.length >= 2) {
-    const a = parts[0].trim()
-    const b = parts.slice(1).join(' — ').trim()
-    const aIsArab = arabicRe.test(a)
-    const bIsArab = arabicRe.test(b)
-    const aIsLatin = latinReHeader.test(a) && !aIsArab
-    const bIsLatin = latinReHeader.test(b) && !bIsArab
-    if (aIsArab && bIsLatin) return b
-    if (aIsLatin && bIsArab) return a
-    if (aIsArab && bIsArab) return ''
-    if (!aIsArab && !bIsArab) return ''
-    if (bIsLatin) return b
-    if (aIsLatin) return a
-    return ''
-  }
-  return ''
-})
+const arabTitle = computed(() => titleParts.value.arab)
+const latinTitle = computed(() => titleParts.value.latin)
 const hasTitleLatin = computed(() => !!latinTitle.value)
 
 const readingMinutes = computed(() => {

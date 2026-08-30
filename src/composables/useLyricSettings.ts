@@ -15,7 +15,7 @@ function clamp(n: number): number {
 }
 
 export function useLyricSettings() {
-  const { showLatin, toggleLatin, annotateLatin } = useLatinToggle()
+  const { showLatin, toggleLatin } = useLatinToggle()
 
   if (!_initialized && typeof window !== 'undefined') {
     try {
@@ -70,7 +70,6 @@ export function useLyricSettings() {
   return {
     showLatin,
     toggleLatin,
-    annotateLatin,
     fontSize,
     isDark,
     increase,

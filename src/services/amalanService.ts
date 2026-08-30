@@ -36,6 +36,22 @@ type AmalanListResponse = {
   offset: number
 }
 
+function buildAmalanParams(params?: {
+  q?: string
+  kategori?: string | string[]
+  kategoriIds?: string[]
+  limit?: number
+  offset?: number
+  includeDeleted?: boolean
+}): URLSearchParams {
+  const searchParams = new URLSearchParams()
+  if (params?.q) searchParams.set('q', params.q)
+  if (params?.kategoriIds?.length) searchParams.set('kategoriIds', params.kategoriIds.join(','))
+  if (params?.limit) searchParams.set('limit', String(params.limit))
+  if (params?.offset) searchParams.set('offset', String(params.offset))
+  return searchParams
+}
+
 export async function listPublic(params?: {
   q?: string
   kategori?: string | string[]
@@ -43,12 +59,7 @@ export async function listPublic(params?: {
   limit?: number
   offset?: number
 }) {
-  const searchParams = new URLSearchParams()
-  if (params?.q) searchParams.set('q', params.q)
-  if (params?.kategoriIds?.length) searchParams.set('kategoriIds', params.kategoriIds.join(','))
-  if (params?.limit) searchParams.set('limit', String(params.limit))
-  if (params?.offset) searchParams.set('offset', String(params.offset))
-
+  const searchParams = buildAmalanParams(params)
   const query = searchParams.toString()
   const result = await api.get<AmalanListResponse>(
     `/api/v1/asyaikhoni/amalan${query ? `?${query}` : ''}`,
@@ -64,12 +75,7 @@ export async function listAll(params?: {
   offset?: number
   includeDeleted?: boolean
 }) {
-  const searchParams = new URLSearchParams()
-  if (params?.q) searchParams.set('q', params.q)
-  if (params?.kategoriIds?.length) searchParams.set('kategoriIds', params.kategoriIds.join(','))
-  if (params?.limit) searchParams.set('limit', String(params.limit))
-  if (params?.offset) searchParams.set('offset', String(params.offset))
-
+  const searchParams = buildAmalanParams(params)
   const query = searchParams.toString()
   const result = await api.get<AmalanListResponse>(
     `/api/v1/asyaikhoni/amalan${query ? `?${query}` : ''}`,
