@@ -180,7 +180,7 @@
                 type="button"
                 class="w-8 h-8 rounded-full bg-white border border-stone-200 hover:border-emerald-200 hover:bg-emerald-50 text-stone-500 hover:text-emerald-700 inline-flex items-center justify-center transition-colors"
                 title="Pindahkan ke folder"
-                @click="showMoveToFolder(item)"
+                @click="openMoveModal(item)"
               >
                 <Move class="w-3.5 h-3.5" />
               </button>
@@ -256,48 +256,109 @@
       </div>
     </div>
 
-    <!-- Move to Folder Modal -->
-    <div v-if="movingItem" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div class="absolute inset-0 bg-[#0f2318]/40 backdrop-blur-sm" @click="movingItem = null"></div>
-      <div class="relative bg-white rounded-[20px] shadow-[0_20px_60px_rgba(15,35,20,0.22)] w-full max-w-md overflow-hidden border border-[#e8e6de]">
-        <div class="h-1 bg-gradient-to-r from-emerald-700 via-emerald-600 to-amber-300"></div>
-        <div class="p-6 sm:p-7">
-          <h2 class="font-serif text-[18px] font-semibold text-[#12291a]" style="font-family: 'Fraunces', Georgia, serif">Pindahkan ke Folder</h2>
-          <p class="text-[13px] text-stone-500 mt-1">Pilih tujuan untuk “{{ movingItem.judul }}”</p>
-          <div class="mt-5 space-y-2 max-h-64 overflow-auto pr-1 custom-scroll">
-            <button
-              type="button"
-              class="w-full flex items-center gap-3 p-3.5 rounded-xl border text-left transition-all"
-              :class="movingItem.folder_id === 0 ? 'border-emerald-300 bg-emerald-50/70' : 'border-stone-200 bg-white hover:border-emerald-200 hover:bg-emerald-50/50'"
-              @click="moveToFolder(0)"
-            >
-              <span class="w-9 h-9 rounded-xl bg-stone-100 border border-stone-200 inline-flex items-center justify-center shrink-0">
-                <FolderX class="w-4 h-4 text-stone-500" />
+    <!-- Move to Folder Modal — drill-down -->
+    <Teleport to="body">
+      <div v-if="showMoveModal" class="fixed inset-0 z-[80] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="move-modal-title">
+        <div class="absolute inset-0 bg-[#0f2318]/40 backdrop-blur-sm" @click="closeMoveModal"></div>
+        <div class="relative bg-white rounded-[20px] shadow-[0_20px_60px_rgba(15,35,20,0.22)] w-full max-w-md overflow-hidden border border-[#e8e6de] max-h-[85vh] flex flex-col">
+          <div class="h-1 bg-gradient-to-r from-emerald-700 via-emerald-600 to-amber-300 shrink-0"></div>
+          <div class="p-6 sm:p-7 flex flex-col min-h-0">
+            <div class="flex items-start justify-between gap-4 shrink-0">
+              <div class="min-w-0">
+                <h2 id="move-modal-title" class="font-serif text-[18px] font-semibold text-[#12291a]" style="font-family: 'Fraunces', Georgia, serif">Pindah ke…</h2>
+                <p class="text-[13px] text-stone-500 mt-1 truncate">“{{ moveAmalan?.judul }}”</p>
+              </div>
+              <button type="button" class="w-8 h-8 rounded-full bg-stone-50 border border-stone-200 inline-flex items-center justify-center text-stone-500 hover:bg-stone-100 shrink-0" aria-label="Tutup" @click="closeMoveModal">
+                <X class="w-4 h-4" />
+              </button>
+            </div>
+
+            <!-- Breadcrumb nav for modal -->
+            <div class="mt-4 flex items-center gap-1.5 flex-wrap text-[13px] bg-stone-50 rounded-xl px-3 py-2.5 border border-stone-200 shrink-0">
+              <button
+                type="button"
+                class="inline-flex items-center gap-1.5 font-medium px-2 py-1 rounded-full transition-colors"
+                :class="moveNavId === null ? 'bg-emerald-700 text-white' : 'bg-white border border-stone-200 text-stone-600 hover:border-emerald-200 hover:text-emerald-800'"
+                @click="moveGoRoot"
+              >
+                <span aria-hidden="true">🏠</span> Root
+              </button>
+              <template v-for="crumb in moveBreadcrumb" :key="crumb.id">
+                <ChevronRight class="w-4 h-4 text-stone-400 shrink-0" />
+                <button
+                  type="button"
+                  class="inline-flex items-center gap-1.5 font-medium px-2.5 py-1 rounded-full border transition-colors max-w-[10rem] truncate"
+                  :class="crumb.id === moveNavId ? 'bg-emerald-700 text-white border-emerald-700' : 'bg-white border-stone-200 text-stone-600 hover:border-emerald-200 hover:text-emerald-800'"
+                  @click="moveGoToCrumb(crumb)"
+                >
+                  <Folder class="w-3.5 h-3.5 shrink-0" :class="crumb.id === moveNavId ? 'text-white' : 'text-emerald-700'" />
+                  <span class="truncate">{{ crumb.name }}</span>
+                </button>
+              </template>
+            </div>
+
+            <!-- Nav controls -->
+            <div class="mt-3 flex items-center gap-2 shrink-0">
+              <button
+                v-if="moveNavId !== null"
+                type="button"
+                class="inline-flex items-center gap-1.5 text-[12.5px] font-medium text-stone-600 bg-white border border-stone-200 hover:border-emerald-200 hover:text-emerald-800 hover:bg-emerald-50 px-3 py-1.5 rounded-full transition-colors"
+                @click="moveGoBack"
+              >
+                <ArrowLeft class="w-3.5 h-3.5" /> Kembali
+              </button>
+              <span class="text-[12px] text-stone-400 truncate">
+                {{ moveNavId === null ? 'Root — pilih subfolder atau pindahkan ke sini' : `Di dalam “${moveCurrentFolder?.name ?? ''}”` }}
               </span>
-              <span class="text-[13.5px] font-medium" :class="movingItem.folder_id === 0 ? 'text-emerald-900' : 'text-stone-700'">Tanpa Folder (Root)</span>
-              <Check v-if="movingItem.folder_id === 0" class="w-4 h-4 text-emerald-700 ml-auto" />
-            </button>
-            <button
-              v-for="folder in allFolders"
-              :key="folder.id"
-              type="button"
-              class="w-full flex items-center gap-3 p-3.5 rounded-xl border text-left transition-all"
-              :class="movingItem.folder_id === folder.id ? 'border-emerald-300 bg-emerald-50/70' : 'border-stone-200 bg-white hover:border-emerald-200 hover:bg-emerald-50/50'"
-              @click="moveToFolder(folder.id!)"
-            >
-              <span class="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 inline-flex items-center justify-center shrink-0">
-                <Folder class="w-4 h-4" />
+            </div>
+
+            <!-- Folder list (children of moveNavId) -->
+            <div class="mt-4 space-y-2 overflow-auto flex-1 pr-1 custom-scroll min-h-[8rem]">
+              <div v-if="displayMoveFolders.length === 0" class="text-center py-8 text-[13px] text-stone-500 border border-dashed border-stone-200 rounded-xl bg-stone-50/50">
+                Tidak ada subfolder
+              </div>
+              <button
+                v-for="folder in displayMoveFolders"
+                :key="folder.id"
+                type="button"
+                class="w-full flex items-center gap-3 p-3.5 rounded-xl border text-left transition-all group"
+                :class="folder.id === moveSourceFolderId ? 'border-amber-200 bg-amber-50/60 opacity-75 cursor-not-allowed' : 'border-stone-200 bg-white hover:border-emerald-200 hover:bg-emerald-50/50'"
+                @click="enterMoveFolder(folder)"
+              >
+                <span class="w-9 h-9 rounded-xl border inline-flex items-center justify-center shrink-0 transition-colors" :class="folder.id === moveSourceFolderId ? 'bg-amber-100 border-amber-200 text-amber-700' : 'bg-emerald-50 border-emerald-100 text-emerald-700 group-hover:bg-emerald-100'">
+                  <Folder class="w-4 h-4" />
+                </span>
+                <span class="flex-1 min-w-0">
+                  <span class="block text-[13.5px] font-medium truncate" :class="folder.id === moveSourceFolderId ? 'text-amber-900' : 'text-stone-700'">{{ folder.name }}</span>
+                  <span v-if="folder.id === moveSourceFolderId" class="block text-[11px] text-amber-700/80">Folder saat ini</span>
+                </span>
+                <ChevronRight class="w-4 h-4 text-stone-400 group-hover:text-emerald-700 shrink-0" />
+              </button>
+            </div>
+
+            <!-- Footer -->
+            <div class="mt-5 pt-4 border-t border-stone-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shrink-0">
+              <span class="text-[12px] text-stone-500 truncate">
+                Target: <span class="font-semibold text-stone-700">{{ moveNavId === null ? 'Root' : moveCurrentFolder?.name }}</span>
+                <span v-if="isMoveToCurrentFolder" class="ml-1 text-amber-600">(sudah di sini)</span>
               </span>
-              <span class="text-[13.5px] font-medium" :class="movingItem.folder_id === folder.id ? 'text-emerald-900' : 'text-stone-700'">{{ folder.name }}</span>
-              <Check v-if="movingItem.folder_id === folder.id" class="w-4 h-4 text-emerald-700 ml-auto" />
-            </button>
-          </div>
-          <div class="mt-6 flex justify-end">
-            <button type="button" class="px-5 py-2.5 rounded-full bg-white border border-stone-200 text-[13px] font-medium text-stone-700 hover:bg-stone-50" @click="movingItem = null">Tutup</button>
+              <div class="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+                <button type="button" class="px-5 py-2.5 rounded-full bg-white border border-stone-200 text-[13px] font-medium text-stone-700 hover:bg-stone-50" @click="closeMoveModal">Batal</button>
+                <button
+                  type="button"
+                  class="px-6 py-2.5 rounded-full text-[13px] font-semibold shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  :class="isMoveToCurrentFolder ? 'bg-stone-200 text-stone-500' : 'bg-emerald-700 text-white hover:bg-emerald-800'"
+                  :disabled="isMoveToCurrentFolder"
+                  @click="confirmMove"
+                >
+                  Pindahkan ke sini
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </Teleport>
 
     <ConfirmDialog
       v-model="isConfirmingDelete"
@@ -366,7 +427,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { db, type LocalSavedAmalan, type LocalFolder, ensureDbReady, isIndexedDBAvailable } from '@/utils/localDb'
 import {
   Folder,
@@ -579,11 +640,77 @@ function goBack() {
   loadData()
 }
 
-// Item Logic
+// Item Logic — drill-down move modal
 const movingItem = ref<LocalSavedAmalan | null>(null)
 
+// New drill-down move state
+const showMoveModal = ref(false)
+const moveAmalan = ref<LocalSavedAmalan | null>(null)
+const moveNavId = ref<number | null>(null)
+
+const displayMoveFolders = computed(() => allFolders.value.filter((f) => (f.parent_id ?? null) === moveNavId.value))
+const moveBreadcrumb = computed(() => buildBreadcrumb(moveNavId.value))
+const moveTargetFolderId = computed(() => moveNavId.value ?? 0)
+const moveSourceFolderId = computed(() => (moveAmalan.value as any)?.folder_id ?? 0)
+const isMoveToCurrentFolder = computed(() => moveSourceFolderId.value === moveTargetFolderId.value)
+const moveCurrentFolder = computed<LocalFolder | null>(() => {
+  if (moveNavId.value == null) return null
+  return allFolders.value.find((f) => f.id === moveNavId.value) ?? null
+})
+
 function showMoveToFolder(item: LocalSavedAmalan) {
-  movingItem.value = item
+  // legacy entry point — delegate to drill-down modal
+  openMoveModal(item)
+}
+
+function openMoveModal(item: LocalSavedAmalan) {
+  moveAmalan.value = item
+  movingItem.value = item // keep for backward compat if legacy template still reads it
+  // start browsing at root; user can drill down
+  moveNavId.value = null
+  showMoveModal.value = true
+}
+
+function closeMoveModal() {
+  showMoveModal.value = false
+  moveAmalan.value = null
+  movingItem.value = null
+}
+
+function enterMoveFolder(folder: LocalFolder) {
+  if (folder.id == null) return
+  moveNavId.value = folder.id
+}
+
+function moveGoBack() {
+  if (moveNavId.value == null) return
+  const cur = allFolders.value.find((f) => f.id === moveNavId.value)
+  moveNavId.value = cur?.parent_id ?? null
+}
+
+function moveGoRoot() {
+  moveNavId.value = null
+}
+
+function moveGoToCrumb(folder: LocalFolder) {
+  if (folder.id == null) return
+  moveNavId.value = folder.id
+}
+
+async function confirmMove() {
+  if (!moveAmalan.value) return
+  const folderId = moveTargetFolderId.value
+  // set movingItem so moveToFolder can reuse its logic if needed
+  movingItem.value = moveAmalan.value
+  await moveToFolder(folderId)
+  // moveToFolder will close and reload; ensure modal closed even if no-op (same folder)
+  if (showMoveModal.value) {
+    // if moveToFolder didn't close due to early return (duplicate/same), keep modal open so user can pick another;
+    // but if success, moveToFolder already nulled movingItem; sync showMoveModal
+    if (!movingItem.value) {
+      closeMoveModal()
+    }
+  }
 }
 
 async function moveToFolder(folderId: number) {
@@ -634,6 +761,9 @@ async function moveToFolder(folderId: number) {
     }
     toast.success('Berhasil dipindahkan.')
     movingItem.value = null
+    // also sync new modal state
+    moveAmalan.value = null
+    showMoveModal.value = false
     loadData()
   } catch (err: any) {
     console.error('[offline] moveToFolder failed', err)
@@ -645,6 +775,27 @@ async function moveToFolder(folderId: number) {
     }
   }
 }
+
+// ESC closes move modal + background scroll lock
+function onKeydown(e: KeyboardEvent) {
+  if (e.key === 'Escape' && showMoveModal.value) {
+    closeMoveModal()
+  }
+}
+watch(showMoveModal, (open) => {
+  if (open) {
+    document.addEventListener('keydown', onKeydown)
+    // prevent background scroll
+    document.documentElement.style.overflow = 'hidden'
+  } else {
+    document.removeEventListener('keydown', onKeydown)
+    document.documentElement.style.overflow = ''
+  }
+})
+onUnmounted(() => {
+  document.removeEventListener('keydown', onKeydown)
+  document.documentElement.style.overflow = ''
+})
 
 async function removeFromOffline(item: LocalSavedAmalan) {
   try {
