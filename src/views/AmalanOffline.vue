@@ -29,7 +29,7 @@
               <span class="inline-flex w-6 h-6 rounded-full bg-emerald-700 text-white items-center justify-center"><BookMarked class="w-3.5 h-3.5" /></span>
               <span class="font-medium text-stone-800">{{ savedAmalan.length }} amalan</span>
               <span class="w-px h-4 bg-stone-200"></span>
-              <span>{{ folders.length }} folder</span>
+              <span>{{ allFolders.length }} folder</span>
             </div>
           </div>
           <div class="flex flex-wrap items-center gap-3 shrink-0">
@@ -42,6 +42,15 @@
               Folder Baru
             </button>
             <button
+              v-if="currentFolderId !== null"
+              type="button"
+              class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white border border-emerald-200 text-[13px] font-semibold text-emerald-800 hover:bg-emerald-50 shadow-sm transition-all"
+              @click="isCreatingFolder = true"
+            >
+              <FolderPlus class="w-4 h-4" />
+              Buat Subfolder
+            </button>
+            <button
               type="button"
               class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-emerald-700 text-white text-[13px] font-semibold hover:bg-emerald-800 shadow-sm transition-colors"
               @click="startShare(null)"
@@ -52,29 +61,44 @@
           </div>
         </div>
 
-        <!-- Breadcrumb -->
-        <div v-if="currentFolder" class="flex items-center gap-2 pb-4 text-[13px]">
-          <button type="button" class="inline-flex items-center gap-1.5 text-emerald-800 hover:text-emerald-900 font-medium" @click="closeFolder">
+        <!-- Breadcrumb nav -->
+        <div v-if="breadcrumbPath.length > 0 || currentFolderId !== null" class="flex items-center gap-1.5 pb-4 text-[13px] flex-wrap">
+          <button type="button" class="inline-flex items-center gap-1.5 text-emerald-800 hover:text-emerald-900 font-medium px-2.5 py-1 rounded-full hover:bg-emerald-50 transition-colors" @click="goToRoot">
             <ArrowLeft class="w-3.5 h-3.5" /> Koleksi
           </button>
-          <ChevronRight class="w-4 h-4 text-stone-400" />
-          <span class="inline-flex items-center gap-1.5 font-medium text-stone-700 bg-white border border-stone-200 px-2.5 py-1 rounded-full">
-            <Folder class="w-3.5 h-3.5 text-emerald-700" /> {{ currentFolder.name }}
-          </span>
+          <template v-for="(crumb, idx) in breadcrumbPath" :key="crumb.id">
+            <ChevronRight class="w-4 h-4 text-stone-400 shrink-0" />
+            <button
+              v-if="idx < breadcrumbPath.length - 1"
+              type="button"
+              class="inline-flex items-center gap-1.5 font-medium text-stone-600 hover:text-emerald-800 bg-white border border-stone-200 hover:border-emerald-200 px-2.5 py-1 rounded-full transition-colors"
+              @click="goToBreadcrumb(crumb)"
+            >
+              <Folder class="w-3.5 h-3.5 text-emerald-700" /> {{ crumb.name }}
+            </button>
+            <span
+              v-else
+              class="inline-flex items-center gap-1.5 font-medium text-stone-700 bg-white border border-stone-200 px-2.5 py-1 rounded-full"
+            >
+              <Folder class="w-3.5 h-3.5 text-emerald-700" /> {{ crumb.name }}
+            </span>
+          </template>
         </div>
       </div>
     </div>
 
     <div class="relative container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10">
-      <!-- Root folders -->
-      <div v-if="!currentFolder && folders.length > 0" class="mb-10">
+      <!-- Folders / Subfolders grid (filtered by currentFolderId) -->
+      <div v-if="displayFolders.length > 0" class="mb-10">
         <div class="flex items-center justify-between mb-4">
-          <h2 class="text-[11px] tracking-[0.16em] font-semibold uppercase text-stone-500">Folder Anda</h2>
-          <span class="text-[12px] text-stone-400">{{ folders.length }} folder</span>
+          <h2 class="text-[11px] tracking-[0.16em] font-semibold uppercase text-stone-500">
+            {{ currentFolderId === null ? 'Folder Anda' : `Subfolder di ${currentFolder?.name ?? ''}` }}
+          </h2>
+          <span class="text-[12px] text-stone-400">{{ displayFolders.length }} folder</span>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
           <div
-            v-for="folder in folders"
+            v-for="folder in displayFolders"
             :key="folder.id"
             class="group relative p-5 md:p-6 rounded-[18px] border border-[#e8e6de] bg-white hover:border-emerald-200 hover:shadow-[0_12px_28px_rgba(16,40,22,0.08)] hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
             @click="openFolder(folder)"
@@ -115,6 +139,21 @@
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- When inside a folder with no subfolders but also check empty handling: show Buat Subfolder hint -->
+      <div v-if="currentFolderId !== null && displayFolders.length === 0" class="mb-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-[11px] tracking-[0.16em] font-semibold uppercase text-stone-500">Subfolder</h2>
+          <button
+            type="button"
+            class="inline-flex items-center gap-1.5 text-[12px] font-medium text-emerald-700 hover:text-emerald-800"
+            @click="isCreatingFolder = true"
+          >
+            <FolderPlus class="w-3.5 h-3.5" /> Buat Subfolder
+          </button>
+        </div>
+        <p class="text-[13px] text-stone-500">Belum ada subfolder di dalam "{{ currentFolder?.name }}".</p>
       </div>
 
       <!-- Saved amalan heading -->
@@ -168,7 +207,7 @@
       </div>
 
       <!-- Empty state -->
-      <div v-if="folders.length === 0 && savedAmalan.length === 0" class="flex flex-col items-center justify-center py-16 md:py-20 text-center">
+      <div v-if="allFolders.length === 0 && savedAmalan.length === 0" class="flex flex-col items-center justify-center py-16 md:py-20 text-center">
         <div class="w-[88px] h-[88px] rounded-[22px] bg-white border border-[#e8e6de] shadow-[0_8px_24px_rgba(16,40,22,0.06)] inline-flex items-center justify-center relative">
           <BookHeart class="w-9 h-9 text-emerald-700" :stroke-width="1.6" />
           <span class="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-amber-300 border-2 border-white flex items-center justify-center">
@@ -193,8 +232,9 @@
         <div class="p-6 sm:p-7">
           <div class="flex items-start justify-between gap-4 mb-5">
             <div>
-              <h2 class="font-serif text-[18px] font-semibold text-[#12291a]" style="font-family: 'Fraunces', Georgia, serif">{{ editingFolderData ? 'Edit Folder' : 'Folder Baru' }}</h2>
+              <h2 class="font-serif text-[18px] font-semibold text-[#12291a]" style="font-family: 'Fraunces', Georgia, serif">{{ editingFolderData ? 'Edit Folder' : (currentFolderId !== null ? 'Subfolder Baru' : 'Folder Baru') }}</h2>
               <p class="text-[13px] text-stone-500 mt-1">Beri nama yang mudah dikenali.</p>
+              <p v-if="!editingFolderData && currentFolder?.name" class="text-[12px] text-emerald-700 mt-1">Di dalam: {{ breadcrumbPath.map(b => b.name).join(' / ') }}</p>
             </div>
             <button type="button" class="w-8 h-8 rounded-full bg-stone-50 border border-stone-200 inline-flex items-center justify-center text-stone-500 hover:bg-stone-100" @click="closeFolderModal">
               <X class="w-4 h-4" />
@@ -238,7 +278,7 @@
               <Check v-if="movingItem.folder_id === 0" class="w-4 h-4 text-emerald-700 ml-auto" />
             </button>
             <button
-              v-for="folder in folders"
+              v-for="folder in allFolders"
               :key="folder.id"
               type="button"
               class="w-full flex items-center gap-3 p-3.5 rounded-xl border text-left transition-all"
@@ -326,8 +366,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { db, type LocalSavedAmalan, type LocalFolder } from '@/utils/localDb'
+import { ref, computed, onMounted } from 'vue'
+import { db, type LocalSavedAmalan, type LocalFolder, ensureDbReady, isIndexedDBAvailable } from '@/utils/localDb'
 import {
   Folder,
   FolderPlus,
@@ -355,16 +395,55 @@ import { createShareBundle } from '@/services/shareService'
 
 const toast = useToast()
 
-const folders = ref<LocalFolder[]>([])
+const allFolders = ref<LocalFolder[]>([])
 const savedAmalan = ref<LocalSavedAmalan[]>([])
-const currentFolder = ref<LocalFolder | null>(null)
+const currentFolderId = ref<number | null>(null)
+
+const currentFolder = computed<LocalFolder | null>(() => {
+  if (currentFolderId.value == null) return null
+  return allFolders.value.find((f) => f.id === currentFolderId.value) ?? null
+})
+
+const displayFolders = computed(() => allFolders.value.filter((f) => (f.parent_id ?? null) === currentFolderId.value))
+
+function buildBreadcrumb(id: number | null): LocalFolder[] {
+  if (id == null) return []
+  const path: LocalFolder[] = []
+  let curId: number | null = id
+  const visited = new Set<number>()
+  while (curId != null && !visited.has(curId)) {
+    visited.add(curId)
+    const folder = allFolders.value.find((f) => f.id === curId)
+    if (!folder) break
+    path.unshift(folder)
+    curId = folder.parent_id ?? null
+  }
+  return path
+}
+
+const breadcrumbPath = computed(() => buildBreadcrumb(currentFolderId.value))
 
 async function loadData() {
-  folders.value = await db.folders.toArray()
-  if (currentFolder.value) {
-    savedAmalan.value = await db.saved_amalan.where('folder_id').equals(currentFolder.value.id!).toArray()
-  } else {
-    savedAmalan.value = await db.saved_amalan.where('folder_id').equals(0).toArray()
+  try {
+    if (!isIndexedDBAvailable()) {
+      console.warn('[offline] IndexedDB not available (private mode / insecure context)')
+      return
+    }
+    try {
+      await ensureDbReady()
+    } catch (e) {
+      console.error('[offline] ensureDbReady failed', e)
+    }
+
+    allFolders.value = await db.folders.toArray()
+    if (currentFolderId.value != null) {
+      savedAmalan.value = await db.saved_amalan.where('folder_id').equals(currentFolderId.value).toArray()
+    } else {
+      savedAmalan.value = await db.saved_amalan.where('folder_id').equals(0).toArray()
+    }
+  } catch (err) {
+    console.error('[offline] loadData failed', err)
+    toast.error('Gagal memuat koleksi offline.')
   }
 }
 
@@ -395,6 +474,7 @@ async function saveFolder() {
   } else {
     await db.folders.add({
       name: folderForm.value.name.trim(),
+      parent_id: currentFolderId.value,
       created_at: Date.now(),
       updated_at: Date.now(),
     })
@@ -431,12 +511,32 @@ async function deleteFolder() {
 }
 
 function openFolder(folder: LocalFolder) {
-  currentFolder.value = folder
+  currentFolderId.value = folder.id!
   loadData()
 }
 
 function closeFolder() {
-  currentFolder.value = null
+  currentFolderId.value = null
+  loadData()
+}
+
+function goToRoot() {
+  currentFolderId.value = null
+  loadData()
+}
+
+function goToBreadcrumb(folder: LocalFolder) {
+  currentFolderId.value = folder.id!
+  loadData()
+}
+
+// kept for template backward compat if referenced elsewhere
+function goBack() {
+  if (currentFolder.value?.parent_id != null) {
+    currentFolderId.value = currentFolder.value.parent_id
+  } else {
+    currentFolderId.value = null
+  }
   loadData()
 }
 

@@ -25,7 +25,7 @@ export interface LocalSavedAmalan {
 export interface LocalFolder {
   id?: number
   name: string
-  parent_id?: number | null
+  parent_id: number | null
   created_at: number
   updated_at: number
 }
@@ -66,6 +66,20 @@ export class MyDatabase extends Dexie {
             if (item.folder_id == null) item.folder_id = 0
             if (item.has_update_available == null) item.has_update_available = false
             if (!item.content_version) item.content_version = 1
+          })
+      })
+    // v3: folder nesting - ensure parent_id exists (null for root)
+    this.version(3)
+      .stores({
+        saved_amalan: '++id, amalan_id, slug, folder_id, has_update_available',
+        folders: '++id, name, parent_id',
+      })
+      .upgrade((tx) => {
+        return tx
+          .table('folders')
+          .toCollection()
+          .modify((f: any) => {
+            if (f.parent_id === undefined) f.parent_id = null
           })
       })
   }
