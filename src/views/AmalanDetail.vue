@@ -367,7 +367,7 @@
           <BaseButton
             :variant="showLatin ? 'primary' : 'ghost'"
             pill
-            class="relative h-[28px] w-[48px] !p-0 shrink-0 cursor-pointer !justify-start !gap-0"
+            class="relative h-8 w-14 !p-0 shrink-0 cursor-pointer"
             :class="showLatin ? '!bg-emerald-700 !border-emerald-700' : '!bg-stone-200 !border-stone-200'"
             role="switch"
             :aria-checked="showLatin ? 'true' : 'false'"
@@ -375,8 +375,8 @@
             @click="toggleLatin"
           >
             <span
-              class="inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition duration-200"
-              :class="showLatin ? 'translate-x-[22px]' : 'translate-x-[3px]'"
+              class="absolute top-1/2 -translate-y-1/2 left-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-sm transition duration-200 will-change-transform"
+              :class="showLatin ? 'translate-x-6' : 'translate-x-0'"
             ></span>
           </BaseButton>
         </div>
@@ -469,7 +469,7 @@
           <BaseButton
             :variant="isDark ? 'primary' : 'ghost'"
             pill
-            class="relative h-[28px] w-[48px] !p-0 shrink-0 cursor-pointer !justify-start !gap-0"
+            class="relative h-8 w-14 !p-0 shrink-0 cursor-pointer"
             :class="isDark ? '!bg-[#1a2420] !border-[#1a2420]' : '!bg-stone-200 !border-stone-200'"
             role="switch"
             :aria-checked="isDark ? 'true' : 'false'"
@@ -477,10 +477,10 @@
             @click="toggleDark"
           >
             <span
-              class="inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition duration-200 flex items-center justify-center"
-              :class="isDark ? 'translate-x-[22px]' : 'translate-x-[3px]'"
+              class="absolute top-1/2 -translate-y-1/2 left-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-sm transition duration-200 will-change-transform"
+              :class="isDark ? 'translate-x-6' : 'translate-x-0'"
             >
-              <component :is="isDark ? Moon : Sun" class="w-3 h-3" :class="isDark ? 'text-[#1a2420]' : 'text-amber-600'" />
+              <component :is="isDark ? Moon : Sun" class="h-4 w-4 shrink-0" :class="isDark ? 'text-slate-600' : 'text-amber-600'" />
             </span>
           </BaseButton>
         </div>
