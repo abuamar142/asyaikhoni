@@ -8,8 +8,6 @@ export type Category = {
   updated_at?: string
 }
 
-type KategoriResponse = { kategori: Category }
-
 export async function listCategories(params?: { q?: string }) {
   const query = params?.q ? `?q=${encodeURIComponent(params.q)}` : ''
   const result = await api.get<{ kategori: Category[] }>(`/api/v1/asyaikhoni/kategori${query}`)
@@ -19,18 +17,4 @@ export async function listCategories(params?: { q?: string }) {
 export async function getCategory(id: string) {
   const result = await api.get<{ kategori: Category }>(`/api/v1/asyaikhoni/kategori/${id}`)
   return result.kategori
-}
-
-export async function createCategory(payload: { nama: string; deskripsi?: string | null }) {
-  const result = await api.post<KategoriResponse>('/api/v1/asyaikhoni/kategori', payload)
-  return result.kategori
-}
-
-export async function updateCategory(id: string, payload: Partial<Category>) {
-  const result = await api.put<KategoriResponse>(`/api/v1/asyaikhoni/kategori/${id}`, payload)
-  return result.kategori
-}
-
-export async function deleteCategory(id: string) {
-  await api.delete(`/api/v1/asyaikhoni/kategori/${id}`)
 }

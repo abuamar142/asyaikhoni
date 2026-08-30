@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { getSession, isAdmin } from '@/services/authService'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -60,45 +59,6 @@ const router = createRouter({
         description: 'Konten amalan dalam format Markdown',
       },
     },
-    {
-      path: '/admin/login',
-      name: 'admin-login',
-      component: () => import('@/views/Admin/Login.vue'),
-      meta: {
-        title: 'Admin Login - PPTQ Asy-Syaikhoni',
-        description: 'Masuk sebagai admin untuk mengelola amalan',
-      },
-    },
-    {
-      path: '/admin',
-      name: 'admin-index',
-      component: () => import('@/views/Admin/Index.vue'),
-      meta: { requiresAuth: true, requiresAdmin: true, title: 'Admin - Dashboard' },
-    },
-    {
-      path: '/admin/amalan',
-      name: 'admin-amalan',
-      component: () => import('@/views/Admin/AmalanList.vue'),
-      meta: { requiresAuth: true, requiresAdmin: true, title: 'Admin - Amalan' },
-    },
-    {
-      path: '/admin/kategori',
-      name: 'admin-kategori',
-      component: () => import('@/views/Admin/CategoryList.vue'),
-      meta: { requiresAuth: true, requiresAdmin: true, title: 'Admin - Kategori' },
-    },
-    {
-      path: '/admin/amalan/new',
-      name: 'admin-amalan-new',
-      component: () => import('@/views/Admin/AmalanForm.vue'),
-      meta: { requiresAuth: true, requiresAdmin: true, title: 'Admin - Tambah Amalan' },
-    },
-    {
-      path: '/admin/amalan/:id/edit',
-      name: 'admin-amalan-edit',
-      component: () => import('@/views/Admin/AmalanForm.vue'),
-      meta: { requiresAuth: true, requiresAdmin: true, title: 'Admin - Edit Amalan' },
-    },
     // Redirect any unknown routes to home
     {
       path: '/:pathMatch(.*)*',
@@ -131,39 +91,6 @@ const router = createRouter({
       return { top: 0, behavior: 'smooth' }
     }
   },
-})
-
-// Middleware untuk handle perpindahan halaman
-router.beforeEach(async (to, from, next) => {
-  // Update page title
-  document.title = (to.meta.title as string) || 'PPTQ Asy-Syaikhoni'
-
-  // Update meta description
-  const metaDescription = document.querySelector('meta[name="description"]')
-  if (metaDescription && to.meta.description) {
-    metaDescription.setAttribute('content', to.meta.description as string)
-  }
-
-  // Loading state (optional) - bisa ditambahkan jika diperlukan
-  // console.log(`Navigating from ${from.path} to ${to.path}`)
-
-  // Auth guard
-  const requiresAuth = Boolean(to.meta?.requiresAuth)
-  const requiresAdmin = Boolean(to.meta?.requiresAdmin)
-  if (requiresAuth || requiresAdmin) {
-    const session = await getSession().catch(() => null)
-    if (!session) {
-      return next({ name: 'admin-login', query: { redirect: to.fullPath } })
-    }
-    if (requiresAdmin) {
-      const admin = await isAdmin().catch(() => false)
-      if (!admin) {
-        return next({ name: 'home' })
-      }
-    }
-  }
-
-  next()
 })
 
 // Middleware setelah navigasi selesai

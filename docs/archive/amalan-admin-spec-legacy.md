@@ -1,4 +1,6 @@
-# Spesifikasi Fitur: Admin CRUD Amalan
+> **LEGACY ARCHIVED — 2026-08-30 (exp-10 audit)**: Dokumen ini diarsipkan. Admin flow lokal (Vue views/services/guard) telah dihapus — admin kini ditangani sepenuhnya via **Payload CMS**. Jangan gunakan spec ini untuk pengembangan baru.
+
+# Spesifikasi Fitur: Admin CRUD Amalan [LEGACY]
 
 ## Ringkasan
 

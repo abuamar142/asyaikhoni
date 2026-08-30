@@ -72,7 +72,7 @@
               <BaseButton
                 variant="secondary"
                 class="w-full h-11 !rounded-xl !px-3.5 !justify-between !gap-3 text-left shadow-[0_1px_2px_rgba(16,30,20,0.06)] !py-0 !font-normal"
-                :class="[showCategoryDropdown ? '!border-emerald-300 ring-4 ring-emerald-500/10' : '!border-[#d7ddd7] hover:!border-[#c2cdc2]']"
+                :class="showCategoryDropdown ? '!border-emerald-300 ring-4 ring-emerald-500/10' : '!border-[#d7ddd7] hover:!border-[#c2cdc2]'"
                 @click="toggleDropdown"
                 :aria-expanded="showCategoryDropdown"
                 aria-haspopup="listbox"
