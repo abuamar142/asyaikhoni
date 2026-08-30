@@ -138,14 +138,14 @@
                 <!-- name + path -->
                 <span class="flex-1 min-w-0">
                   <span class="block text-[13px] font-medium truncate" :class="isDisabled(folder.id!) ? 'text-amber-900' : 'text-[#0f2318]'">{{ folder.name }}</span>
-                  <span v-if="getFolderDepth(folder) > 0" class="block text-[11px] text-stone-500 truncate">{{ getFolderPath(folder) }}</span>
+                  <span v-if="folder.id != null && getFolderDepth(folder.id, folders) > 0" class="block text-[11px] text-stone-500 truncate">{{ getFolderPath(folder, folders) }}</span>
                   <span v-else class="block text-[11px] text-stone-500">Folder</span>
                 </span>
 
                 <!-- disabled label or drill -->
                 <span v-if="isDisabled(folder.id!)" class="inline-flex items-center gap-1 text-[11px] font-medium text-amber-700 shrink-0"><AlertCircle class="w-3 h-3" /> Sudah ada</span>
                 <button
-                  v-else-if="hasChildren(folder.id!)"
+                  v-else-if="hasChildren(folder.id!, folders)"
                   type="button"
                   class="w-8 h-8 rounded-full bg-white border border-stone-200 hover:border-emerald-200 hover:bg-emerald-50 text-stone-500 hover:text-emerald-700 inline-flex items-center justify-center shrink-0 transition-colors"
                   aria-label="Masuk ke folder"
@@ -200,6 +200,7 @@
 import { computed } from 'vue'
 import { Folder, ChevronRight, Home, X, ArrowLeft, AlertCircle } from 'lucide-vue-next'
 import type { LocalFolder } from '@/utils/localDb'
+import { hasChildren, buildBreadcrumb, getFolderDepth, getFolderPath } from '@/utils/folderTree'
 
 const props = withDefaults(
   defineProps<{
@@ -231,61 +232,12 @@ const titleId = computed(() => `folder-picker-${props.title.replace(/\s+/g, '-')
 
 const displayFolders = computed(() => props.folders.filter((f) => (f.parent_id ?? null) === props.navId))
 
-function hasChildren(id: number): boolean {
-  return props.folders.some((f) => (f.parent_id ?? null) === id)
-}
-
-function buildBreadcrumb(id: number | null): LocalFolder[] {
-  if (id == null) return []
-  const path: LocalFolder[] = []
-  let curId: number | null = id
-  const visited = new Set<number>()
-  while (curId != null && !visited.has(curId)) {
-    visited.add(curId)
-    const folder = props.folders.find((f) => f.id === curId)
-    if (!folder) break
-    path.unshift(folder)
-    curId = folder.parent_id ?? null
-    if (path.length > 20) break
-  }
-  return path
-}
-
-const breadcrumb = computed(() => buildBreadcrumb(props.navId))
+const breadcrumb = computed(() => buildBreadcrumb(props.navId, props.folders))
 
 const currentNavFolder = computed<LocalFolder | null>(() => {
   if (props.navId == null) return null
   return props.folders.find((f) => f.id === props.navId) ?? null
 })
-
-function getFolderDepth(folder: LocalFolder): number {
-  let depth = 0
-  let curId: number | null = folder.parent_id ?? null
-  const visited = new Set<number>()
-  while (curId != null && !visited.has(curId)) {
-    visited.add(curId)
-    const parent = props.folders.find((f) => f.id === curId)
-    if (!parent) break
-    depth += 1
-    curId = parent.parent_id ?? null
-    if (depth > 20) break
-  }
-  return depth
-}
-
-function getFolderPath(folder: LocalFolder): string {
-  const parts: string[] = []
-  let cur: LocalFolder | undefined = folder
-  const visited = new Set<number>()
-  while (cur && cur.id != null && !visited.has(cur.id)) {
-    visited.add(cur.id)
-    parts.unshift(cur.name)
-    if (cur.parent_id == null) break
-    cur = props.folders.find((f) => f.id === cur.parent_id)
-    if (parts.length > 20) break
-  }
-  return parts.join(' / ')
-}
 
 const disabledSet = computed(() => {
   if (!props.disabledIds) return new Set<number>()

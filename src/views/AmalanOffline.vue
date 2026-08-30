@@ -368,6 +368,7 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
 import FolderPicker from '@/components/FolderPicker.vue'
 import { createShareBundle } from '@/services/shareService'
 import { toPlainLyrics } from '@/utils/lyric'
+import { buildBreadcrumb, collectDescendants, type Folder as TreeFolder } from '@/utils/folderTree'
 
 const toast = useToast()
 
@@ -382,22 +383,7 @@ const currentFolder = computed<LocalFolder | null>(() => {
 
 const displayFolders = computed(() => allFolders.value.filter((f) => (f.parent_id ?? null) === currentFolderId.value))
 
-function buildBreadcrumb(id: number | null): LocalFolder[] {
-  if (id == null) return []
-  const path: LocalFolder[] = []
-  let curId: number | null = id
-  const visited = new Set<number>()
-  while (curId != null && !visited.has(curId)) {
-    visited.add(curId)
-    const folder = allFolders.value.find((f) => f.id === curId)
-    if (!folder) break
-    path.unshift(folder)
-    curId = folder.parent_id ?? null
-  }
-  return path
-}
-
-const breadcrumbPath = computed(() => buildBreadcrumb(currentFolderId.value))
+const breadcrumbPath = computed(() => buildBreadcrumb(currentFolderId.value, allFolders.value))
 
 async function loadData() {
   try {
@@ -480,21 +466,8 @@ async function deleteFolder() {
   try {
     await ensureDbReady()
     const targetId = folderToDelete.value.id!
-    // collect all descendant folder ids recursively
     const all = await db.folders.toArray()
-    const toDeleteIds = new Set<number>()
-    toDeleteIds.add(targetId)
-    let changed = true
-    while (changed) {
-      changed = false
-      for (const f of all) {
-        const pid = f.parent_id ?? null
-        if (pid != null && toDeleteIds.has(pid) && f.id != null && !toDeleteIds.has(f.id)) {
-          toDeleteIds.add(f.id)
-          changed = true
-        }
-      }
-    }
+    const toDeleteIds = new Set<number>(collectDescendants(targetId, all))
     // move amalan in deleted folders (and descendants) to root
     for (const fid of toDeleteIds) {
       try {
@@ -540,7 +513,7 @@ function goToRoot() {
   loadData()
 }
 
-function goToBreadcrumb(folder: LocalFolder) {
+function goToBreadcrumb(folder: TreeFolder) {
   currentFolderId.value = folder.id!
   loadData()
 }
@@ -564,7 +537,7 @@ const moveNavId = ref<number | null>(null)
 const moveSelectedId = ref<number | null>(null)
 
 const displayMoveFolders = computed(() => allFolders.value.filter((f) => (f.parent_id ?? null) === moveNavId.value))
-const moveBreadcrumb = computed(() => buildBreadcrumb(moveNavId.value))
+const moveBreadcrumb = computed(() => buildBreadcrumb(moveNavId.value, allFolders.value))
 const moveTargetFolderId = computed(() => moveSelectedId.value ?? moveNavId.value ?? 0)
 const moveSourceFolderId = computed(() => (moveAmalan.value as any)?.folder_id ?? 0)
 const isMoveToCurrentFolder = computed(() => moveSourceFolderId.value === moveTargetFolderId.value)

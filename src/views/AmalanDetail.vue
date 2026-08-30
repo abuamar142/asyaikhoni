@@ -607,6 +607,7 @@ import { useToast } from '@/composables/useToast'
 import { useLyricSettings } from '@/composables/useLyricSettings'
 import FolderPicker from '@/components/FolderPicker.vue'
 import { toPlainLyrics, toSavedAmalanPayload } from '@/utils/lyric'
+import { getFolderDepth, getFolderPath } from '@/utils/folderTree'
 
 const route = useRoute()
 const toast = useToast()
@@ -808,39 +809,11 @@ async function loadFolders() {
   }
 }
 
-function getFolderDepth(folder: LocalFolder): number {
-  let depth = 0
-  let curId: number | null = folder.parent_id ?? null
-  const visited = new Set<number>()
-  while (curId != null && !visited.has(curId)) {
-    visited.add(curId)
-    const parent = allFolders.value.find((f) => f.id === curId)
-    if (!parent) break
-    depth += 1
-    curId = parent.parent_id ?? null
-    if (depth > 20) break
-  }
-  return depth
-}
-
-function getFolderPath(folder: LocalFolder): string {
-  const parts: string[] = []
-  let cur: LocalFolder | undefined = folder
-  const visited = new Set<number>()
-  while (cur && cur.id != null && !visited.has(cur.id)) {
-    visited.add(cur.id)
-    parts.unshift(cur.name)
-    if (cur.parent_id == null) break
-    cur = allFolders.value.find((f) => f.id === cur.parent_id)
-  }
-  return parts.join(' / ')
-}
-
 const orderedFoldersForSave = computed(() => {
   // sort by depth then name so parents appear before children
   return [...allFolders.value].sort((a, b) => {
-    const da = getFolderDepth(a)
-    const dbd = getFolderDepth(b)
+    const da = a.id != null ? getFolderDepth(a.id, allFolders.value) : 0
+    const dbd = b.id != null ? getFolderDepth(b.id, allFolders.value) : 0
     if (da !== dbd) return da - dbd
     return a.name.localeCompare(b.name)
   })
