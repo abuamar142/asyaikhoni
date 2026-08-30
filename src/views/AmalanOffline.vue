@@ -210,20 +210,29 @@
       </div>
 
       <!-- Empty state -->
-      <div v-if="allFolders.length === 0 && savedAmalan.length === 0" class="flex flex-col items-center justify-center py-16 md:py-20 text-center">
-        <div class="w-[88px] h-[88px] rounded-[22px] bg-white border border-[#e8e6de] shadow-[0_8px_24px_rgba(16,40,22,0.06)] inline-flex items-center justify-center relative">
-          <BookHeart class="w-9 h-9 text-emerald-700" :stroke-width="1.6" />
-          <span class="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-amber-300 border-2 border-white flex items-center justify-center">
-            <Bookmark class="w-3 h-3 text-[#14532d]" />
-          </span>
-        </div>
-        <h2 class="mt-6 font-serif text-[20px] font-semibold tracking-[-0.015em] text-[#12291a]" style="font-family: 'Fraunces', Georgia, serif">Belum ada amalan tersimpan</h2>
-        <p class="mt-2 text-[14px] leading-[1.7] text-stone-500 max-w-[42ch] mx-auto text-pretty">
-          Jelajahi katalog dan ketuk “Simpan offline” pada halaman detail amalan untuk membacanya kapan saja tanpa koneksi.
-        </p>
-        <router-link :to="{ name: 'amalan-list' }" class="mt-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-emerald-700 text-white text-[13px] font-semibold hover:bg-emerald-800 shadow-sm transition-colors">
-          <Library class="w-4 h-4" /> Jelajahi Amalan
-        </router-link>
+      <div v-if="allFolders.length === 0 && savedAmalan.length === 0" class="flex flex-col items-center justify-center py-16 md:py-20">
+        <EmptyState
+          title="Belum ada amalan tersimpan"
+          description="Jelajahi katalog dan ketuk “Simpan offline” pada halaman detail amalan untuk membacanya kapan saja tanpa koneksi."
+        >
+          <template #icon>
+            <BookHeart class="h-9 w-9 text-emerald-700" :stroke-width="1.6" />
+            <span
+              class="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-amber-300 shadow-sm"
+              aria-hidden="true"
+            >
+              <Bookmark class="h-3 w-3 text-[#14532d]" />
+            </span>
+          </template>
+          <template #actions>
+            <router-link
+              :to="{ name: 'amalan-list' }"
+              class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-emerald-700 text-white text-[13px] font-semibold hover:bg-emerald-800 shadow-sm transition-colors"
+            >
+              <Library class="w-4 h-4" /> Jelajahi Amalan
+            </router-link>
+          </template>
+        </EmptyState>
       </div>
     </div>
 
@@ -368,6 +377,7 @@ import {
 import { useToast } from '@/composables/useToast'
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
 import FolderPicker from '@/components/FolderPicker.vue'
+import EmptyState from '@/components/ui/EmptyState.vue'
 import { createShareBundle } from '@/services/shareService'
 import { toPlainLyrics } from '@/utils/lyric'
 import { buildBreadcrumb, collectDescendants, type Folder as TreeFolder } from '@/utils/folderTree'

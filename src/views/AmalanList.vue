@@ -320,41 +320,38 @@
       </div>
 
       <!-- Empty -->
-      <div v-else-if="isEmpty" class="max-w-[560px] mx-auto text-center py-10 md:py-16">
-        <div
-          class="mx-auto w-[88px] h-[88px] rounded-[22px] bg-white border border-[#e8e6de] shadow-[0_8px_24px_rgba(20,40,20,0.06)] inline-flex items-center justify-center relative"
+      <div v-else-if="isEmpty" class="max-w-[560px] mx-auto py-10 md:py-16">
+        <EmptyState
+          title="Tidak ada amalan ditemukan"
+          description="Coba ubah kata kunci atau kategori. Kosongkan filter untuk melihat seluruh katalog khazanah amalan."
         >
-          <div class="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-amber-300 border-2 border-white flex items-center justify-center">
-            <Search class="w-3 h-3 text-[#14532d]" />
-          </div>
-          <BookHeart class="w-9 h-9 text-emerald-700" :stroke-width="1.6" />
-        </div>
-        <h3
-          class="mt-6 font-serif text-[22px] font-semibold tracking-[-0.015em] text-[#12291a]"
-          style="font-family: 'Fraunces', Georgia, serif"
-        >
-          Tidak ada amalan ditemukan
-        </h3>
-        <p class="mt-2 text-[14px] leading-[1.7] text-stone-500 max-w-[42ch] mx-auto text-pretty">
-          Coba ubah kata kunci atau kategori. Kosongkan filter untuk melihat seluruh katalog khazanah amalan.
-        </p>
-        <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
-          <button
-            type="button"
-            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-emerald-700 text-white text-[13px] font-semibold hover:bg-emerald-800 shadow-sm transition-colors"
-            @click="resetFilters"
-          >
-            <RotateCcw class="w-4 h-4" /> Reset filter
-          </button>
-          <span class="text-[13px] text-stone-400">atau</span>
-          <button
-            type="button"
-            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white border border-[#e7e5e0] text-[13px] font-medium text-stone-700 hover:border-emerald-200 hover:text-emerald-800 transition-colors"
-            @click="q = ''"
-          >
-            Hapus pencarian
-          </button>
-        </div>
+          <template #icon>
+            <BookHeart class="h-9 w-9 text-emerald-700" :stroke-width="1.6" />
+            <span
+              class="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-amber-300 shadow-sm"
+              aria-hidden="true"
+            >
+              <Search class="h-3 w-3 text-[#14532d]" />
+            </span>
+          </template>
+          <template #actions>
+            <button
+              type="button"
+              class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-emerald-700 text-white text-[13px] font-semibold hover:bg-emerald-800 shadow-sm transition-colors"
+              @click="resetFilters"
+            >
+              <RotateCcw class="w-4 h-4" /> Reset filter
+            </button>
+            <span class="text-[13px] text-stone-400">atau</span>
+            <button
+              type="button"
+              class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white border border-[#e7e5e0] text-[13px] font-medium text-stone-700 hover:border-emerald-200 hover:text-emerald-800 transition-colors"
+              @click="q = ''"
+            >
+              Hapus pencarian
+            </button>
+          </template>
+        </EmptyState>
       </div>
 
       <!-- Grid -->
@@ -455,6 +452,7 @@ import { useAmalanListQuery } from '@/composables/useAmalanQueries'
 import { useCategoryListQuery } from '@/composables/useCategoryQueries'
 import { useDebouncedRef } from '@/composables/useDebouncedRef'
 import SearchInput from '@/components/ui/SearchInput.vue'
+import EmptyState from '@/components/ui/EmptyState.vue'
 import type { Category } from '@/services/categoryService'
 import {
   ArrowRight,

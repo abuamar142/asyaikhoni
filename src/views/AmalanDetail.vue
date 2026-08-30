@@ -34,18 +34,21 @@
 
     <!-- Not Found -->
     <div v-else-if="!amalan && !hasOfflineFallback" class="min-h-[70vh] container mx-auto px-4 sm:px-6 lg:px-8 py-12 flex items-center justify-center">
-      <div class="max-w-[560px] w-full text-center">
-        <div class="mx-auto w-[88px] h-[88px] rounded-[22px] bg-white border border-[#e8e6de] shadow-sm inline-flex items-center justify-center">
-          <SearchX class="w-9 h-9 text-stone-400" :stroke-width="1.6" />
-        </div>
-        <h1 class="mt-6 font-serif text-[24px] font-semibold tracking-[-0.015em] text-[#12291a]" style="font-family: 'Fraunces', Georgia, serif">Amalan tidak ditemukan</h1>
-        <p class="mt-2 text-[14px] leading-[1.7] text-stone-500">Tautan mungkin salah atau konten telah dipindahkan.</p>
-        <router-link
-          :to="{ name: 'amalan-list' }"
-          class="mt-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-emerald-700 text-white text-[13px] font-semibold hover:bg-emerald-800 shadow-sm transition-colors"
+      <div class="max-w-[560px] w-full">
+        <EmptyState
+          :icon="SearchX"
+          title="Amalan tidak ditemukan"
+          description="Tautan mungkin salah atau konten telah dipindahkan."
         >
-          <ArrowLeft class="w-4 h-4" /> Kembali ke daftar
-        </router-link>
+          <template #actions>
+            <router-link
+              :to="{ name: 'amalan-list' }"
+              class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-emerald-700 text-white text-[13px] font-semibold hover:bg-emerald-800 shadow-sm transition-colors"
+            >
+              <ArrowLeft class="w-4 h-4" /> Kembali ke daftar
+            </router-link>
+          </template>
+        </EmptyState>
       </div>
     </div>
 
@@ -244,12 +247,12 @@
           </div>
 
           <!-- empty: no lyrics -->
-          <div v-else-if="!hasLyrics" class="rounded-2xl border border-stone-200 bg-white p-10 text-center">
-            <div class="w-12 h-12 rounded-full bg-stone-50 border border-stone-200 inline-flex items-center justify-center mx-auto mb-3">
-              <FileText class="w-6 h-6 text-stone-400" />
-            </div>
-            <p class="text-[14px] font-medium text-stone-700">Konten belum tersedia</p>
-            <p class="text-[13px] text-stone-500 mt-1">Naskah amalan ini sedang disiapkan oleh pengasuh.</p>
+          <div v-else-if="!hasLyrics" class="rounded-2xl border border-stone-200 bg-white p-8 sm:p-10">
+            <EmptyState
+              :icon="FileText"
+              title="Konten belum tersedia"
+              description="Naskah amalan ini sedang disiapkan oleh pengasuh."
+            />
           </div>
 
             <!-- lyrics paper -->
@@ -609,6 +612,7 @@ import { getFolderDepth } from '@/utils/folderTree'
 import { useOfflineAmalan } from '@/composables/useOfflineAmalan'
 import { useBodyLock } from '@/composables/useBodyLock'
 import { useEsc } from '@/composables/useEsc'
+import EmptyState from '@/components/ui/EmptyState.vue'
 
 const route = useRoute()
 const toast = useToast()
