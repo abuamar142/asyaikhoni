@@ -158,20 +158,21 @@
               <BaseButton
                 :variant="isSaved ? 'primary' : 'secondary'"
                 pill
+                size="md"
                 :disabled="isSaving"
                 :aria-busy="isSaving ? 'true' : 'false'"
-                class="text-[13px] min-h-[44px]"
+                class="text-[13px]"
                 @click="toggleOffline"
               >
                 <span
                   v-if="isSaving"
-                  class="w-[18px] h-[18px] rounded-full border-2 border-current border-t-transparent animate-spin shrink-0"
+                  class="w-4 h-4 rounded-full border-2 border-current border-t-transparent animate-spin shrink-0"
                   aria-hidden="true"
                 ></span>
                 <component
                   v-else
                   :is="isSaved ? CheckCircle2 : Download"
-                  class="w-[18px] h-[18px] shrink-0"
+                  class="w-4 h-4 shrink-0"
                   :class="isSaved ? 'text-white' : 'text-emerald-700'"
                 />
                 {{ isSaving ? 'Menyimpan…' : isSaved ? 'Tersimpan offline' : 'Simpan offline' }}
@@ -181,10 +182,11 @@
                 v-if="isSaved"
                 variant="secondary"
                 pill
-                class="text-[13px] min-h-[44px]"
+                size="md"
+                class="text-[13px]"
                 @click="openSaveToFolderModal"
               >
-                <FolderPlus class="w-4 h-4 text-emerald-700" />
+                <FolderPlus class="w-4 h-4 shrink-0 text-emerald-700" />
                 Simpan ke folder lain
               </BaseButton>
 
@@ -192,26 +194,28 @@
                 v-if="isSaved && hasUpdateAvailable"
                 variant="warning"
                 pill
+                size="md"
                 :disabled="isSaving"
-                class="text-[13px] min-h-[44px]"
+                class="text-[13px]"
                 @click="updateOffline"
               >
                 <span
                   v-if="isSaving"
-                  class="w-4 h-4 rounded-full border-2 border-current border-t-transparent animate-spin"
+                  class="w-4 h-4 rounded-full border-2 border-current border-t-transparent animate-spin shrink-0"
                   aria-hidden="true"
                 ></span>
-                <RefreshCw v-else class="w-4 h-4" /> {{ isSaving ? 'Memperbarui…' : 'Update tersedia' }}
+                <RefreshCw v-else class="w-4 h-4 shrink-0" /> {{ isSaving ? 'Memperbarui…' : 'Update tersedia' }}
               </BaseButton>
 
               <BaseButton
                 v-if="!isSaved"
                 variant="secondary"
                 pill
+                size="md"
                 class="hidden sm:inline-flex text-[13px]"
                 @click="handleShare"
               >
-                <Share2 class="w-4 h-4" /> Bagikan amalan
+                <Share2 class="w-4 h-4 shrink-0" /> Bagikan amalan
               </BaseButton>
             </div>
 

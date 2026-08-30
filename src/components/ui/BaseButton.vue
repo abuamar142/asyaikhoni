@@ -4,7 +4,7 @@
     :type="as === 'button' ? type : undefined"
     :disabled="disabled"
     :class="[
-      'inline-flex items-center justify-center gap-2 font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 border',
+      'inline-flex items-center justify-center gap-2 font-semibold leading-none whitespace-nowrap shrink-0 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 border [&_svg]:shrink-0',
       roundedClass,
       sizeClasses,
       block ? 'w-full' : '',
@@ -63,14 +63,30 @@ const variantClasses = computed(() => {
 const roundedClass = computed(() => (props.pill ? 'rounded-full' : 'rounded-lg'))
 
 const sizeClasses = computed(() => {
+  const cls = props.class || ''
+  // If caller provides explicit dimensions (icon squares w-8 h-8 !p-0, or h-11 etc),
+  // skip the fixed pill height so custom dimensions win. This keeps the hero
+  // pill system (h-10) from fighting square icon buttons.
+  const isIconOrCustomH = cls.includes('!p-0') || /\bh-(8|9|10|11|\[)/.test(cls)
+  if (isIconOrCustomH) {
+    switch (props.size) {
+      case 'sm':
+        return 'text-[13px] leading-none'
+      case 'lg':
+        return 'text-sm leading-none'
+      case 'md':
+      default:
+        return 'text-[13px] leading-none'
+    }
+  }
   switch (props.size) {
     case 'sm':
-      return 'px-3 py-1.5 text-sm'
+      return 'h-8 min-h-[32px] px-3.5 text-[13px] leading-none'
     case 'lg':
-      return 'px-5 py-3 text-base'
+      return 'h-11 min-h-[44px] px-6 text-sm leading-none'
     case 'md':
     default:
-      return 'px-4 py-2 text-sm'
+      return 'h-10 min-h-[40px] px-5 text-[13px] leading-none'
   }
 })
 
