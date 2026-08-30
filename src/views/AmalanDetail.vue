@@ -291,48 +291,15 @@
                     </div>
                   </div>
 
-                <!-- LYRIC ROWS: 1 baris = 1 row, selalu center, • = split 2-col center -->
+                <!-- LYRIC ROWS: 1 baris = 1 LyricRow, selalu center, • = split 2-col center -->
                 <div class="lyrics-container">
-                  <div
+                  <LyricRow
                     v-for="(row, idx) in effectiveLyrics"
-                    :key="row.id || idx"
-                    class="lyric-row"
-                  >
-                    <!-- Arab: selalu center, jika ada • maka 2 kolom center dengan bullet -->
-                    <div
-                      class="lyric-arab"
-                      dir="rtl"
-                      lang="ar"
-                    >
-                      <template v-if="hasBullet(row.arab)">
-                        <div class="lyric-split">
-                          <span class="arab-cell">{{ splitBullet(row.arab)[0] }}</span>
-                          <span class="bullet" aria-hidden="true">•</span>
-                          <span class="arab-cell">{{ splitBullet(row.arab)[1] }}</span>
-                        </div>
-                      </template>
-                      <template v-else>
-                        <span class="arab-single">{{ row.arab }}</span>
-                      </template>
-                    </div>
-
-                    <!-- Latin: di bawah Arab, juga split jika ada •, hide via showLatin -->
-                    <div
-                      v-if="row.latin && showLatin"
-                      class="lyric-latin"
-                    >
-                      <template v-if="hasBullet(row.latin!)">
-                        <div class="lyric-split lyric-split--latin">
-                          <span class="latin-cell">{{ splitBullet(row.latin!)[0] }}</span>
-                          <span class="bullet bullet--latin" aria-hidden="true">•</span>
-                          <span class="latin-cell">{{ splitBullet(row.latin!)[1] }}</span>
-                        </div>
-                      </template>
-                      <template v-else>
-                        <span class="latin-single">{{ row.latin }}</span>
-                      </template>
-                    </div>
-                  </div>
+                    :key="(row as any).id || idx"
+                    :row="row as any"
+                    :showLatin="showLatin"
+                    :fontSize="fontSize"
+                  />
                 </div>
 
                 <!-- bottom ornament inside paper -->
@@ -613,6 +580,7 @@ import { useOfflineAmalan } from '@/composables/useOfflineAmalan'
 import { useBodyLock } from '@/composables/useBodyLock'
 import { useEsc } from '@/composables/useEsc'
 import EmptyState from '@/components/ui/EmptyState.vue'
+import LyricRow from '@/components/LyricRow.vue'
 
 const route = useRoute()
 const toast = useToast()
@@ -680,19 +648,6 @@ const effectiveAmalan = computed(() => {
 const displayCategories = computed(() => {
   return (effectiveAmalan.value?.categories as any[]) || []
 })
-
-// lyrics helpers: 1 row = 1 baris, • = split 2-col center
-function hasBullet(text: string | null | undefined): boolean {
-  return !!text && text.includes('•')
-}
-function splitBullet(text: string): [string, string] {
-  const parts = text.split('•').map((s) => s.trim())
-  if (parts.length > 2) {
-    const mid = Math.floor(parts.length / 2)
-    return [parts.slice(0, mid).join(' • '), parts.slice(mid).join(' • ')]
-  }
-  return [parts[0] || '', parts[1] || '']
-}
 
 const effectiveLyrics = computed(() => {
   const online = (amalan.value as any)?.lyrics
@@ -940,11 +895,11 @@ const loadingPage = computed(
   opacity: 0.045;
 }
 .amalan-paper.dark-paper .title-ar,
-.amalan-paper.dark-paper .lyric-arab {
+.amalan-paper.dark-paper :deep(.lyric-arab) {
   color: #e8e6d8;
 }
 .amalan-paper.dark-paper .title-latin,
-.amalan-paper.dark-paper .lyric-latin {
+.amalan-paper.dark-paper :deep(.lyric-latin) {
   color: #9bb0a5;
 }
 .amalan-paper.dark-paper .lyric-title-ornament span:first-child,
@@ -955,14 +910,14 @@ const loadingPage = computed(
   background: rgba(52, 211, 153, 0.85) !important;
   box-shadow: 0 0 0 4px #1a2420 !important;
 }
-.amalan-paper.dark-paper .lyric-row:hover {
+.amalan-paper.dark-paper :deep(.lyric-row:hover) {
   background: rgba(255, 255, 255, 0.04);
 }
-.amalan-paper.dark-paper .bullet {
+.amalan-paper.dark-paper :deep(.bullet) {
   color: #34d399;
   opacity: 0.65;
 }
-.amalan-paper.dark-paper .bullet--latin {
+.amalan-paper.dark-paper :deep(.bullet--latin) {
   color: #9bb0a5;
   opacity: 0.5;
 }
