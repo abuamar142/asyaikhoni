@@ -23,6 +23,7 @@
           <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
               <span class="inline-block px-3 py-1 bg-brand text-white text-xs font-bold rounded-full mb-3 uppercase tracking-wider">Koleksi Dibagikan</span>
+              <span v-if="bundle.is_local || bundle._local" class="inline-block ml-2 px-3 py-1 bg-amber-100 text-amber-800 border border-amber-200 text-xs font-bold rounded-full mb-3 uppercase tracking-wider">Lokal — hanya di perangkat ini</span>
               <h1 class="text-heading-xl text-brand mb-3">{{ bundle.title }}</h1>
               <p v-if="bundle.description" class="text-body-md text-muted">{{ bundle.description }}</p>
             </div>
@@ -77,7 +78,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getShareBundle } from '@/services/shareService'
+import { getShareBundle, getLocalBundle } from '@/services/shareService'
 import { downloadMarkdown, getById } from '@/services/amalanService'
 import { db, type LocalFolder, ensureDbReady, isIndexedDBAvailable } from '@/utils/localDb'
 import { 
@@ -94,13 +95,79 @@ const error = ref(false)
 const bundle = ref<any>(null)
 const importing = ref(false)
 
+function normalizeBundle(raw: any): any {
+  if (!raw) return raw
+  const b = { ...raw }
+  // ensure share_bundle_items exists
+  if (!Array.isArray(b.share_bundle_items)) {
+    if (Array.isArray(b.shareBundleItems)) b.share_bundle_items = b.shareBundleItems
+    else if (Array.isArray(b.items)) {
+      b.share_bundle_items = b.items.map((it: any, idx: number) => ({
+        id: `${b.public_share_id ?? b.id ?? 'local'}-${idx}`,
+        amalan_id: it.amalan_id ?? it.slug ?? '',
+        title: it.title ?? (it as any).judul ?? '',
+        slug: it.slug ?? it.amalan_id ?? '',
+        folder_path: it.folder_path ?? null,
+        sort_order: it.sort_order ?? idx,
+        version_at_share: it.version_at_share ?? 1,
+        lyrics: it.lyrics ?? [],
+        amalan: {
+          id: it.amalan_id ?? it.slug ?? '',
+          judul: it.title ?? (it as any).judul ?? '',
+          title: it.title ?? (it as any).judul ?? '',
+          slug: it.slug ?? it.amalan_id ?? '',
+          ringkasan: (it as any).ringkasan ?? null,
+          lyrics: it.lyrics ?? [],
+          folder_path: it.folder_path ?? null,
+        },
+        _raw: it,
+      }))
+    } else {
+      b.share_bundle_items = []
+    }
+  }
+  // ensure each item has amalan sub-object
+  b.share_bundle_items = (b.share_bundle_items as any[]).map((it: any) => ({
+    ...it,
+    amalan: it.amalan ?? {
+      id: it.amalan_id ?? it.slug ?? '',
+      judul: it.title ?? (it as any).judul ?? '',
+      title: it.title ?? (it as any).judul ?? '',
+      slug: it.slug ?? it.amalan_id ?? '',
+      ringkasan: (it as any).ringkasan ?? null,
+      lyrics: it.lyrics ?? [],
+    },
+    folder_path: it.folder_path ?? it.amalan?.folder_path ?? null,
+  }))
+  return b
+}
+
 async function loadBundle() {
   const shareId = route.params.share_id as string
   try {
     loading.value = true
-    bundle.value = await getShareBundle(shareId)
+    const fetched: any = await getShareBundle(shareId)
+    bundle.value = normalizeBundle(fetched)
   } catch (err) {
     console.error('Error loading bundle:', err)
+    // final fallback: try localStorage directly
+    try {
+      const local = getLocalBundle(shareId)
+      if (local) {
+        bundle.value = normalizeBundle(local)
+        error.value = false
+        return
+      }
+      // also try hash / query fallback (if any)
+      const hash = window.location.hash || ''
+      if (hash.includes('local')) {
+        const local2 = getLocalBundle(shareId)
+        if (local2) {
+          bundle.value = normalizeBundle(local2)
+          return
+        }
+      }
+    } catch {}
     error.value = true
   } finally {
     loading.value = false
@@ -159,76 +226,98 @@ async function importBundle() {
         folder_id = parent_id || 0
       }
       
-      // Download and save amalan content
-      const fullAmalan = await getById(item.amalan_id)
-        
-      if (fullAmalan) {
-        const content = await downloadMarkdown(fullAmalan.id)
-        // Prefer bundle lyrics if available, fallback to downloaded content
-        let plainLyrics: any[] | null = null
-        const bundleLyrics = (item as any).lyrics || (item.amalan as any)?.lyrics
-        if (Array.isArray(bundleLyrics) && bundleLyrics.length > 0) {
-          plainLyrics = JSON.parse(JSON.stringify(bundleLyrics.map((r: any) => ({
-            ...(r?.id != null ? { id: String(r.id) } : {}),
-            arab: String(r?.arab ?? ''),
-            latin: r?.latin == null ? null : String(r.latin),
-          }))))
-        } else if (Array.isArray((fullAmalan as any).lyrics) && (fullAmalan as any).lyrics.length > 0) {
-          plainLyrics = JSON.parse(JSON.stringify((fullAmalan as any).lyrics.map((r: any) => ({
-            ...(r?.id != null ? { id: String(r.id) } : {}),
-            arab: String(r?.arab ?? ''),
-            latin: r?.latin == null ? null : String(r.latin),
-          }))))
+      // Try to fetch full amalan from server, but fallback to bundle data for offline/local shares
+      let fullAmalan: any = null
+      let contentFromServer: string | null = null
+      try {
+        fullAmalan = await getById(item.amalan_id)
+        if (fullAmalan) {
+          try { contentFromServer = await downloadMarkdown(fullAmalan.id) } catch {}
         }
-        const amalanIdStr = String((fullAmalan as any).id ?? item.amalan_id ?? '')
+      } catch (e) {
+        // offline or not found — will use bundle data
+        console.warn('[share] getById failed, using bundle lyrics', e)
+      }
+
+      // Prefer bundle lyrics (offline-first), fallback to server lyrics
+      let plainLyrics: any[] | null = null
+      const bundleLyrics = (item as any).lyrics || (item.amalan as any)?.lyrics
+      if (Array.isArray(bundleLyrics) && bundleLyrics.length > 0) {
+        plainLyrics = JSON.parse(JSON.stringify(bundleLyrics.map((r: any) => ({
+          ...(r?.id != null ? { id: String(r.id) } : {}),
+          arab: String(r?.arab ?? ''),
+          latin: r?.latin == null ? null : String(r.latin),
+        }))))
+      } else if (fullAmalan && Array.isArray((fullAmalan as any).lyrics) && (fullAmalan as any).lyrics.length > 0) {
+        plainLyrics = JSON.parse(JSON.stringify((fullAmalan as any).lyrics.map((r: any) => ({
+          ...(r?.id != null ? { id: String(r.id) } : {}),
+          arab: String(r?.arab ?? ''),
+          latin: r?.latin == null ? null : String(r.latin),
+        }))))
+      }
+
+      // Determine metadata — prefer server, fallback to bundle
+      const amalanIdStr = String(fullAmalan?.id ?? item.amalan_id ?? '')
+      if (!amalanIdStr) continue
+      const judul = String(fullAmalan?.judul ?? item.amalan?.judul ?? (item as any).title ?? '')
+      const slug = String(fullAmalan?.slug ?? item.amalan?.slug ?? (item as any).slug ?? amalanIdStr)
+      const ringkasan = fullAmalan?.ringkasan ?? item.amalan?.ringkasan ?? (item as any).ringkasan ?? null
+      const contentVersion = Number(fullAmalan?.content_version ?? (item as any).version_at_share ?? 1)
+      const serverUpdatedAt = String(fullAmalan?.updated_at ?? bundle.value.updated_at ?? bundle.value.created_at ?? new Date().toISOString())
+      const content = plainLyrics ? JSON.stringify(plainLyrics) : (contentFromServer ?? '[]')
+
+      // If neither server nor bundle provided lyrics/content, skip this item (avoid empty record)
+      if (!plainLyrics && !contentFromServer) {
+        // still allow import with empty lyrics but with bundle title — useful for local fallback
+        // we already have plainLyrics null, content = '[]'
+      }
         
-        // Compound check: allow same amalan in different folders
-        let existingLocal: any = null
-        try {
-          existingLocal = await db.saved_amalan.where('[amalan_id+folder_id]').equals([amalanIdStr, folder_id]).first()
-        } catch (e) {
-          console.error('[share] compound check failed, fallback to amalan_id', e)
-          try { existingLocal = await db.saved_amalan.where('amalan_id').equals(amalanIdStr).first() } catch {}
+      // Compound check: allow same amalan in different folders
+      let existingLocal: any = null
+      try {
+        existingLocal = await db.saved_amalan.where('[amalan_id+folder_id]').equals([amalanIdStr, folder_id]).first()
+      } catch (e) {
+        console.error('[share] compound check failed, fallback to amalan_id', e)
+        try { existingLocal = await db.saved_amalan.where('amalan_id').equals(amalanIdStr).first() } catch {}
+      }
+      const basePayload: any = {
+        folder_id,
+        content,
+        content_version: contentVersion,
+        server_updated_at: serverUpdatedAt,
+        last_synced_at: Date.now(),
+        has_update_available: false,
+      }
+      if (plainLyrics) {
+        basePayload.lyrics = plainLyrics
+        basePayload.content = JSON.stringify(plainLyrics)
+      }
+      const plainBase = JSON.parse(JSON.stringify(basePayload))
+      if (existingLocal) {
+        if (existingLocal.id != null) {
+          await db.saved_amalan.update(existingLocal.id, plainBase)
+        } else {
+          await db.saved_amalan.where('[amalan_id+folder_id]').equals([amalanIdStr, folder_id]).modify(plainBase)
         }
-        const basePayload: any = {
-          folder_id,
+      } else {
+        const newRec: any = JSON.parse(JSON.stringify({
+          amalan_id: amalanIdStr,
+          judul,
+          slug,
+          ringkasan: ringkasan == null ? null : String(ringkasan),
           content,
-          content_version: Number((fullAmalan as any).content_version ?? 1),
-          server_updated_at: String((fullAmalan as any).updated_at || new Date().toISOString()),
+          content_version: contentVersion,
+          server_updated_at: serverUpdatedAt,
+          saved_at: Date.now(),
           last_synced_at: Date.now(),
           has_update_available: false,
-        }
+          folder_id,
+        }))
         if (plainLyrics) {
-          basePayload.lyrics = plainLyrics
-          basePayload.content = JSON.stringify(plainLyrics)
+          newRec.lyrics = plainLyrics
+          newRec.content = JSON.stringify(plainLyrics)
         }
-        const plainBase = JSON.parse(JSON.stringify(basePayload))
-        if (existingLocal) {
-          if (existingLocal.id != null) {
-            await db.saved_amalan.update(existingLocal.id, plainBase)
-          } else {
-            await db.saved_amalan.where('[amalan_id+folder_id]').equals([amalanIdStr, folder_id]).modify(plainBase)
-          }
-        } else {
-          const newRec: any = JSON.parse(JSON.stringify({
-            amalan_id: amalanIdStr,
-            judul: String((fullAmalan as any).judul ?? item.amalan?.judul ?? ''),
-            slug: String((fullAmalan as any).slug ?? item.amalan?.slug ?? amalanIdStr),
-            ringkasan: (fullAmalan as any).ringkasan == null ? null : String((fullAmalan as any).ringkasan),
-            content,
-            content_version: Number((fullAmalan as any).content_version ?? 1),
-            server_updated_at: String((fullAmalan as any).updated_at || new Date().toISOString()),
-            saved_at: Date.now(),
-            last_synced_at: Date.now(),
-            has_update_available: false,
-            folder_id,
-          }))
-          if (plainLyrics) {
-            newRec.lyrics = plainLyrics
-            newRec.content = JSON.stringify(plainLyrics)
-          }
-          await db.saved_amalan.add(newRec)
-        }
+        await db.saved_amalan.add(newRec)
       }
     }
     

@@ -311,7 +311,10 @@
           <div class="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-700 inline-flex items-center justify-center mx-auto mb-4">
             <CheckCircle class="w-8 h-8" />
           </div>
-          <div class="flex items-center gap-2 p-2 bg-stone-50 rounded-xl border border-stone-200 mt-6">
+          <p v-if="(shareResult as any)?.is_local" class="text-[11px] leading-[1.5] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-4 text-left">
+            Mode lokal — server tidak tersedia (404). Link hanya bisa dibuka di perangkat ini. Coba lagi saat online untuk link yang bisa dibagikan antar perangkat.
+          </p>
+          <div class="flex items-center gap-2 p-2 bg-stone-50 rounded-xl border border-stone-200 mt-4">
             <input readonly :value="shareResult.share_url" class="bg-transparent border-none focus:ring-0 flex-1 px-3 text-[13px] text-stone-700 truncate" />
             <BaseButton variant="primary" class="!rounded-xl w-10 h-10 !p-0 shrink-0" @click="copyShareLink">
               <Copy class="w-4 h-4" />
@@ -697,7 +700,7 @@ async function removeFromOffline(item: LocalSavedAmalan) {
 const sharingData = ref<{ folder: LocalFolder | null } | null>(null)
 const shareForm = ref({ title: '', description: '' })
 const generatingShare = ref(false)
-const shareResult = ref<{ share_url: string } | null>(null)
+const shareResult = ref<{ share_url: string; is_local?: boolean; public_share_id?: string } | null>(null)
 
 function startShare(folder: LocalFolder | null) {
   sharingData.value = { folder }
@@ -763,7 +766,21 @@ async function generateShare() {
     // Ensure plain clone for DataCloneError safety (Vue proxies / Dexie)
     const plainPayload = JSON.parse(JSON.stringify(payload))
 
-    shareResult.value = await createShareBundle(plainPayload as any)
+    const result: any = await createShareBundle(plainPayload as any)
+    shareResult.value = result
+    // Offline-first fallback: if server 404/network, shareService returns is_local=true
+    if (result?.is_local) {
+      // auto-copy local link and inform user it works on this device
+      try {
+        await navigator.clipboard.writeText(result.share_url)
+        toast.success('Link lokal disalin — bisa dibuka di perangkat ini')
+      } catch {}
+    } else {
+      // server success — also auto-copy for convenience
+      try {
+        await navigator.clipboard.writeText(result.share_url)
+      } catch {}
+    }
   } catch (err: any) {
     console.error('Error generating share bundle:', err)
     const message = err?.message || ''
@@ -780,8 +797,10 @@ async function generateShare() {
 
 function copyShareLink() {
   if (!shareResult.value) return
-  navigator.clipboard.writeText(shareResult.value.share_url)
-  toast.success('Link berhasil disalin!')
+  navigator.clipboard
+    .writeText(shareResult.value.share_url)
+    .then(() => toast.success('Link berhasil disalin!'))
+    .catch(() => toast.success('Link disalin'))
 }
 
 // Body lock via composable — Esc handled inside BaseModal for folder/share/move modals

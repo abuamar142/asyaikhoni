@@ -41,11 +41,36 @@ class HttpClient {
       body: body ? JSON.stringify(body) : undefined,
     })
 
-    const json: ApiResponse<T> = await res.json()
-    if (!json.success) {
-      throw new Error(json.message || json.errors?.join(', ') || 'Request gagal')
+    const text = await res.text()
+    let json: ApiResponse<T> | null = null
+    try {
+      json = text ? (JSON.parse(text) as ApiResponse<T>) : null
+    } catch {
+      json = null
     }
-    return json.data as T
+
+    const isJsonSuccess = json !== null && typeof (json as any).success === 'boolean'
+    if (!res.ok || (isJsonSuccess && !(json as ApiResponse<T>).success)) {
+      const msg =
+        (json as any)?.message ||
+        (json as any)?.errors?.join(', ') ||
+        (text ? text.slice(0, 500) : '') ||
+        `Request gagal: ${res.status}`
+      const err: any = new Error(msg)
+      err.status = res.status
+      err.statusCode = res.status
+      err.code = res.status
+      throw err
+    }
+
+    if (json !== null && (json as any).data !== undefined) {
+      return (json as any).data as T
+    }
+    // Fallback: some endpoints may return raw shape without data wrapper
+    if (json !== null) {
+      return json as unknown as T
+    }
+    return text as unknown as T
   }
 
   get<T>(path: string) {
