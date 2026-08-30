@@ -1,4 +1,5 @@
 import { api } from '@/utils/httpClient'
+import { toPlainLyrics } from '@/utils/lyric'
 
 export interface ShareBundlePayload {
   title: string
@@ -28,16 +29,7 @@ export async function createShareBundle(payload: ShareBundlePayload) {
       amalan_id: String(item.amalan_id ?? ''),
       title: String(item.title ?? ''),
       slug: String(item.slug ?? item.amalan_id ?? ''),
-      lyrics: Array.isArray(item.lyrics)
-        ? JSON.parse(
-            JSON.stringify(
-              item.lyrics.map((r: any) => ({
-                arab: String(r?.arab ?? ''),
-                latin: r?.latin == null ? null : String(r.latin),
-              })),
-            ),
-          )
-        : [],
+      lyrics: Array.isArray(item.lyrics) ? toPlainLyrics(item.lyrics as any) : [],
       folder_path: item.folder_path == null ? null : String(item.folder_path),
       sort_order: Number(item.sort_order ?? 0),
       version_at_share: Number(item.version_at_share ?? 1),

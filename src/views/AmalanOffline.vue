@@ -367,6 +367,7 @@ import { useToast } from '@/composables/useToast'
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
 import FolderPicker from '@/components/FolderPicker.vue'
 import { createShareBundle } from '@/services/shareService'
+import { toPlainLyrics } from '@/utils/lyric'
 
 const toast = useToast()
 
@@ -787,16 +788,7 @@ async function generateShare() {
             // ignore parse error, fallback to empty
           }
         }
-        const plainLyrics = rawLyrics
-          ? JSON.parse(
-              JSON.stringify(
-                rawLyrics.map((r: any) => ({
-                  arab: String(r?.arab ?? ''),
-                  latin: r?.latin == null ? null : String(r.latin),
-                })),
-              ),
-            )
-          : []
+        const plainLyrics = rawLyrics ? toPlainLyrics(rawLyrics as any) : []
 
         return {
           amalan_id: String(item.amalan_id ?? ''),

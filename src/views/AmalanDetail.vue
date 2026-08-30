@@ -606,6 +606,7 @@ import { db, type LocalSavedAmalan, type LocalFolder, ensureDbReady, isIndexedDB
 import { useToast } from '@/composables/useToast'
 import { useLyricSettings } from '@/composables/useLyricSettings'
 import FolderPicker from '@/components/FolderPicker.vue'
+import { toPlainLyrics, toSavedAmalanPayload } from '@/utils/lyric'
 
 const route = useRoute()
 const toast = useToast()
@@ -904,31 +905,12 @@ async function confirmSaveToFolder() {
       return
     }
 
-    const plainLyrics: LocalSavedAmalan['lyrics'] = JSON.parse(
-      JSON.stringify(
-        (lyricsToSave as any[]).map((r: any) => ({
-          ...(r?.id != null ? { id: String(r.id) } : {}),
-          arab: String(r?.arab ?? ''),
-          latin: r?.latin == null ? null : String(r.latin),
-        })),
-      ),
-    )
-    const plainPayload: LocalSavedAmalan = JSON.parse(
-      JSON.stringify({
-        amalan_id: idStr,
-        judul: String(src.judul ?? ''),
-        slug: String(src.slug ?? slug.value ?? ''),
-        ringkasan: src.ringkasan == null ? null : String(src.ringkasan),
-        content: JSON.stringify(plainLyrics),
-        lyrics: plainLyrics,
-        content_version: Number((src as any).content_version ?? 1),
-        server_updated_at: String((src as any).updated_at ?? (src as any).updatedAt ?? new Date().toISOString()),
-        saved_at: Date.now(),
-        last_synced_at: Date.now(),
-        has_update_available: false,
-        folder_id: targetId,
-      }),
-    )
+    const plainLyrics: LocalSavedAmalan['lyrics'] = toPlainLyrics(lyricsToSave as any)
+    const plainPayload: LocalSavedAmalan = toSavedAmalanPayload(
+      { ...src, id: idStr, slug: String(src.slug ?? slug.value ?? '') },
+      plainLyrics,
+      targetId,
+    ) as LocalSavedAmalan
     await db.saved_amalan.add(plainPayload)
     toast.success(targetId === 0 ? 'Berhasil disimpan di Koleksi Utama.' : 'Berhasil disimpan ke folder.')
     closeSaveToFolderModal()
@@ -1040,36 +1022,8 @@ async function toggleOffline() {
         return
       }
 
-      // FIX DataCloneError: Dexie/IDB requires structured-cloneable plain objects.
-      // effectiveAmalan / effectiveLyrics are Vue reactive proxies (TanStack Query cache).
-      // Proxies, refs, functions, or undefined cannot be cloned by IDB — deep-clone to plain JSON.
-      const plainLyrics: LocalSavedAmalan['lyrics'] = JSON.parse(
-        JSON.stringify(
-          (lyricsToSave as any[]).map((r: any) => ({
-            ...(r?.id != null ? { id: String(r.id) } : {}),
-            arab: String(r?.arab ?? ''),
-            latin: r?.latin == null ? null : String(r.latin),
-          })),
-        ),
-      )
-      const plainPayload: LocalSavedAmalan = JSON.parse(
-        JSON.stringify({
-          amalan_id: String(src.id ?? (src as any).amalan_id ?? ''),
-          judul: String(src.judul ?? ''),
-          slug: String(src.slug ?? ''),
-          ringkasan: src.ringkasan == null ? null : String(src.ringkasan),
-          content: JSON.stringify(plainLyrics),
-          lyrics: plainLyrics,
-          content_version: Number((src as any).content_version ?? 1),
-          server_updated_at: String(
-            (src as any).updated_at ?? (src as any).updatedAt ?? new Date().toISOString(),
-          ),
-          saved_at: Date.now(),
-          last_synced_at: Date.now(),
-          has_update_available: false,
-          folder_id: 0,
-        }),
-      )
+      const plainLyrics: LocalSavedAmalan['lyrics'] = toPlainLyrics(lyricsToSave as any)
+      const plainPayload: LocalSavedAmalan = toSavedAmalanPayload(src, plainLyrics, 0) as LocalSavedAmalan
       await db.saved_amalan.add(plainPayload)
       isSaved.value = true
       toast.success('Berhasil disimpan offline.')
@@ -1125,26 +1079,15 @@ async function updateOffline() {
     try {
       await ensureDbReady()
     } catch {}
-    // FIX DataCloneError: same plain-clone sanitization as toggleOffline — modify() also structured-clones
-    const plainLyricsUpd: LocalSavedAmalan['lyrics'] = JSON.parse(
-      JSON.stringify(
-        (lyricsToSave as any[]).map((r: any) => ({
-          ...(r?.id != null ? { id: String(r.id) } : {}),
-          arab: String(r?.arab ?? ''),
-          latin: r?.latin == null ? null : String(r.latin),
-        })),
-      ),
-    )
-    const plainModify = JSON.parse(
-      JSON.stringify({
+    const plainLyricsUpd: LocalSavedAmalan['lyrics'] = toPlainLyrics(lyricsToSave as any)
+    const plainModify = {
         content: JSON.stringify(plainLyricsUpd),
         lyrics: plainLyricsUpd,
         content_version: Number(src.content_version ?? 1),
         server_updated_at: String(src.updated_at ?? (src as any).updatedAt ?? new Date().toISOString()),
         last_synced_at: Date.now(),
         has_update_available: false,
-      }),
-    )
+      }
     const updated = await db.saved_amalan.where('amalan_id').equals(String(src.id)).modify(plainModify)
     if (!updated) {
       // fallback by slug if amalan_id modify matched 0
