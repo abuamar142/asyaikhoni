@@ -1,6 +1,9 @@
 <template>
   <div class="min-h-screen bg-[#fdfcf8] selection:bg-emerald-100 selection:text-emerald-900">
-    <div aria-hidden="true" class="pointer-events-none fixed inset-0">
+    <AppHeader />
+    <!-- offset for fixed header h-16 (64px) — matches AmalanList -->
+    <div class="pt-16">
+      <div aria-hidden="true" class="pointer-events-none fixed inset-0">
       <div class="absolute inset-0 opacity-[0.025]" style="background-image: radial-gradient(circle at 1px 1px, #0f2e1c 1px, transparent 0); background-size: 22px 22px"></div>
     </div>
 
@@ -332,11 +335,13 @@
         </div>
       </div>
     </div>
+    </div>
 
   </div>
 </template>
 
 <script setup lang="ts">
+import AppHeader from '@/components/layout/AppHeader.vue'
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { db, type LocalSavedAmalan, type LocalFolder, ensureDbReady, isIndexedDBAvailable } from '@/utils/localDb'
 import {
