@@ -347,184 +347,146 @@
       </div>
     </article>
 
-    <!-- Gear Settings Modal -->
-    <Teleport to="body">
-      <Transition name="settings-fade">
-        <div
-          v-if="showSettings"
-          class="fixed inset-0 z-[70] flex items-center justify-center p-4 sm:p-6"
-          @keydown.esc="showSettings = false"
-        >
-          <!-- backdrop blur -->
-          <div
-            class="absolute inset-0 bg-[#0f1a16]/45 backdrop-blur-[6px]"
-            @click="showSettings = false"
-            aria-hidden="true"
-          ></div>
+    <!-- Gear Settings Modal — migrated to BaseModal -->
+    <BaseModal :open="showSettings" title="Pengaturan Tampilan" title-id="settings-title" @close="showSettings = false">
+      <template #headerIcon>
+        <span class="w-8 h-8 rounded-full bg-emerald-700 inline-flex items-center justify-center shadow-[0_2px_8px_rgba(21,128,61,0.25)]">
+          <Settings class="w-4 h-4 text-white" />
+        </span>
+      </template>
 
-          <!-- card -->
-          <div
-            ref="settingsCardRef"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="settings-title"
-            class="relative w-full max-w-[360px] rounded-[20px] bg-[#fdfcf8] border border-[#e8e6de] shadow-[0_20px_60px_rgba(15,35,24,0.18),0_1px_0_rgba(255,255,255,0.9)_inset] overflow-hidden flex flex-col max-h-[90vh]"
-            @click.stop
-          >
-            <!-- header -->
-            <div class="flex items-center justify-between px-5 pt-5 pb-4 border-b border-[#e8e6de]/70 shrink-0">
-              <div class="flex items-center gap-3">
-                <span class="w-8 h-8 rounded-full bg-emerald-700 inline-flex items-center justify-center shadow-[0_2px_8px_rgba(21,128,61,0.25)]">
-                  <Settings class="w-4 h-4 text-white" />
-                </span>
-                <h2 id="settings-title" class="text-[14px] font-semibold tracking-[-0.01em] text-[#0f2318]">Pengaturan Tampilan</h2>
-              </div>
-              <button
-                type="button"
-                class="w-8 h-8 rounded-full bg-white border border-[#e7e5e0] inline-flex items-center justify-center text-stone-500 hover:bg-stone-50 hover:text-stone-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30 shrink-0"
-                aria-label="Tutup pengaturan"
-                @click="showSettings = false"
-              >
-                <X class="w-4 h-4" />
-              </button>
-            </div>
-
-            <!-- rows -->
-            <div class="p-5 space-y-3 overflow-y-auto overscroll-contain">
-              <!-- Row1: Tampilkan Latin Switch -->
-              <div class="flex items-center justify-between gap-4 p-3.5 rounded-2xl bg-white border border-[#e8e6de] shadow-sm">
-                <div class="flex items-center gap-3 min-w-0">
-                  <span class="w-9 h-9 rounded-full bg-emerald-50 border border-emerald-100 inline-flex items-center justify-center shrink-0">
-                    <component :is="showLatin ? Eye : EyeOff" class="w-4 h-4 text-emerald-700" />
-                  </span>
-                  <div class="min-w-0">
-                    <div class="text-[13px] font-semibold text-[#0f2318] leading-none">Tampilkan Latin</div>
-                    <div class="text-[11px] text-stone-500 mt-1 leading-none">Transliterasi di bawah Arab</div>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  role="switch"
-                  :aria-checked="showLatin ? 'true' : 'false'"
-                  :aria-label="showLatin ? 'Sembunyikan Latin' : 'Tampilkan Latin'"
-                  class="relative inline-flex h-[28px] w-[48px] shrink-0 cursor-pointer items-center rounded-full border transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30"
-                  :class="showLatin ? 'bg-emerald-700 border-emerald-700' : 'bg-stone-200 border-stone-200'"
-                  @click="toggleLatin"
-                >
-                  <span
-                    class="inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition duration-200"
-                    :class="showLatin ? 'translate-x-[22px]' : 'translate-x-[3px]'"
-                  ></span>
-                </button>
-              </div>
-
-              <!-- Row2: Ukuran Huruf -->
-              <div class="p-3.5 rounded-2xl bg-white border border-[#e8e6de] shadow-sm">
-                <div class="flex items-center justify-between gap-3 mb-3">
-                  <div class="flex items-center gap-3">
-                    <span class="w-9 h-9 rounded-full bg-amber-50 border border-amber-100 inline-flex items-center justify-center shrink-0">
-                      <Type class="w-4 h-4 text-amber-700" />
-                    </span>
-                    <div>
-                      <div class="text-[13px] font-semibold text-[#0f2318] leading-none">Ukuran Huruf</div>
-                      <div class="text-[11px] text-stone-500 mt-1">
-                        <span class="font-semibold text-stone-700">{{ fontSize }}px</span> • Arab
-                      </div>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    class="text-[11px] font-semibold tracking-wide px-2.5 py-1 rounded-full bg-stone-50 border border-stone-200 text-stone-600 hover:bg-white hover:border-stone-300 hover:text-stone-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/20 inline-flex items-center gap-1"
-                    @click="resetFontSize"
-                    aria-label="Reset ukuran huruf"
-                  >
-                    <RotateCcw class="w-3 h-3" /> Reset
-                  </button>
-                </div>
-
-                <div class="flex items-center gap-2">
-                  <button
-                    type="button"
-                    class="w-8 h-8 rounded-full bg-white border border-[#e7e5e0] inline-flex items-center justify-center text-stone-700 hover:bg-stone-50 hover:border-stone-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/20 shrink-0"
-                    :disabled="fontSize <= 8"
-                    aria-label="Kecilkan huruf"
-                    @click="decrease"
-                  >
-                    <span class="text-[12px] font-bold leading-none">A-</span>
-                  </button>
-
-                  <input
-                    type="range"
-                    min="8"
-                    max="36"
-                    step="1"
-                    :value="fontSize"
-                    class="lyric-range flex-1 accent-emerald-700 h-1 cursor-pointer"
-                    aria-label="Ukuran huruf Arab"
-                    @input="setFontSize(Number(($event.target as HTMLInputElement).value))"
-                  />
-
-                  <button
-                    type="button"
-                    class="w-8 h-8 rounded-full bg-white border border-[#e7e5e0] inline-flex items-center justify-center text-stone-700 hover:bg-stone-50 hover:border-stone-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/20 shrink-0"
-                    :disabled="fontSize >= 36"
-                    aria-label="Besarkan huruf"
-                    @click="increase"
-                  >
-                    <span class="text-[13px] font-bold leading-none">A+</span>
-                  </button>
-                </div>
-
-                <!-- live preview -->
-                <div class="mt-3 rounded-xl bg-[#fdfcf8] border border-[#e8e6de]/70 px-3 py-2.5 flex items-center justify-between gap-3">
-                  <span class="text-[11px] tracking-wide font-medium text-stone-500 shrink-0">Pratinjau</span>
-                  <span dir="rtl" lang="ar" class="font-amiri text-[#0f2318] leading-none text-center flex-1" :style="{ fontSize: fontSize + 'px' }" style="font-family: 'Amiri', serif">اَللّٰهُ</span>
-                  <span class="text-[11px] italic text-stone-500 shrink-0" :style="{ fontSize: Math.round(fontSize * 0.58) + 'px' }">Allāh</span>
-                </div>
-              </div>
-
-              <!-- Row3: Mode Switch -->
-              <div class="flex items-center justify-between gap-4 p-3.5 rounded-2xl bg-white border border-[#e8e6de] shadow-sm">
-                <div class="flex items-center gap-3 min-w-0">
-                  <span
-                    class="w-9 h-9 rounded-full border inline-flex items-center justify-center shrink-0 transition-colors"
-                    :class="isDark ? 'bg-[#1a2420] border-[#2a3a32]' : 'bg-amber-50 border-amber-100'"
-                  >
-                    <component :is="isDark ? Moon : Sun" class="w-4 h-4" :class="isDark ? 'text-amber-300' : 'text-amber-600'" />
-                  </span>
-                  <div class="min-w-0">
-                    <div class="text-[13px] font-semibold text-[#0f2318] leading-none">Mode</div>
-                    <div class="text-[11px] text-stone-500 mt-1 leading-none">
-                      {{ isDark ? 'Gelap' : 'Terang' }} • {{ isDark ? 'Nyaman di malam' : 'Kertas terang' }}
-                    </div>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  role="switch"
-                  :aria-checked="isDark ? 'true' : 'false'"
-                  aria-label="Toggle mode gelap"
-                  class="relative inline-flex h-[28px] w-[48px] shrink-0 cursor-pointer items-center rounded-full border transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30"
-                  :class="isDark ? 'bg-[#1a2420] border-[#1a2420]' : 'bg-stone-200 border-stone-200'"
-                  @click="toggleDark"
-                >
-                  <span
-                    class="inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition duration-200 flex items-center justify-center"
-                    :class="isDark ? 'translate-x-[22px]' : 'translate-x-[3px]'"
-                  >
-                    <component :is="isDark ? Moon : Sun" class="w-3 h-3" :class="isDark ? 'text-[#1a2420]' : 'text-amber-600'" />
-                  </span>
-                </button>
-              </div>
-            </div>
-
-            <div class="px-5 pb-4 pt-2 shrink-0">
-              <p class="text-[11px] leading-relaxed text-stone-400 text-center">Pengaturan disimpan otomatis di perangkat ini.</p>
+      <div class="p-5 space-y-3">
+        <!-- Row1: Tampilkan Latin Switch -->
+        <div class="flex items-center justify-between gap-4 p-3.5 rounded-2xl bg-white border border-[#e8e6de] shadow-sm">
+          <div class="flex items-center gap-3 min-w-0">
+            <span class="w-9 h-9 rounded-full bg-emerald-50 border border-emerald-100 inline-flex items-center justify-center shrink-0">
+              <component :is="showLatin ? Eye : EyeOff" class="w-4 h-4 text-emerald-700" />
+            </span>
+            <div class="min-w-0">
+              <div class="text-[13px] font-semibold text-[#0f2318] leading-none">Tampilkan Latin</div>
+              <div class="text-[11px] text-stone-500 mt-1 leading-none">Transliterasi di bawah Arab</div>
             </div>
           </div>
+          <button
+            type="button"
+            role="switch"
+            :aria-checked="showLatin ? 'true' : 'false'"
+            :aria-label="showLatin ? 'Sembunyikan Latin' : 'Tampilkan Latin'"
+            class="relative inline-flex h-[28px] w-[48px] shrink-0 cursor-pointer items-center rounded-full border transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30"
+            :class="showLatin ? 'bg-emerald-700 border-emerald-700' : 'bg-stone-200 border-stone-200'"
+            @click="toggleLatin"
+          >
+            <span
+              class="inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition duration-200"
+              :class="showLatin ? 'translate-x-[22px]' : 'translate-x-[3px]'"
+            ></span>
+          </button>
         </div>
-      </Transition>
-    </Teleport>
+
+        <!-- Row2: Ukuran Huruf -->
+        <div class="p-3.5 rounded-2xl bg-white border border-[#e8e6de] shadow-sm">
+          <div class="flex items-center justify-between gap-3 mb-3">
+            <div class="flex items-center gap-3">
+              <span class="w-9 h-9 rounded-full bg-amber-50 border border-amber-100 inline-flex items-center justify-center shrink-0">
+                <Type class="w-4 h-4 text-amber-700" />
+              </span>
+              <div>
+                <div class="text-[13px] font-semibold text-[#0f2318] leading-none">Ukuran Huruf</div>
+                <div class="text-[11px] text-stone-500 mt-1">
+                  <span class="font-semibold text-stone-700">{{ fontSize }}px</span> • Arab
+                </div>
+              </div>
+            </div>
+            <button
+              type="button"
+              class="text-[11px] font-semibold tracking-wide px-2.5 py-1 rounded-full bg-stone-50 border border-stone-200 text-stone-600 hover:bg-white hover:border-stone-300 hover:text-stone-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/20 inline-flex items-center gap-1"
+              @click="resetFontSize"
+              aria-label="Reset ukuran huruf"
+            >
+              <RotateCcw class="w-3 h-3" /> Reset
+            </button>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              class="w-8 h-8 rounded-full bg-white border border-[#e7e5e0] inline-flex items-center justify-center text-stone-700 hover:bg-stone-50 hover:border-stone-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/20 shrink-0"
+              :disabled="fontSize <= 8"
+              aria-label="Kecilkan huruf"
+              @click="decrease"
+            >
+              <span class="text-[12px] font-bold leading-none">A-</span>
+            </button>
+
+            <input
+              type="range"
+              min="8"
+              max="36"
+              step="1"
+              :value="fontSize"
+              class="lyric-range flex-1 accent-emerald-700 h-1 cursor-pointer"
+              aria-label="Ukuran huruf Arab"
+              @input="setFontSize(Number(($event.target as HTMLInputElement).value))"
+            />
+
+            <button
+              type="button"
+              class="w-8 h-8 rounded-full bg-white border border-[#e7e5e0] inline-flex items-center justify-center text-stone-700 hover:bg-stone-50 hover:border-stone-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/20 shrink-0"
+              :disabled="fontSize >= 36"
+              aria-label="Besarkan huruf"
+              @click="increase"
+            >
+              <span class="text-[13px] font-bold leading-none">A+</span>
+            </button>
+          </div>
+
+          <!-- live preview -->
+          <div class="mt-3 rounded-xl bg-[#fdfcf8] border border-[#e8e6de]/70 px-3 py-2.5 flex items-center justify-between gap-3">
+            <span class="text-[11px] tracking-wide font-medium text-stone-500 shrink-0">Pratinjau</span>
+            <span dir="rtl" lang="ar" class="font-amiri text-[#0f2318] leading-none text-center flex-1" :style="{ fontSize: fontSize + 'px' }" style="font-family: 'Amiri', serif">اَللّٰهُ</span>
+            <span class="text-[11px] italic text-stone-500 shrink-0" :style="{ fontSize: Math.round(fontSize * 0.58) + 'px' }">Allāh</span>
+          </div>
+        </div>
+
+        <!-- Row3: Mode Switch -->
+        <div class="flex items-center justify-between gap-4 p-3.5 rounded-2xl bg-white border border-[#e8e6de] shadow-sm">
+          <div class="flex items-center gap-3 min-w-0">
+            <span
+              class="w-9 h-9 rounded-full border inline-flex items-center justify-center shrink-0 transition-colors"
+              :class="isDark ? 'bg-[#1a2420] border-[#2a3a32]' : 'bg-amber-50 border-amber-100'"
+            >
+              <component :is="isDark ? Moon : Sun" class="w-4 h-4" :class="isDark ? 'text-amber-300' : 'text-amber-600'" />
+            </span>
+            <div class="min-w-0">
+              <div class="text-[13px] font-semibold text-[#0f2318] leading-none">Mode</div>
+              <div class="text-[11px] text-stone-500 mt-1 leading-none">
+                {{ isDark ? 'Gelap' : 'Terang' }} • {{ isDark ? 'Nyaman di malam' : 'Kertas terang' }}
+              </div>
+            </div>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            :aria-checked="isDark ? 'true' : 'false'"
+            aria-label="Toggle mode gelap"
+            class="relative inline-flex h-[28px] w-[48px] shrink-0 cursor-pointer items-center rounded-full border transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30"
+            :class="isDark ? 'bg-[#1a2420] border-[#1a2420]' : 'bg-stone-200 border-stone-200'"
+            @click="toggleDark"
+          >
+            <span
+              class="inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition duration-200 flex items-center justify-center"
+              :class="isDark ? 'translate-x-[22px]' : 'translate-x-[3px]'"
+            >
+              <component :is="isDark ? Moon : Sun" class="w-3 h-3" :class="isDark ? 'text-[#1a2420]' : 'text-amber-600'" />
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <template #footer>
+        <p class="text-[11px] leading-relaxed text-stone-400 text-center">Pengaturan disimpan otomatis di perangkat ini.</p>
+      </template>
+    </BaseModal>
 
     <!-- Fase 6: Simpan ke folder lain — unified FolderPicker -->
     <FolderPicker
@@ -577,6 +539,7 @@ import { useEsc } from '@/composables/useEsc'
 import EmptyState from '@/components/ui/EmptyState.vue'
 import PaperCard from '@/components/ui/PaperCard.vue'
 import LyricRow from '@/components/LyricRow.vue'
+import BaseModal from '@/components/ui/BaseModal.vue'
 
 const route = useRoute()
 const toast = useToast()
@@ -714,8 +677,7 @@ async function updateOffline() {
 
 const isAnyModalOpen = computed(() => showSettings.value || showSaveToFolderModal.value)
 useBodyLock(isAnyModalOpen)
-useEsc(showSettings, () => (showSettings.value = false))
-useEsc(showSaveToFolderModal, () => closeSaveToFolderModal())
+// Esc is handled inside BaseModal; no additional useEsc needed for these modals
 
 onMounted(async () => {
   await checkOfflineStatus()

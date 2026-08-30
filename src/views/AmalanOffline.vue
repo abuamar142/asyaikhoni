@@ -222,37 +222,36 @@
       </div>
     </div>
 
-    <!-- Create/Edit Folder Modal -->
-    <div v-if="isCreatingFolder || editingFolderData" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div class="absolute inset-0 bg-[#0f2318]/40 backdrop-blur-sm" @click="closeFolderModal"></div>
-      <div class="relative bg-white rounded-[20px] shadow-[0_20px_60px_rgba(15,35,20,0.22)] w-full max-w-md overflow-hidden border border-[#e8e6de]">
-        <div class="h-1 bg-gradient-to-r from-emerald-700 via-emerald-600 to-amber-300"></div>
-        <div class="p-6 sm:p-7">
-          <div class="flex items-start justify-between gap-4 mb-5">
-            <div>
-              <h2 class="font-serif text-[18px] font-semibold text-[#12291a]" style="font-family: 'Fraunces', Georgia, serif">{{ editingFolderData ? 'Edit Folder' : (currentFolderId !== null ? 'Subfolder Baru' : 'Folder Baru') }}</h2>
-              <p class="text-[13px] text-stone-500 mt-1">Beri nama yang mudah dikenali.</p>
-              <p v-if="!editingFolderData && currentFolder?.name" class="text-[12px] text-emerald-700 mt-1">Di dalam: {{ breadcrumbPath.map(b => b.name).join(' / ') }}</p>
-            </div>
-            <button type="button" class="w-8 h-8 rounded-full bg-stone-50 border border-stone-200 inline-flex items-center justify-center text-stone-500 hover:bg-stone-100" @click="closeFolderModal">
-              <X class="w-4 h-4" />
-            </button>
-          </div>
-          <label class="block text-[12px] font-semibold tracking-[0.08em] uppercase text-stone-600 mb-2">Nama Folder</label>
-          <input
-            v-model="folderForm.name"
-            type="text"
-            placeholder="Contoh: Wirid Harian"
-            class="w-full px-4 py-3 rounded-xl border border-[#d7ddd7] bg-white text-[14px] text-[#12291a] placeholder:text-stone-400 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-300 transition-all"
-            @keyup.enter="saveFolder"
-          />
-          <div class="mt-6 flex items-center justify-end gap-3">
-            <button type="button" class="px-5 py-2.5 rounded-full bg-white border border-stone-200 text-[13px] font-medium text-stone-700 hover:bg-stone-50" @click="closeFolderModal">Batal</button>
-            <button type="button" class="px-6 py-2.5 rounded-full bg-emerald-700 text-white text-[13px] font-semibold hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm" :disabled="!folderForm.name.trim()" @click="saveFolder">Simpan</button>
-          </div>
-        </div>
+    <!-- Create/Edit Folder Modal — migrated to BaseModal -->
+    <BaseModal
+      :open="!!(isCreatingFolder || editingFolderData)"
+      :title="editingFolderData ? 'Edit Folder' : currentFolderId !== null ? 'Subfolder Baru' : 'Folder Baru'"
+      subtitle="Beri nama yang mudah dikenali."
+      @close="closeFolderModal"
+    >
+      <template #headerIcon>
+        <span class="w-8 h-8 rounded-full bg-emerald-700 inline-flex items-center justify-center shadow-[0_2px_8px_rgba(21,128,61,0.25)] shrink-0">
+          <Folder class="w-4 h-4 text-white" />
+        </span>
+      </template>
+      <div class="p-6 sm:p-7">
+        <p v-if="!editingFolderData && currentFolder?.name" class="text-[12px] text-emerald-700 mb-4">Di dalam: {{ breadcrumbPath.map((b) => b.name).join(' / ') }}</p>
+        <label class="block text-[12px] font-semibold tracking-[0.08em] uppercase text-stone-600 mb-2">Nama Folder</label>
+        <input
+          v-model="folderForm.name"
+          type="text"
+          placeholder="Contoh: Wirid Harian"
+          class="w-full px-4 py-3 rounded-xl border border-[#d7ddd7] bg-white text-[14px] text-[#12291a] placeholder:text-stone-400 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-300 transition-all"
+          @keyup.enter="saveFolder"
+        />
       </div>
-    </div>
+      <template #footer>
+        <div class="flex items-center justify-end gap-3">
+          <button type="button" class="px-5 py-2.5 rounded-full bg-white border border-stone-200 text-[13px] font-medium text-stone-700 hover:bg-stone-50" @click="closeFolderModal">Batal</button>
+          <button type="button" class="px-6 py-2.5 rounded-full bg-emerald-700 text-white text-[13px] font-semibold hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm" :disabled="!folderForm.name.trim()" @click="saveFolder">Simpan</button>
+        </div>
+      </template>
+    </BaseModal>
 
     <!-- Move to Folder — unified FolderPicker -->
     <FolderPicker
@@ -276,60 +275,61 @@
       @cancel="isConfirmingDelete = false"
     />
 
-    <!-- Share Modal -->
-    <div v-if="sharingData" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div class="absolute inset-0 bg-[#0f2318]/40 backdrop-blur-sm" @click="sharingData = null"></div>
-      <div class="relative bg-white rounded-[20px] shadow-[0_20px_60px_rgba(15,35,20,0.22)] w-full max-w-lg overflow-hidden border border-[#e8e6de]">
-        <div class="h-1 bg-gradient-to-r from-emerald-700 via-emerald-600 to-amber-300"></div>
-        <div class="p-6 sm:p-8">
-          <div v-if="!shareResult">
-            <div class="flex items-start justify-between gap-4">
-              <div>
-                <h2 class="font-serif text-[18px] font-semibold text-[#12291a]" style="font-family: 'Fraunces', Georgia, serif">Bagikan Koleksi</h2>
-                <p class="text-[13px] text-stone-500 mt-1 max-w-[36ch]">
-                  {{ sharingData.folder ? `Bagikan folder '${sharingData.folder.name}' beserta seluruh isinya.` : 'Bagikan seluruh koleksi amalan offline Anda.' }}
-                </p>
-              </div>
-              <button type="button" class="w-8 h-8 rounded-full bg-stone-50 border border-stone-200 inline-flex items-center justify-center text-stone-500 hover:bg-stone-100" @click="sharingData = null">
-                <X class="w-4 h-4" />
-              </button>
-            </div>
-            <div class="mt-6 space-y-4">
-              <div>
-                <label class="block text-[12px] font-semibold tracking-[0.08em] uppercase text-stone-600 mb-2">Judul Koleksi</label>
-                <input v-model="shareForm.title" type="text" class="w-full px-4 py-3 rounded-xl border border-[#d7ddd7] bg-white text-[14px] focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-300 placeholder:text-stone-400" placeholder="Koleksi Wirid Saya" />
-              </div>
-              <div>
-                <label class="block text-[12px] font-semibold tracking-[0.08em] uppercase text-stone-600 mb-2">Deskripsi (Opsional)</label>
-                <textarea v-model="shareForm.description" class="w-full px-4 py-3 rounded-xl border border-[#d7ddd7] bg-white text-[14px] focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-300 placeholder:text-stone-400" rows="3" placeholder="Kumpulan doa dan wirid pilihan…"></textarea>
-              </div>
-            </div>
-            <div class="mt-6 flex items-center gap-3 justify-end">
-              <button type="button" class="px-5 py-2.5 rounded-full bg-white border border-stone-200 text-[13px] font-medium text-stone-700 hover:bg-stone-50" @click="sharingData = null">Batal</button>
-              <button type="button" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-emerald-700 text-white text-[13px] font-semibold hover:bg-emerald-800 disabled:opacity-50 shadow-sm" :disabled="!shareForm.title.trim() || generatingShare" @click="generateShare">
-                <Share2 v-if="!generatingShare" class="w-4 h-4" />
-                <span v-else class="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"></span>
-                <span>{{ generatingShare ? 'Memproses…' : 'Buat Link Share' }}</span>
-              </button>
-            </div>
+    <!-- Share Modal — migrated to BaseModal -->
+    <BaseModal
+      :open="!!sharingData"
+      :title="shareResult ? 'Link share berhasil dibuat!' : 'Bagikan Koleksi'"
+      :subtitle="shareResult ? 'Salin tautan di bawah ini dan bagikan.' : sharingData?.folder ? `Bagikan folder '${sharingData.folder.name}' beserta seluruh isinya.` : 'Bagikan seluruh koleksi amalan offline Anda.'"
+      max-width-class="max-w-lg"
+      @close="sharingData = null"
+    >
+      <template #headerIcon>
+        <span v-if="!shareResult" class="w-8 h-8 rounded-full bg-emerald-700 inline-flex items-center justify-center shadow-[0_2px_8px_rgba(21,128,61,0.25)] shrink-0">
+          <Share2 class="w-4 h-4 text-white" />
+        </span>
+        <span v-else class="w-8 h-8 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-700 inline-flex items-center justify-center shrink-0">
+          <CheckCircle class="w-4 h-4" />
+        </span>
+      </template>
+
+      <div class="p-6 sm:p-8">
+        <div v-if="!shareResult" class="space-y-4">
+          <div>
+            <label class="block text-[12px] font-semibold tracking-[0.08em] uppercase text-stone-600 mb-2">Judul Koleksi</label>
+            <input v-model="shareForm.title" type="text" class="w-full px-4 py-3 rounded-xl border border-[#d7ddd7] bg-white text-[14px] focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-300 placeholder:text-stone-400" placeholder="Koleksi Wirid Saya" />
           </div>
-          <div v-else class="text-center">
-            <div class="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-700 inline-flex items-center justify-center mx-auto mb-4">
-              <CheckCircle class="w-8 h-8" />
-            </div>
-            <h2 class="font-serif text-[18px] font-semibold text-[#12291a]" style="font-family: 'Fraunces', Georgia, serif">Link share berhasil dibuat!</h2>
-            <p class="text-[13px] text-stone-500 mt-1">Salin tautan di bawah ini dan bagikan.</p>
-            <div class="mt-6 flex items-center gap-2 p-2 bg-stone-50 rounded-xl border border-stone-200">
-              <input readonly :value="shareResult.share_url" class="bg-transparent border-none focus:ring-0 flex-1 px-3 text-[13px] text-stone-700 truncate" />
-              <button type="button" class="w-10 h-10 rounded-xl bg-emerald-700 text-white inline-flex items-center justify-center hover:bg-emerald-800 shrink-0" @click="copyShareLink">
-                <Copy class="w-4 h-4" />
-              </button>
-            </div>
-            <button type="button" class="mt-6 w-full px-5 py-2.5 rounded-full bg-white border border-stone-200 text-[13px] font-medium text-stone-700 hover:bg-stone-50" @click="sharingData = null">Tutup</button>
+          <div>
+            <label class="block text-[12px] font-semibold tracking-[0.08em] uppercase text-stone-600 mb-2">Deskripsi (Opsional)</label>
+            <textarea v-model="shareForm.description" class="w-full px-4 py-3 rounded-xl border border-[#d7ddd7] bg-white text-[14px] focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-300 placeholder:text-stone-400" rows="3" placeholder="Kumpulan doa dan wirid pilihan…"></textarea>
+          </div>
+        </div>
+        <div v-else class="text-center">
+          <div class="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-700 inline-flex items-center justify-center mx-auto mb-4">
+            <CheckCircle class="w-8 h-8" />
+          </div>
+          <div class="flex items-center gap-2 p-2 bg-stone-50 rounded-xl border border-stone-200 mt-6">
+            <input readonly :value="shareResult.share_url" class="bg-transparent border-none focus:ring-0 flex-1 px-3 text-[13px] text-stone-700 truncate" />
+            <button type="button" class="w-10 h-10 rounded-xl bg-emerald-700 text-white inline-flex items-center justify-center hover:bg-emerald-800 shrink-0" @click="copyShareLink">
+              <Copy class="w-4 h-4" />
+            </button>
           </div>
         </div>
       </div>
-    </div>
+
+      <template #footer>
+        <div v-if="!shareResult" class="flex items-center gap-3 justify-end">
+          <button type="button" class="px-5 py-2.5 rounded-full bg-white border border-stone-200 text-[13px] font-medium text-stone-700 hover:bg-stone-50" @click="sharingData = null">Batal</button>
+          <button type="button" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-emerald-700 text-white text-[13px] font-semibold hover:bg-emerald-800 disabled:opacity-50 shadow-sm" :disabled="!shareForm.title.trim() || generatingShare" @click="generateShare">
+            <Share2 v-if="!generatingShare" class="w-4 h-4" />
+            <span v-else class="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"></span>
+            <span>{{ generatingShare ? 'Memproses…' : 'Buat Link Share' }}</span>
+          </button>
+        </div>
+        <div v-else>
+          <button type="button" class="w-full px-5 py-2.5 rounded-full bg-white border border-stone-200 text-[13px] font-medium text-stone-700 hover:bg-stone-50" @click="sharingData = null">Tutup</button>
+        </div>
+      </template>
+    </BaseModal>
     </div>
 
   </div>
@@ -363,6 +363,7 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
 import FolderPicker from '@/components/FolderPicker.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
 import AmalanCard from '@/components/AmalanCard.vue'
+import BaseModal from '@/components/ui/BaseModal.vue'
 import { createShareBundle } from '@/services/shareService'
 import { toPlainLyrics } from '@/utils/lyric'
 import { buildBreadcrumb, collectDescendants, type Folder as TreeFolder } from '@/utils/folderTree'
@@ -777,14 +778,11 @@ function copyShareLink() {
   toast.success('Link berhasil disalin!')
 }
 
-// Body lock + Esc handling via composables (ora-2)
+// Body lock via composable — Esc handled inside BaseModal for folder/share/move modals
 const isFolderModalOpen = computed(() => isCreatingFolder.value || !!editingFolderData.value)
 const isShareModalOpen = computed(() => !!sharingData.value)
 const isAnyOfflineModalOpen = computed(() => showMoveModal.value || isFolderModalOpen.value || isShareModalOpen.value)
 useBodyLock(isAnyOfflineModalOpen)
-useEsc(showMoveModal, closeMoveModal)
-useEsc(isFolderModalOpen, closeFolderModal)
-useEsc(isShareModalOpen, () => (sharingData.value = null))
 </script>
 
 <style scoped>
