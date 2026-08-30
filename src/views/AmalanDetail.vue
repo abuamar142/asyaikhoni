@@ -602,12 +602,11 @@ import {
   RotateCcw,
   FolderPlus,
 } from 'lucide-vue-next'
-import { db, type LocalSavedAmalan, type LocalFolder, ensureDbReady, isIndexedDBAvailable } from '@/utils/localDb'
 import { useToast } from '@/composables/useToast'
 import { useLyricSettings } from '@/composables/useLyricSettings'
 import FolderPicker from '@/components/FolderPicker.vue'
-import { toPlainLyrics, toSavedAmalanPayload } from '@/utils/lyric'
-import { getFolderDepth, getFolderPath } from '@/utils/folderTree'
+import { getFolderDepth } from '@/utils/folderTree'
+import { useOfflineAmalan } from '@/composables/useOfflineAmalan'
 
 const route = useRoute()
 const toast = useToast()
@@ -625,11 +624,25 @@ const {
   isError: amalanError,
 } = useAmalanBySlugQuery(slug)
 
+// offline composable — encapsulates IndexedDB logic (ora-2)
+const {
+  isSaved,
+  localData,
+  hasUpdate: hasUpdateAvailable,
+  allFolders,
+  isSaving,
+  isSavingToFolder,
+  loadFolders,
+  checkStatus: checkOfflineStatus,
+  toggleRoot,
+  saveToFolder,
+  updateAllCopies,
+} = useOfflineAmalan(amalan as any, slug)
+
 // effective amalan: online or offline fallback — also checks content JSON for old v1 records (HP)
 const hasOfflineFallback = computed(() => {
   if (!localData.value) return false
   if (localData.value.lyrics?.length) return true
-  // fallback for v1 DB records that only have content (JSON string)
   if (localData.value.content) {
     try {
       const parsed = JSON.parse(localData.value.content)
@@ -669,7 +682,6 @@ function hasBullet(text: string | null | undefined): boolean {
 }
 function splitBullet(text: string): [string, string] {
   const parts = text.split('•').map((s) => s.trim())
-  // join extra parts beyond 2 with • again (future-proof)
   if (parts.length > 2) {
     const mid = Math.floor(parts.length / 2)
     return [parts.slice(0, mid).join(' • '), parts.slice(mid).join(' • ')]
@@ -678,12 +690,10 @@ function splitBullet(text: string): [string, string] {
 }
 
 const effectiveLyrics = computed(() => {
-  // prefer online lyrics, fallback to offline
-  const online = amalan.value?.lyrics
+  const online = (amalan.value as any)?.lyrics
   if (online && Array.isArray(online) && online.length > 0) return online
   const offline = localData.value?.lyrics
   if (offline && Array.isArray(offline) && offline.length > 0) return offline
-  // also try to parse offline content JSON if lyrics not stored separately (backwards compat)
   if (localData.value?.content) {
     try {
       const parsed = JSON.parse(localData.value.content)
@@ -694,123 +704,16 @@ const effectiveLyrics = computed(() => {
 })
 
 const hasLyrics = computed(() => effectiveLyrics.value.length > 0)
-const hasAnyLatin = computed(() => effectiveLyrics.value.some((r) => !!r.latin))
+const hasAnyLatin = computed(() => effectiveLyrics.value.some((r: any) => !!r.latin))
 
-// Offline Logic
-const isSaved = ref(false)
-const hasUpdateAvailable = ref(false)
-const localData = ref<LocalSavedAmalan | null>(null)
-const isSaving = ref(false)
-
-// Fase 6: allow same amalan saved to different folders — secondary action state
-const allFolders = ref<LocalFolder[]>([])
+// Phase 6 UI state — folder picker modal
 const showSaveToFolderModal = ref(false)
 const saveTargetFolderId = ref<number | null>(0)
 const saveNavId = ref<number | null>(null)
-const isSavingToFolder = ref(false)
 
 const availableFoldersForSave = computed(() => allFolders.value)
 
-async function checkOfflineStatus() {
-  try {
-    if (!isIndexedDBAvailable()) {
-      console.warn('[offline] IndexedDB not available (private mode / insecure context)')
-      return
-    }
-    try {
-      await ensureDbReady()
-    } catch (e) {
-      console.error('[offline] ensureDbReady failed', e)
-      // continue — db may still be usable, or will throw below and be caught
-    }
-
-    let local: LocalSavedAmalan | undefined
-    const rawId = (amalan.value as any)?.id ?? (effectiveAmalan.value as any)?.id
-    const id = rawId != null ? String(rawId) : null
-    if (id) {
-      try {
-        local = await db.saved_amalan.where('[amalan_id+folder_id]').equals([id, 0]).first()
-      } catch (e) {
-        console.error('[offline] where compound [amalan_id+folder_id] failed', e)
-      }
-      if (!local) {
-        try {
-          local = await db.saved_amalan.where('amalan_id').equals(id).first()
-        } catch (e) {
-          console.error('[offline] where amalan_id fallback failed', e)
-        }
-      }
-    }
-    // Fallback by slug — critical for offline first load (amalan.value is null, chicken-egg)
-    if (!local && slug.value) {
-      try {
-        local = await db.saved_amalan.where('slug').equals(slug.value).first()
-      } catch (e) {
-        console.error('[offline] where slug failed', e)
-      }
-    }
-
-    if (local) {
-      isSaved.value = true
-      localData.value = local
-      const serverVer = (amalan.value as any)?.content_version ?? local.content_version ?? 1
-      hasUpdateAvailable.value = (local.content_version ?? 1) < (serverVer ?? 1)
-    } else {
-      isSaved.value = false
-      localData.value = null
-      hasUpdateAvailable.value = false
-    }
-  } catch (err) {
-    console.error('[offline] checkOfflineStatus failed', err)
-    // Don't spam toast on every check; only if we had expected data
-    // toast.error('Gagal memeriksa status offline.')
-  }
-}
-
-function onKeydown(e: KeyboardEvent) {
-  if (e.key === 'Escape' && showSettings.value) {
-    showSettings.value = false
-  }
-  if (e.key === 'Escape' && showSaveToFolderModal.value) {
-    closeSaveToFolderModal()
-  }
-}
-
-watch(showSettings, (open) => {
-  if (open) {
-    document.addEventListener('keydown', onKeydown)
-    // prevent background scroll on mobile
-    document.documentElement.style.overflow = 'hidden'
-  } else {
-    document.removeEventListener('keydown', onKeydown)
-    // only clear overflow if save modal not open
-    if (!showSaveToFolderModal.value) document.documentElement.style.overflow = ''
-  }
-})
-
-watch(showSaveToFolderModal, (open) => {
-  if (open) {
-    document.addEventListener('keydown', onKeydown)
-    document.documentElement.style.overflow = 'hidden'
-  } else {
-    document.removeEventListener('keydown', onKeydown)
-    if (!showSettings.value) document.documentElement.style.overflow = ''
-  }
-})
-
-// Fase 6 helpers
-async function loadFolders() {
-  try {
-    if (!isIndexedDBAvailable()) return
-    await ensureDbReady()
-    allFolders.value = await db.folders.toArray()
-  } catch (e) {
-    console.error('[offline] loadFolders failed', e)
-  }
-}
-
 const orderedFoldersForSave = computed(() => {
-  // sort by depth then name so parents appear before children
   return [...allFolders.value].sort((a, b) => {
     const da = a.id != null ? getFolderDepth(a.id, allFolders.value) : 0
     const dbd = b.id != null ? getFolderDepth(b.id, allFolders.value) : 0
@@ -821,8 +724,6 @@ const orderedFoldersForSave = computed(() => {
 
 async function openSaveToFolderModal() {
   await loadFolders()
-  // default target: prefer first folder if exists, else root (0)
-  // if root already saved and folders exist, default to first folder to avoid immediate duplicate toast
   if (allFolders.value.length > 0) {
     const first = orderedFoldersForSave.value[0]
     if (first?.id != null) saveTargetFolderId.value = first.id
@@ -839,66 +740,52 @@ function closeSaveToFolderModal() {
 }
 
 async function confirmSaveToFolder() {
-  if (isSavingToFolder.value) return
-  const src = effectiveAmalan.value as any
-  const lyricsToSave = effectiveLyrics.value
-  if (!src || !lyricsToSave.length) {
-    toast.error('Konten belum siap untuk disimpan offline.')
-    return
-  }
-  if (!isIndexedDBAvailable()) {
-    toast.error('Penyimpanan offline tidak tersedia di browser ini.')
-    return
-  }
-  if (saveTargetFolderId.value == null) {
-    toast.error('Pilih folder tujuan terlebih dahulu.')
-    return
-  }
-  const targetId = saveTargetFolderId.value as number
-  const idStr = String(src.id ?? (src as any).amalan_id ?? localData.value?.amalan_id ?? '')
-  if (!idStr) {
-    toast.error('Data amalan tidak valid.')
-    return
-  }
-  isSavingToFolder.value = true
-  try {
-    await ensureDbReady()
-    // check duplicate in target folder via compound index
-    let exists: LocalSavedAmalan | undefined
-    try {
-      exists = await db.saved_amalan.where('[amalan_id+folder_id]').equals([idStr, targetId]).first()
-    } catch (e) {
-      console.error('[offline] duplicate check compound failed', e)
-      // fallback to filter
-      const candidates = await db.saved_amalan.where('amalan_id').equals(idStr).toArray().catch(() => [] as LocalSavedAmalan[])
-      exists = candidates.find((c) => (c.folder_id ?? 0) === targetId)
-    }
-    if (exists) {
-      toast.error('Sudah ada di folder tersebut')
-      return
-    }
+  const ok = await saveToFolder(saveTargetFolderId.value as number, {
+    amalan: effectiveAmalan.value as any,
+    lyrics: effectiveLyrics.value as any,
+  })
+  if (ok) closeSaveToFolderModal()
+}
 
-    const plainLyrics: LocalSavedAmalan['lyrics'] = toPlainLyrics(lyricsToSave as any)
-    const plainPayload: LocalSavedAmalan = toSavedAmalanPayload(
-      { ...src, id: idStr, slug: String(src.slug ?? slug.value ?? '') },
-      plainLyrics,
-      targetId,
-    ) as LocalSavedAmalan
-    await db.saved_amalan.add(plainPayload)
-    toast.success(targetId === 0 ? 'Berhasil disimpan di Koleksi Utama.' : 'Berhasil disimpan ke folder.')
+async function toggleOffline() {
+  await toggleRoot({
+    amalan: effectiveAmalan.value as any,
+    lyrics: effectiveLyrics.value as any,
+  })
+}
+
+async function updateOffline() {
+  await updateAllCopies(effectiveLyrics.value as any, amalan.value as any)
+}
+
+function onKeydown(e: KeyboardEvent) {
+  if (e.key === 'Escape' && showSettings.value) {
+    showSettings.value = false
+  }
+  if (e.key === 'Escape' && showSaveToFolderModal.value) {
     closeSaveToFolderModal()
-  } catch (err: any) {
-    console.error('[offline] confirmSaveToFolder failed', err)
-    const msg = err?.message || ''
-    if (/ConstraintError|already exists|unique/i.test(msg)) {
-      toast.error('Sudah ada di folder tersebut')
-    } else {
-      toast.error(msg || 'Gagal menyimpan ke folder.')
-    }
-  } finally {
-    isSavingToFolder.value = false
   }
 }
+
+watch(showSettings, (open) => {
+  if (open) {
+    document.addEventListener('keydown', onKeydown)
+    document.documentElement.style.overflow = 'hidden'
+  } else {
+    document.removeEventListener('keydown', onKeydown)
+    if (!showSaveToFolderModal.value) document.documentElement.style.overflow = ''
+  }
+})
+
+watch(showSaveToFolderModal, (open) => {
+  if (open) {
+    document.addEventListener('keydown', onKeydown)
+    document.documentElement.style.overflow = 'hidden'
+  } else {
+    document.removeEventListener('keydown', onKeydown)
+    if (!showSettings.value) document.documentElement.style.overflow = ''
+  }
+})
 
 onMounted(async () => {
   await checkOfflineStatus()
@@ -920,165 +807,6 @@ watch(slug, async () => {
   await checkOfflineStatus()
 })
 
-async function toggleOffline() {
-  if (isSaving.value) return
-  const src = effectiveAmalan.value as any
-  const lyricsToSave = effectiveLyrics.value
-  if (!src || !lyricsToSave.length) {
-    toast.error('Konten belum siap untuk disimpan offline.')
-    return
-  }
-  if (!isIndexedDBAvailable()) {
-    toast.error('Penyimpanan offline tidak tersedia di browser ini. Coba gunakan Chrome terbaru dan pastikan bukan mode private.')
-    return
-  }
-
-  isSaving.value = true
-  try {
-    try {
-      await ensureDbReady()
-    } catch (e) {
-      console.error('[offline] ensureDbReady in toggle failed', e)
-    }
-
-    if (isSaved.value) {
-      // Delete only the root copy [amalan_id, 0] — allow same amalan in other folders
-      try {
-        const amalanIdStr = String(src.id ?? (src as any).amalan_id ?? localData.value?.amalan_id ?? '')
-        if (amalanIdStr) {
-          try {
-            await db.saved_amalan.where('[amalan_id+folder_id]').equals([amalanIdStr, 0]).delete()
-          } catch (e) {
-            console.error('[offline] delete compound failed, fallback to amalan_id+folder 0', e)
-            // fallback: try delete by amalan_id where folder_id 0
-            const candidates = await db.saved_amalan.where('amalan_id').equals(amalanIdStr).toArray()
-            for (const c of candidates) {
-              if ((c.folder_id ?? 0) === 0 && c.id != null) await db.saved_amalan.delete(c.id)
-            }
-          }
-          // fallback for legacy slug-only records
-          if (amalanIdStr === '' && src.slug) {
-            await db.saved_amalan.where('slug').equals(String(src.slug)).delete()
-          }
-          // verify still exists in root?
-          const stillExists = await db.saved_amalan.where('[amalan_id+folder_id]').equals([amalanIdStr, 0]).first().catch(() => null)
-          if (stillExists && (stillExists as any).id != null) {
-            try {
-              await db.saved_amalan.delete((stillExists as any).id)
-            } catch {}
-          }
-        } else if (src.slug) {
-          await db.saved_amalan.where('slug').equals(String(src.slug)).delete()
-        }
-      } catch (e) {
-        console.error('[offline] delete failed', e)
-        throw e
-      }
-      isSaved.value = false
-      localData.value = null
-      hasUpdateAvailable.value = false
-      toast.success('Dihapus dari koleksi offline.')
-    } else {
-      // Prevent double-tap duplicate: check exists in root folder only (compound)
-      let existing: LocalSavedAmalan | undefined
-      try {
-        const checkId = String(src.id ?? (src as any).amalan_id ?? '')
-        if (checkId) {
-          existing = await db.saved_amalan.where('[amalan_id+folder_id]').equals([checkId, 0]).first()
-        }
-        if (!existing && src.slug) existing = await db.saved_amalan.where('slug').equals(String(src.slug)).first()
-      } catch {}
-      if (existing) {
-        isSaved.value = true
-        localData.value = existing
-        toast.success('Sudah tersimpan offline.')
-        return
-      }
-
-      const plainLyrics: LocalSavedAmalan['lyrics'] = toPlainLyrics(lyricsToSave as any)
-      const plainPayload: LocalSavedAmalan = toSavedAmalanPayload(src, plainLyrics, 0) as LocalSavedAmalan
-      await db.saved_amalan.add(plainPayload)
-      isSaved.value = true
-      toast.success('Berhasil disimpan offline.')
-      await checkOfflineStatus()
-    }
-  } catch (err: any) {
-    console.error('[offline] toggleOffline failed', err)
-    const name = err?.name || ''
-    const msg = err?.message || ''
-    // Dexie VersionError on old HP DB — try one-time delete & retry
-    if (/VersionError|SchemaError|UpgradeError/i.test(name + ' ' + msg)) {
-      try {
-        toast.warning('Memperbaiki penyimpanan offline, coba lagi…')
-        db.close()
-        await db.delete()
-        await db.open()
-        toast.error('Penyimpanan telah diperbaiki — ketuk Simpan offline lagi.')
-      } catch (e2) {
-        console.error('[offline] recovery failed', e2)
-        toast.error('Gagal memperbaiki penyimpanan offline. Coba hapus data situs di pengaturan browser.')
-      }
-      return
-    }
-    // Quota exceeded, SecurityError (iOS private), etc.
-    if (/QuotaExceeded|Storage/i.test(name + ' ' + msg)) {
-      toast.error('Penyimpanan penuh — hapus beberapa amalan offline atau bersihkan cache browser.')
-      return
-    }
-    if (/SecurityError|NotAllowedError/i.test(name)) {
-      toast.error('Browser memblokir penyimpanan offline (mode private atau izin ditolak).')
-      return
-    }
-    toast.error(msg || 'Gagal menyimpan offline.')
-  } finally {
-    isSaving.value = false
-  }
-}
-
-async function updateOffline() {
-  if (isSaving.value) return
-  const src = amalan.value as any
-  const lyricsToSave = effectiveLyrics.value
-  if (!src || !lyricsToSave.length) {
-    toast.error('Konten belum siap untuk diperbarui.')
-    return
-  }
-  if (!isIndexedDBAvailable()) {
-    toast.error('Penyimpanan offline tidak tersedia.')
-    return
-  }
-  isSaving.value = true
-  try {
-    try {
-      await ensureDbReady()
-    } catch {}
-    const plainLyricsUpd: LocalSavedAmalan['lyrics'] = toPlainLyrics(lyricsToSave as any)
-    const plainModify = {
-        content: JSON.stringify(plainLyricsUpd),
-        lyrics: plainLyricsUpd,
-        content_version: Number(src.content_version ?? 1),
-        server_updated_at: String(src.updated_at ?? (src as any).updatedAt ?? new Date().toISOString()),
-        last_synced_at: Date.now(),
-        has_update_available: false,
-      }
-    const updated = await db.saved_amalan.where('amalan_id').equals(String(src.id)).modify(plainModify)
-    if (!updated) {
-      // fallback by slug if amalan_id modify matched 0
-      if (src.slug) {
-        await db.saved_amalan.where('slug').equals(String(src.slug)).modify(plainModify)
-      }
-    }
-    hasUpdateAvailable.value = false
-    await checkOfflineStatus()
-    toast.success('Konten offline diperbarui.')
-  } catch (err: any) {
-    console.error('[offline] updateOffline failed', err)
-    toast.error(err?.message || 'Gagal memperbarui offline.')
-  } finally {
-    isSaving.value = false
-  }
-}
-
 const progress = ref(0)
 function onScroll() {
   const scrollTop = window.scrollY
@@ -1087,10 +815,9 @@ function onScroll() {
   progress.value = Math.min(100, Math.max(0, pct))
 }
 
-// — Lyric title header: split `judul` into Arab + Latin (e.g. "حَلَّ الرَّبِيع — Halla Rabi") —
+// lyric title header
 const arabicRe = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/
 const latinReHeader = /[A-Za-z]/
-// em/en dash may appear without spaces ("A—B"), hyphen must have spaces to avoid "Asy-Syaikhoni"
 const titleSplitRe = /\s*[—–]\s*|\s+-\s+/
 const rawTitle = computed(() => (effectiveAmalan.value?.judul || '').trim())
 const arabTitle = computed(() => {
@@ -1105,8 +832,8 @@ const arabTitle = computed(() => {
     const bIsArab = arabicRe.test(b)
     if (aIsArab && !bIsArab) return a
     if (!aIsArab && bIsArab) return b
-    if (aIsArab && bIsArab) return raw // both arabic — keep original
-    if (!aIsArab && !bIsArab) return raw // both latin — keep original as single line
+    if (aIsArab && bIsArab) return raw
+    if (!aIsArab && !bIsArab) return raw
     return a
   }
   return raw
@@ -1124,9 +851,8 @@ const latinTitle = computed(() => {
     const bIsLatin = latinReHeader.test(b) && !bIsArab
     if (aIsArab && bIsLatin) return b
     if (aIsLatin && bIsArab) return a
-    if (aIsArab && bIsArab) return '' // no latin when both arabic
-    if (!aIsArab && !bIsArab) return '' // both latin — no separate latin line
-    // ambiguous: if b looks latin, treat as latin
+    if (aIsArab && bIsArab) return ''
+    if (!aIsArab && !bIsArab) return ''
     if (bIsLatin) return b
     if (aIsLatin) return a
     return ''
@@ -1138,7 +864,7 @@ const hasTitleLatin = computed(() => !!latinTitle.value)
 const readingMinutes = computed(() => {
   const lyrics = effectiveLyrics.value
   if (!lyrics.length) return 0
-  const text = lyrics.map((r) => `${r.arab} ${r.latin || ''}`).join(' ')
+  const text = lyrics.map((r: any) => `${r.arab} ${r.latin || ''}`).join(' ')
   const words = text.trim().split(/\s+/).length
   return Math.max(1, Math.round(words / 180))
 })
@@ -1166,8 +892,6 @@ async function handleShare() {
 }
 
 const loadingPage = computed(
-  // fetchingAmalan alone should not hide article when effectiveAmalan already exists (offline fallback or cached).
-  // Only show skeleton while initial load is pending and no fallback available.
   () => loadingAmalan.value || (!effectiveAmalan.value && !amalanError.value && !hasOfflineFallback.value),
 )
 </script>
