@@ -689,12 +689,20 @@ async function checkOfflineStatus() {
     }
 
     let local: LocalSavedAmalan | undefined
-    const id = amalan.value?.id || (effectiveAmalan.value as any)?.id
+    const rawId = (amalan.value as any)?.id ?? (effectiveAmalan.value as any)?.id
+    const id = rawId != null ? String(rawId) : null
     if (id) {
       try {
-        local = await db.saved_amalan.where('amalan_id').equals(id).first()
+        local = await db.saved_amalan.where('[amalan_id+folder_id]').equals([id, 0]).first()
       } catch (e) {
-        console.error('[offline] where amalan_id failed', e)
+        console.error('[offline] where compound [amalan_id+folder_id] failed', e)
+      }
+      if (!local) {
+        try {
+          local = await db.saved_amalan.where('amalan_id').equals(id).first()
+        } catch (e) {
+          console.error('[offline] where amalan_id fallback failed', e)
+        }
       }
     }
     // Fallback by slug — critical for offline first load (amalan.value is null, chicken-egg)
@@ -781,19 +789,33 @@ async function toggleOffline() {
     }
 
     if (isSaved.value) {
-      // Delete — support both amalan_id and slug lookup (offline entry may have been found via slug)
+      // Delete only the root copy [amalan_id, 0] — allow same amalan in other folders
       try {
-        if (src.id) {
-          await db.saved_amalan.where('amalan_id').equals(src.id).delete()
+        const amalanIdStr = String(src.id ?? (src as any).amalan_id ?? localData.value?.amalan_id ?? '')
+        if (amalanIdStr) {
+          try {
+            await db.saved_amalan.where('[amalan_id+folder_id]').equals([amalanIdStr, 0]).delete()
+          } catch (e) {
+            console.error('[offline] delete compound failed, fallback to amalan_id+folder 0', e)
+            // fallback: try delete by amalan_id where folder_id 0
+            const candidates = await db.saved_amalan.where('amalan_id').equals(amalanIdStr).toArray()
+            for (const c of candidates) {
+              if ((c.folder_id ?? 0) === 0 && c.id != null) await db.saved_amalan.delete(c.id)
+            }
+          }
+          // fallback for legacy slug-only records
+          if (amalanIdStr === '' && src.slug) {
+            await db.saved_amalan.where('slug').equals(String(src.slug)).delete()
+          }
+          // verify still exists in root?
+          const stillExists = await db.saved_amalan.where('[amalan_id+folder_id]').equals([amalanIdStr, 0]).first().catch(() => null)
+          if (stillExists && (stillExists as any).id != null) {
+            try {
+              await db.saved_amalan.delete((stillExists as any).id)
+            } catch {}
+          }
         } else if (src.slug) {
-          await db.saved_amalan.where('slug').equals(src.slug).delete()
-        }
-        // fallback: if no id/slug matched, try by localData id
-        if (localData.value?.id) {
-          const stillExists = src.id
-            ? await db.saved_amalan.where('amalan_id').equals(src.id).first()
-            : null
-          if (stillExists) await db.saved_amalan.delete(stillExists.id!)
+          await db.saved_amalan.where('slug').equals(String(src.slug)).delete()
         }
       } catch (e) {
         console.error('[offline] delete failed', e)
@@ -804,11 +826,14 @@ async function toggleOffline() {
       hasUpdateAvailable.value = false
       toast.success('Dihapus dari koleksi offline.')
     } else {
-      // Prevent double-tap duplicate: check exists first
+      // Prevent double-tap duplicate: check exists in root folder only (compound)
       let existing: LocalSavedAmalan | undefined
       try {
-        if (src.id) existing = await db.saved_amalan.where('amalan_id').equals(src.id).first()
-        if (!existing && src.slug) existing = await db.saved_amalan.where('slug').equals(src.slug).first()
+        const checkId = String(src.id ?? (src as any).amalan_id ?? '')
+        if (checkId) {
+          existing = await db.saved_amalan.where('[amalan_id+folder_id]').equals([checkId, 0]).first()
+        }
+        if (!existing && src.slug) existing = await db.saved_amalan.where('slug').equals(String(src.slug)).first()
       } catch {}
       if (existing) {
         isSaved.value = true

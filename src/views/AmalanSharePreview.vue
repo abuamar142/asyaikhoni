@@ -79,7 +79,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getShareBundle } from '@/services/shareService'
 import { downloadMarkdown, getById } from '@/services/amalanService'
-import { db, type LocalFolder } from '@/utils/localDb'
+import { db, type LocalFolder, ensureDbReady, isIndexedDBAvailable } from '@/utils/localDb'
 import { 
   Download, BookOpen, Calendar, FileText, Folder, AlertCircle 
 } from 'lucide-vue-next'
@@ -116,6 +116,12 @@ async function importBundle() {
   
   importing.value = true
   try {
+    if (!isIndexedDBAvailable()) {
+      toast.error('Penyimpanan offline tidak tersedia di browser ini.')
+      importing.value = false
+      return
+    }
+    try { await ensureDbReady() } catch {}
     const folderMap = new Map<string, number>()
     
     for (const item of bundle.value.share_bundle_items) {
@@ -123,7 +129,7 @@ async function importBundle() {
       
       // Create folders if they don't exist
       if (item.folder_path) {
-        const parts = item.folder_path.split('/')
+        const parts = item.folder_path.split('/').map((s: string) => s.trim()).filter(Boolean)
         let parent_id: number | null = null
         let pathAccumulator = ''
         
@@ -158,31 +164,70 @@ async function importBundle() {
         
       if (fullAmalan) {
         const content = await downloadMarkdown(fullAmalan.id)
+        // Prefer bundle lyrics if available, fallback to downloaded content
+        let plainLyrics: any[] | null = null
+        const bundleLyrics = (item as any).lyrics || (item.amalan as any)?.lyrics
+        if (Array.isArray(bundleLyrics) && bundleLyrics.length > 0) {
+          plainLyrics = JSON.parse(JSON.stringify(bundleLyrics.map((r: any) => ({
+            ...(r?.id != null ? { id: String(r.id) } : {}),
+            arab: String(r?.arab ?? ''),
+            latin: r?.latin == null ? null : String(r.latin),
+          }))))
+        } else if (Array.isArray((fullAmalan as any).lyrics) && (fullAmalan as any).lyrics.length > 0) {
+          plainLyrics = JSON.parse(JSON.stringify((fullAmalan as any).lyrics.map((r: any) => ({
+            ...(r?.id != null ? { id: String(r.id) } : {}),
+            arab: String(r?.arab ?? ''),
+            latin: r?.latin == null ? null : String(r.latin),
+          }))))
+        }
+        const amalanIdStr = String((fullAmalan as any).id ?? item.amalan_id ?? '')
         
-        // Check if already saved
-        const existingLocal = await db.saved_amalan.where('amalan_id').equals(fullAmalan.id).first()
+        // Compound check: allow same amalan in different folders
+        let existingLocal: any = null
+        try {
+          existingLocal = await db.saved_amalan.where('[amalan_id+folder_id]').equals([amalanIdStr, folder_id]).first()
+        } catch (e) {
+          console.error('[share] compound check failed, fallback to amalan_id', e)
+          try { existingLocal = await db.saved_amalan.where('amalan_id').equals(amalanIdStr).first() } catch {}
+        }
+        const basePayload: any = {
+          folder_id,
+          content,
+          content_version: Number((fullAmalan as any).content_version ?? 1),
+          server_updated_at: String((fullAmalan as any).updated_at || new Date().toISOString()),
+          last_synced_at: Date.now(),
+          has_update_available: false,
+        }
+        if (plainLyrics) {
+          basePayload.lyrics = plainLyrics
+          basePayload.content = JSON.stringify(plainLyrics)
+        }
+        const plainBase = JSON.parse(JSON.stringify(basePayload))
         if (existingLocal) {
-          await db.saved_amalan.update(existingLocal.id!, {
-            folder_id,
-            content,
-            content_version: fullAmalan.content_version,
-            server_updated_at: fullAmalan.updated_at || new Date().toISOString(),
-            last_synced_at: Date.now()
-          })
+          if (existingLocal.id != null) {
+            await db.saved_amalan.update(existingLocal.id, plainBase)
+          } else {
+            await db.saved_amalan.where('[amalan_id+folder_id]').equals([amalanIdStr, folder_id]).modify(plainBase)
+          }
         } else {
-          await db.saved_amalan.add({
-            amalan_id: fullAmalan.id,
-            judul: fullAmalan.judul,
-            slug: fullAmalan.slug,
-            ringkasan: fullAmalan.ringkasan,
+          const newRec: any = JSON.parse(JSON.stringify({
+            amalan_id: amalanIdStr,
+            judul: String((fullAmalan as any).judul ?? item.amalan?.judul ?? ''),
+            slug: String((fullAmalan as any).slug ?? item.amalan?.slug ?? amalanIdStr),
+            ringkasan: (fullAmalan as any).ringkasan == null ? null : String((fullAmalan as any).ringkasan),
             content,
-            content_version: fullAmalan.content_version,
-            server_updated_at: fullAmalan.updated_at || new Date().toISOString(),
+            content_version: Number((fullAmalan as any).content_version ?? 1),
+            server_updated_at: String((fullAmalan as any).updated_at || new Date().toISOString()),
             saved_at: Date.now(),
             last_synced_at: Date.now(),
             has_update_available: false,
-            folder_id
-          })
+            folder_id,
+          }))
+          if (plainLyrics) {
+            newRec.lyrics = plainLyrics
+            newRec.content = JSON.stringify(plainLyrics)
+          }
+          await db.saved_amalan.add(newRec)
         }
       }
     }

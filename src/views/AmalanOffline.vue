@@ -501,9 +501,48 @@ function confirmDeleteFolder(folder: LocalFolder) {
 async function deleteFolder() {
   if (!folderToDelete.value?.id) return
 
-  await db.saved_amalan.where('folder_id').equals(folderToDelete.value.id).modify({ folder_id: 0 })
-
-  await db.folders.delete(folderToDelete.value.id)
+  try {
+    await ensureDbReady()
+    const targetId = folderToDelete.value.id!
+    // collect all descendant folder ids recursively
+    const all = await db.folders.toArray()
+    const toDeleteIds = new Set<number>()
+    toDeleteIds.add(targetId)
+    let changed = true
+    while (changed) {
+      changed = false
+      for (const f of all) {
+        const pid = f.parent_id ?? null
+        if (pid != null && toDeleteIds.has(pid) && f.id != null && !toDeleteIds.has(f.id)) {
+          toDeleteIds.add(f.id)
+          changed = true
+        }
+      }
+    }
+    // move amalan in deleted folders (and descendants) to root
+    for (const fid of toDeleteIds) {
+      try {
+        await db.saved_amalan.where('folder_id').equals(fid).modify({ folder_id: 0 })
+      } catch (e) {
+        console.error('[offline] deleteFolder modify failed for', fid, e)
+      }
+    }
+    // delete folder records
+    for (const fid of toDeleteIds) {
+      try {
+        await db.folders.delete(fid)
+      } catch (e) {
+        console.error('[offline] delete folder record failed', fid, e)
+      }
+    }
+    if (currentFolderId.value != null && toDeleteIds.has(currentFolderId.value)) {
+      currentFolderId.value = null
+    }
+  } catch (e) {
+    console.error('[offline] deleteFolder failed', e)
+    toast.error('Gagal menghapus folder.')
+    return
+  }
   isConfirmingDelete.value = false
   folderToDelete.value = null
   toast.success('Folder dihapus.')
@@ -548,19 +587,84 @@ function showMoveToFolder(item: LocalSavedAmalan) {
 }
 
 async function moveToFolder(folderId: number) {
-  if (!movingItem.value?.id) return
+  if (!movingItem.value) return
 
-  await db.saved_amalan.update(movingItem.value.id, { folder_id: folderId })
-  toast.success('Berhasil dipindahkan.')
-  movingItem.value = null
-  loadData()
+  const amalanId = String((movingItem.value as any).amalan_id ?? '')
+  if (!amalanId) {
+    toast.error('Data amalan tidak valid.')
+    return
+  }
+  try {
+    await ensureDbReady()
+    const existing = await db.saved_amalan.where('[amalan_id+folder_id]').equals([amalanId, folderId]).first()
+    if (existing) {
+      toast.error('Sudah ada di folder tersebut')
+      return
+    }
+  } catch (e) {
+    console.error('[offline] move duplicate check failed', e)
+  }
+
+  try {
+    await ensureDbReady()
+    const currentFolder = (movingItem.value as any).folder_id ?? 0
+    if ((movingItem.value as any).id != null) {
+      try {
+        await db.saved_amalan.update((movingItem.value as any).id!, { folder_id: folderId })
+      } catch (err: any) {
+        // fallback for compound primary without ++id: delete old compound and add new
+        const msg = err?.name || err?.message || ''
+        if (/ConstraintError|DataError|InvalidState/i.test(msg)) {
+          const oldData: any = { ...movingItem.value, folder_id: folderId }
+          delete oldData.id
+          const plain = JSON.parse(JSON.stringify(oldData))
+          await db.saved_amalan.where('[amalan_id+folder_id]').equals([amalanId, currentFolder]).delete()
+          await db.saved_amalan.add(plain)
+        } else {
+          throw err
+        }
+      }
+    } else {
+      // no numeric id — use compound delete+add
+      const oldData: any = { ...movingItem.value, folder_id: folderId }
+      const plain = JSON.parse(JSON.stringify(oldData))
+      delete plain.id
+      await db.saved_amalan.where('[amalan_id+folder_id]').equals([amalanId, currentFolder]).delete()
+      await db.saved_amalan.add(plain)
+    }
+    toast.success('Berhasil dipindahkan.')
+    movingItem.value = null
+    loadData()
+  } catch (err: any) {
+    console.error('[offline] moveToFolder failed', err)
+    const msg = err?.message || ''
+    if (/ConstraintError|already exists|unique/i.test(msg)) {
+      toast.error('Sudah ada di folder tersebut')
+    } else {
+      toast.error('Gagal memindahkan.')
+    }
+  }
 }
 
 async function removeFromOffline(item: LocalSavedAmalan) {
-  if (!item.id) return
-  await db.saved_amalan.delete(item.id)
-  toast.success('Dihapus dari koleksi offline.')
-  loadData()
+  try {
+    await ensureDbReady()
+    if ((item as any).id != null) {
+      try {
+        await db.saved_amalan.delete((item as any).id)
+      } catch {
+        // fallback compound delete if primary is compound
+        await db.saved_amalan.where('[amalan_id+folder_id]').equals([String((item as any).amalan_id), (item as any).folder_id ?? 0]).delete()
+      }
+    } else {
+      await db.saved_amalan.where('[amalan_id+folder_id]').equals([String((item as any).amalan_id), (item as any).folder_id ?? 0]).delete()
+    }
+    toast.success('Dihapus dari koleksi offline.')
+    loadData()
+  } catch (e) {
+    console.error('[offline] removeFromOffline failed', e)
+    toast.error('Gagal menghapus.')
+  }
 }
 
 // Sharing Logic

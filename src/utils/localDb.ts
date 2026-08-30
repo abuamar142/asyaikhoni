@@ -82,6 +82,46 @@ export class MyDatabase extends Dexie {
             if (f.parent_id === undefined) f.parent_id = null
           })
       })
+    // v4: same amalan in different folders — compound unique [amalan_id+folder_id]
+    this.version(4)
+      .stores({
+        saved_amalan: '++id, &[amalan_id+folder_id], folder_id, amalan_id, slug, has_update_available',
+        folders: '++id, name, parent_id',
+      })
+      .upgrade(async (tx) => {
+        const table = tx.table('saved_amalan')
+        // ensure folder_id defaults to 0 (root) for old records
+        await table.toCollection().modify((item: any) => {
+          if (item.folder_id == null) item.folder_id = 0
+        })
+        // deduplicate by [amalan_id+folder_id], keep newest by saved_at/last_synced_at
+        const all = await table.toArray()
+        const grouped = new Map<string, any[]>()
+        for (const item of all) {
+          const amalanId = String(item.amalan_id ?? '')
+          const folderId = item.folder_id ?? 0
+          const key = `${amalanId}::${folderId}`
+          if (!grouped.has(key)) grouped.set(key, [])
+          grouped.get(key)!.push(item)
+        }
+        for (const [, items] of grouped) {
+          if (items.length > 1) {
+            items.sort((a: any, b: any) => {
+              const at = a.saved_at ?? a.last_synced_at ?? 0
+              const bt = b.saved_at ?? b.last_synced_at ?? 0
+              return bt - at
+            })
+            const dupes = items.slice(1)
+            for (const dup of dupes) {
+              if (dup.id != null) {
+                await table.delete(dup.id)
+              } else {
+                await table.where('[amalan_id+folder_id]').equals([String(dup.amalan_id), dup.folder_id ?? 0]).delete()
+              }
+            }
+          }
+        }
+      })
   }
 }
 
