@@ -8,100 +8,58 @@
         <div class="absolute inset-0 opacity-[0.025]" style="background-image: radial-gradient(circle at 1px 1px, #0f2e1c 1px, transparent 0); background-size: 22px 22px"></div>
       </div>
 
-      <!-- Masthead -->
-      <header class="relative border-b border-[#e8e6de] bg-white/85 backdrop-blur-[8px]">
-      <div aria-hidden="true" class="absolute inset-0 overflow-hidden pointer-events-none">
-        <div class="absolute -right-16 -top-16 w-[420px] h-[420px] rounded-full border border-emerald-100/70 hidden lg:block"></div>
-        <div class="absolute -right-16 -top-16 w-[320px] h-[320px] rounded-full border border-emerald-100/50 hidden lg:block"></div>
-        <div class="absolute -right-10 top-10 hidden lg:flex w-20 h-20 rounded-full bg-white border border-[#ece9e0] shadow-[0_8px_24px_rgba(20,40,20,0.06)] items-center justify-center">
-          <span class="font-serif text-emerald-800 text-xl leading-none">۞</span>
-        </div>
-        <!-- thin accent line top -->
-        <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-200/50 to-transparent"></div>
-      </div>
-
-      <div class="relative container mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="pt-10 pb-8 md:pt-14 md:pb-10">
-          <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8">
-            <div class="max-w-[44rem]">
-              <!-- eyebrow -->
-              <div class="inline-flex flex-wrap items-center gap-3 mb-4">
-                <span class="h-px w-8 bg-emerald-700 hidden sm:block"></span>
-                <span class="text-[11px] tracking-[0.18em] font-semibold text-emerald-800 uppercase"
-                  >Khazanah · PPTQ Asy-Syaikhôni</span
-                >
-                <span class="hidden sm:inline-flex items-center gap-2">
-                  <span class="w-1 h-1 rounded-full bg-amber-400"></span>
-                  <span class="text-[11px] tracking-[0.14em] font-medium text-stone-500 uppercase">Nganjuk · Est</span>
-                </span>
-              </div>
-
-              <h1
-                class="font-serif text-[34px] sm:text-[42px] lg:text-[48px] font-[600] tracking-[-0.03em] leading-[0.95] text-[#0f2418]"
-                style="font-family: 'Fraunces', 'Cormorant Garamond', Georgia, serif"
-              >
-                Kumpulan
-                <span class="font-[300] italic text-emerald-800">Amalan</span>
-              </h1>
-
-              <p
-                class="mt-3.5 text-[15px] sm:text-[16px] leading-[1.7] text-[#5b6b5f] max-w-[38rem] text-pretty"
-              >
-                Khazanah doa, wirid, dan tuntunan ibadah yang diamalkan di lingkungan Pondok
-                Pesantren — tersusun rapi untuk dibaca, dihafal, dan diamalkan sehari-hari.
-              </p>
-
-              <div class="mt-6 flex flex-wrap items-center gap-3">
-                <div
-                  class="inline-flex items-center gap-2.5 pl-1 pr-3 py-1 rounded-full bg-emerald-50 border border-emerald-100"
-                >
-                  <span
-                    class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-700 text-white"
-                  >
-                    <Library class="w-3.5 h-3.5" />
-                  </span>
-                  <span class="text-[13px] font-medium text-emerald-900"
-                    ><span class="font-semibold">{{ itemsList.length }}</span>
-                    <span class="text-emerald-700/80"> amalan</span>
-                  </span>
-                  <span class="w-px h-4 bg-emerald-200"></span>
-                  <span class="text-[12px] text-emerald-700">{{ categoryOptions.length }} kategori</span>
-                </div>
-
-                <router-link
-                  :to="{ name: 'amalan-offline' }"
-                  class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-[#e7e5e0] text-[13px] font-semibold text-[#1a2e1f] hover:border-emerald-200 hover:bg-emerald-50/60 hover:text-emerald-800 shadow-sm transition-all"
-                >
-                  <Bookmark class="w-4 h-4 text-emerald-700" />
-                  Koleksi Saya
-                  <ArrowUpRight class="w-3.5 h-3.5 text-stone-400" />
-                </router-link>
-              </div>
-            </div>
-
-            <!-- right stat - desktop only -->
-            <div class="hidden lg:flex flex-col items-end text-right shrink-0">
-              <div
-                class="text-[11px] tracking-[0.16em] uppercase font-semibold text-stone-400 mb-2"
-              >
-                Katalog terdokumentasi
-              </div>
-              <div
-                class="font-serif text-5xl font-[300] tracking-[-0.04em] leading-none text-[#12291a]"
-                style="font-family: 'Fraunces', Georgia, serif"
-              >
-                {{ String(itemsList.length || 0).padStart(2, '0') }}
-              </div>
-              <div class="text-sm text-stone-500 mt-1.5">amalan tersimpan</div>
-              <div class="mt-5 h-px w-24 bg-gradient-to-r from-transparent to-emerald-200"></div>
-              <div class="mt-3 text-[11px] leading-[1.5] text-stone-500 max-w-[18rem] text-pretty">
-                Diperbarui berkala oleh pengasuh. Simpan offline untuk dibaca tanpa koneksi.
-              </div>
-            </div>
+      <PageHero
+        eyebrow="KHAZANAH · PPTQ ASY-SYAIKHONI"
+        eyebrow-accent="NGANJUK · EST"
+        title="Kumpulan"
+        title-accent="Amalan"
+        description="Khazanah doa, wirid, dan tuntunan ibadah yang diamalkan di lingkungan Pondok Pesantren — tersusun rapi untuk dibaca, dihafal, dan diamalkan sehari-hari."
+        show-arc
+      >
+        <template #actions-left>
+          <div
+            class="inline-flex items-center gap-2.5 pl-1 pr-3 py-1 rounded-full bg-emerald-50 border border-emerald-100"
+          >
+            <span
+              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-700 text-white"
+            >
+              <Library class="w-3.5 h-3.5" />
+            </span>
+            <span class="text-[13px] font-medium text-emerald-900"
+              ><span class="font-semibold">{{ itemsList.length }}</span>
+              <span class="text-emerald-700/80"> amalan</span>
+            </span>
+            <span class="w-px h-4 bg-emerald-200"></span>
+            <span class="text-[12px] text-emerald-700">{{ categoryOptions.length }} kategori</span>
           </div>
-        </div>
-      </div>
-    </header>
+
+          <router-link
+            :to="{ name: 'amalan-offline' }"
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-[#e7e5e0] text-[13px] font-semibold text-[#1a2e1f] hover:border-emerald-200 hover:bg-emerald-50/60 hover:text-emerald-800 shadow-sm transition-all"
+          >
+            <Bookmark class="w-4 h-4 text-emerald-700" />
+            Koleksi Saya
+            <ArrowUpRight class="w-3.5 h-3.5 text-stone-400" />
+          </router-link>
+        </template>
+
+        <template #stats-right>
+          <div class="text-[11px] tracking-[0.16em] uppercase font-semibold text-stone-400 mb-2">
+            Katalog terdokumentasi
+          </div>
+          <div
+            class="font-serif text-5xl font-[300] tracking-[-0.04em] leading-none text-[#12291a]"
+            style="font-family: 'Fraunces', Georgia, serif"
+          >
+            {{ String(itemsList.length || 0).padStart(2, '0') }}
+          </div>
+          <div class="text-sm text-stone-500 mt-1.5">amalan tersimpan</div>
+          <div class="mt-5 h-px w-24 bg-gradient-to-r from-transparent to-emerald-200"></div>
+          <div class="mt-3 text-[11px] leading-[1.5] text-stone-500 max-w-[18rem] text-pretty">
+            Diperbarui berkala oleh pengasuh. Simpan offline untuk dibaca tanpa koneksi.
+          </div>
+        </template>
+      </PageHero>
 
     <!-- Sticky toolbar — mentok ke header (fixed h-16) -->
     <div class="sticky top-16 z-20 mt-0 -mb-px">
@@ -381,6 +339,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import AppHeader from '@/components/layout/AppHeader.vue'
+import PageHero from '@/components/ui/PageHero.vue'
 import { useAmalanListQuery } from '@/composables/useAmalanQueries'
 import { useCategoryListQuery } from '@/composables/useCategoryQueries'
 import { useDebouncedRef } from '@/composables/useDebouncedRef'

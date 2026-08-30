@@ -7,62 +7,75 @@
       <div class="absolute inset-0 opacity-[0.025]" style="background-image: radial-gradient(circle at 1px 1px, #0f2e1c 1px, transparent 0); background-size: 22px 22px"></div>
     </div>
 
-    <!-- Header -->
-    <div class="relative border-b border-[#e8e6de] bg-white/85 backdrop-blur-[8px]">
-      <div aria-hidden="true" class="absolute inset-0 overflow-hidden pointer-events-none">
-        <div class="absolute -right-16 -top-16 w-[360px] h-[360px] rounded-full border border-emerald-100/60 hidden lg:block"></div>
-        <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-200/40 to-transparent"></div>
-      </div>
+    <PageHero
+        eyebrow="KOLEKSI PRIBADI · OFFLINE"
+        eyebrow-accent="TERSIMPAN DI PERANGKAT"
+        title="Koleksi"
+        title-accent="Amalan Saya"
+        description="Kelola amalan yang telah Anda simpan untuk akses offline. Atur dalam folder, bagikan sebagai koleksi, dan baca kapan saja tanpa koneksi."
+        show-arc
+      >
+        <template #actions-left>
+          <div
+            class="inline-flex items-center gap-2 text-[12.5px] text-stone-600 bg-white border border-[#ece9e0] rounded-full pl-1 pr-3 py-1 shadow-sm"
+          >
+            <span
+              class="inline-flex w-6 h-6 rounded-full bg-emerald-700 text-white items-center justify-center"
+              ><BookMarked class="w-3.5 h-3.5"
+            /></span>
+            <span class="font-medium text-stone-800">{{ savedAmalan.length }} amalan</span>
+            <span class="w-px h-4 bg-stone-200"></span>
+            <span>{{ allFolders.length }} folder</span>
+          </div>
+        </template>
+
+        <template #actions-right>
+          <button
+            type="button"
+            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white border border-[#e7e5e0] text-[13px] font-semibold text-stone-700 hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-800 shadow-sm transition-all"
+            @click="isCreatingFolder = true"
+          >
+            <FolderPlus class="w-4 h-4 text-emerald-700" />
+            Folder Baru
+          </button>
+          <button
+            v-if="currentFolderId !== null"
+            type="button"
+            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white border border-emerald-200 text-[13px] font-semibold text-emerald-800 hover:bg-emerald-50 shadow-sm transition-all"
+            @click="isCreatingFolder = true"
+          >
+            <FolderPlus class="w-4 h-4" />
+            Buat Subfolder
+          </button>
+          <button
+            type="button"
+            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-emerald-700 text-white text-[13px] font-semibold hover:bg-emerald-800 shadow-sm transition-colors"
+            @click="startShare(null)"
+          >
+            <Share2 class="w-4 h-4" />
+            Bagikan Semua
+          </button>
+        </template>
+
+        <template #stats-right>
+          <div class="text-[11px] tracking-[0.16em] uppercase font-semibold text-stone-400 mb-2">
+            Koleksi tersimpan
+          </div>
+          <div
+            class="font-serif text-5xl font-[300] tracking-[-0.04em] leading-none text-[#12291a]"
+            style="font-family: 'Fraunces', Georgia, serif"
+          >
+            {{ String(savedAmalan.length).padStart(2, '0') }}
+          </div>
+          <div class="text-sm text-stone-500 mt-1.5">{{ allFolders.length }} folder · offline</div>
+          <div class="mt-5 h-px w-24 bg-gradient-to-r from-transparent to-emerald-200"></div>
+          <div class="mt-3 text-[11px] leading-[1.5] text-stone-500 max-w-[18rem] text-pretty">
+            Tersimpan di perangkat. Atur dalam folder dan bagikan sebagai koleksi.
+          </div>
+        </template>
+      </PageHero>
+
       <div class="relative container mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="py-10 md:py-12 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
-          <div class="max-w-2xl">
-            <div class="inline-flex items-center gap-3 mb-3">
-              <span class="h-px w-8 bg-emerald-700 hidden sm:block"></span>
-              <span class="text-[11px] tracking-[0.18em] font-semibold text-emerald-800 uppercase">Koleksi Pribadi · Offline</span>
-              <span class="w-1 h-1 rounded-full bg-amber-400 hidden sm:block"></span>
-              <span class="text-[11px] tracking-[0.12em] font-medium text-stone-500 uppercase hidden sm:block">Tersimpan di perangkat</span>
-            </div>
-            <h1 class="font-serif text-[30px] sm:text-[36px] font-[600] tracking-[-0.02em] leading-[1] text-[#0f2318]" style="font-family: 'Fraunces', Georgia, serif">
-              Koleksi <span class="font-[300] italic text-emerald-800">Amalan Saya</span>
-            </h1>
-            <p class="mt-3 text-[15px] leading-[1.7] text-[#5b6b5f] max-w-[42rem] text-pretty">
-              Kelola amalan yang telah Anda simpan untuk akses offline. Atur dalam folder, bagikan sebagai koleksi, dan baca kapan saja tanpa koneksi.
-            </p>
-            <div class="mt-5 inline-flex items-center gap-2 text-[12.5px] text-stone-600 bg-white border border-[#ece9e0] rounded-full pl-1 pr-3 py-1 shadow-sm">
-              <span class="inline-flex w-6 h-6 rounded-full bg-emerald-700 text-white items-center justify-center"><BookMarked class="w-3.5 h-3.5" /></span>
-              <span class="font-medium text-stone-800">{{ savedAmalan.length }} amalan</span>
-              <span class="w-px h-4 bg-stone-200"></span>
-              <span>{{ allFolders.length }} folder</span>
-            </div>
-          </div>
-          <div class="flex flex-wrap items-center gap-3 shrink-0">
-            <button
-              type="button"
-              class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white border border-[#e7e5e0] text-[13px] font-semibold text-stone-700 hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-800 shadow-sm transition-all"
-              @click="isCreatingFolder = true"
-            >
-              <FolderPlus class="w-4 h-4 text-emerald-700" />
-              Folder Baru
-            </button>
-            <button
-              v-if="currentFolderId !== null"
-              type="button"
-              class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white border border-emerald-200 text-[13px] font-semibold text-emerald-800 hover:bg-emerald-50 shadow-sm transition-all"
-              @click="isCreatingFolder = true"
-            >
-              <FolderPlus class="w-4 h-4" />
-              Buat Subfolder
-            </button>
-            <button
-              type="button"
-              class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-emerald-700 text-white text-[13px] font-semibold hover:bg-emerald-800 shadow-sm transition-colors"
-              @click="startShare(null)"
-            >
-              <Share2 class="w-4 h-4" />
-              Bagikan Semua
-            </button>
-          </div>
-        </div>
 
         <!-- Breadcrumb nav -->
         <div v-if="breadcrumbPath.length > 0 || currentFolderId !== null" class="flex items-center gap-1.5 pb-4 text-[13px] flex-wrap">
@@ -88,7 +101,6 @@
           </template>
         </div>
       </div>
-    </div>
 
     <div class="relative container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10">
       <!-- Folders / Subfolders grid (filtered by currentFolderId) -->
@@ -337,6 +349,7 @@
 
 <script setup lang="ts">
 import AppHeader from '@/components/layout/AppHeader.vue'
+import PageHero from '@/components/ui/PageHero.vue'
 import { ref, computed, onMounted } from 'vue'
 import { useBodyLock } from '@/composables/useBodyLock'
 import { useEsc } from '@/composables/useEsc'
