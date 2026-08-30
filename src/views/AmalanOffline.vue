@@ -17,15 +17,17 @@
       >
         <template #actions-left>
           <div
-            class="inline-flex items-center gap-2 text-[12.5px] text-stone-600 bg-white border border-[#ece9e0] rounded-full pl-1 pr-3 py-1 shadow-sm"
+            class="inline-flex items-center gap-2.5 pl-1 pr-3 py-1 rounded-full bg-emerald-50 border border-emerald-100"
           >
-            <span
-              class="inline-flex w-6 h-6 rounded-full bg-emerald-700 text-white items-center justify-center"
-              ><BookMarked class="w-3.5 h-3.5"
-            /></span>
-            <span class="font-medium text-stone-800">{{ savedAmalan.length }} amalan</span>
-            <span class="w-px h-4 bg-stone-200"></span>
-            <span>{{ allFolders.length }} folder</span>
+            <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-700 text-white">
+              <BookMarked class="w-3.5 h-3.5" />
+            </span>
+            <span class="text-[13px] font-medium text-emerald-900"
+              ><span class="font-semibold">{{ savedAmalan.length }}</span>
+              <span class="text-emerald-700/80"> amalan</span>
+            </span>
+            <span class="w-px h-4 bg-emerald-200"></span>
+            <span class="text-[12px] text-emerald-700">{{ allFolders.length }} folder</span>
           </div>
         </template>
 

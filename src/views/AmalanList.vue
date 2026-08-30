@@ -20,9 +20,7 @@
           <div
             class="inline-flex items-center gap-2.5 pl-1 pr-3 py-1 rounded-full bg-emerald-50 border border-emerald-100"
           >
-            <span
-              class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-700 text-white"
-            >
+            <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-700 text-white">
               <Library class="w-3.5 h-3.5" />
             </span>
             <span class="text-[13px] font-medium text-emerald-900"
@@ -32,10 +30,12 @@
             <span class="w-px h-4 bg-emerald-200"></span>
             <span class="text-[12px] text-emerald-700">{{ categoryOptions.length }} kategori</span>
           </div>
+        </template>
 
+        <template #actions-right>
           <router-link
             :to="{ name: 'amalan-offline' }"
-            class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-[#e7e5e0] text-[13px] font-semibold text-[#1a2e1f] hover:border-emerald-200 hover:bg-emerald-50/60 hover:text-emerald-800 shadow-sm transition-all"
+            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white border border-[#e7e5e0] text-[13px] font-semibold text-[#1a2e1f] hover:border-emerald-200 hover:bg-emerald-50/60 hover:text-emerald-800 shadow-sm transition-all"
           >
             <Bookmark class="w-4 h-4 text-emerald-700" />
             Koleksi Saya
