@@ -39,7 +39,7 @@
           </div>
 
           <h1
-            class="font-serif text-4xl sm:text-[42px] lg:text-[48px] font-[600] tracking-[-0.03em] leading-none text-[#0f2318]"
+            class="font-serif text-4xl sm:text-[42px] lg:text-[48px] font-[600] tracking-[-0.03em] leading-[1.1] text-[#0f2318] py-0.5 overflow-visible"
             style="font-family: 'Fraunces', 'Cormorant Garamond', Georgia, serif"
           >
             {{ title }}

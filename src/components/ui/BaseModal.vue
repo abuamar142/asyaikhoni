@@ -31,7 +31,7 @@
             <div class="flex items-center gap-3 min-w-0">
               <slot name="headerIcon" />
               <div class="min-w-0">
-                <h2 :id="computedTitleId" class="text-[14px] font-semibold tracking-[-0.01em] text-[#0f2318] leading-none truncate">
+                <h2 :id="computedTitleId" class="text-[14px] font-semibold tracking-[-0.01em] text-[#0f2318] leading-[1.4] py-0.5 truncate">
                   {{ title }}
                 </h2>
                 <p v-if="subtitle" class="text-[11px] text-stone-500 mt-1 leading-snug line-clamp-2">

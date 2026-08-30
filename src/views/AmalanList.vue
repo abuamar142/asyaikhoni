@@ -45,7 +45,7 @@
             Katalog terdokumentasi
           </div>
           <div
-            class="font-serif text-5xl font-[300] tracking-[-0.04em] leading-none text-[#12291a]"
+            class="font-serif text-5xl font-[300] tracking-[-0.04em] leading-[1.1] text-[#12291a] py-0.5 overflow-visible"
             style="font-family: 'Fraunces', Georgia, serif"
           >
             {{ String(itemsList.length || 0).padStart(2, '0') }}

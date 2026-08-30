@@ -26,7 +26,7 @@
     </div>
 
     <h3
-      class="mt-6 font-serif text-[22px] font-semibold tracking-[-0.015em] text-[#12291a] text-balance"
+      class="mt-6 font-serif text-[22px] font-semibold tracking-[-0.015em] text-[#12291a] text-balance leading-[1.3] py-0.5 overflow-visible"
       style="font-family: 'Fraunces', Georgia, serif"
     >
       {{ props.title }}

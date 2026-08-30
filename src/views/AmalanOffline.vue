@@ -57,7 +57,7 @@
             Koleksi tersimpan
           </div>
           <div
-            class="font-serif text-5xl font-[300] tracking-[-0.04em] leading-none text-[#12291a]"
+            class="font-serif text-5xl font-[300] tracking-[-0.04em] leading-[1.1] text-[#12291a] py-0.5 overflow-visible"
             style="font-family: 'Fraunces', Georgia, serif"
           >
             {{ String(savedAmalan.length).padStart(2, '0') }}
@@ -126,7 +126,7 @@
                 <Folder class="w-5 h-5" />
               </div>
               <div class="flex-1 min-w-0">
-                <h3 class="font-serif text-[16px] font-semibold leading-tight text-[#12291a] truncate" style="font-family: 'Fraunces', Georgia, serif">{{ folder.name }}</h3>
+                <h3 class="font-serif text-[16px] font-semibold leading-[1.35] text-[#12291a] py-0.5 truncate" style="font-family: 'Fraunces', Georgia, serif">{{ folder.name }}</h3>
                 <p class="text-[12px] text-stone-500">Folder koleksi</p>
               </div>
               <div class="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">

@@ -360,8 +360,8 @@
               <component :is="showLatin ? Eye : EyeOff" class="w-4 h-4 text-emerald-700" />
             </span>
             <div class="min-w-0">
-              <div class="text-[13px] font-semibold text-[#0f2318] leading-none">Tampilkan Latin</div>
-              <div class="text-[11px] text-stone-500 mt-1 leading-none">Transliterasi di bawah Arab</div>
+              <div class="text-[13px] font-semibold text-[#0f2318] leading-[1.4] py-0.5">Tampilkan Latin</div>
+              <div class="text-[11px] text-stone-500 mt-1 leading-[1.5]">Transliterasi di bawah Arab</div>
             </div>
           </div>
           <BaseButton
@@ -389,8 +389,8 @@
                 <Type class="w-4 h-4 text-amber-700" />
               </span>
               <div>
-                <div class="text-[13px] font-semibold text-[#0f2318] leading-none">Ukuran Huruf</div>
-                <div class="text-[11px] text-stone-500 mt-1">
+                <div class="text-[13px] font-semibold text-[#0f2318] leading-[1.4] py-0.5">Ukuran Huruf</div>
+                <div class="text-[11px] text-stone-500 mt-1 leading-[1.5]">
                   <span class="font-semibold text-stone-700">{{ fontSize }}px</span> • Arab
                 </div>
               </div>
@@ -445,7 +445,7 @@
           <!-- live preview -->
           <div class="mt-3 rounded-xl bg-[#fdfcf8] border border-[#e8e6de]/70 px-3 py-2.5 flex items-center justify-between gap-3">
             <span class="text-[11px] tracking-wide font-medium text-stone-500 shrink-0">Pratinjau</span>
-            <span dir="rtl" lang="ar" class="font-amiri text-[#0f2318] leading-none text-center flex-1" :style="{ fontSize: fontSize + 'px' }" style="font-family: 'Amiri', serif">اَللّٰهُ</span>
+            <span dir="rtl" lang="ar" class="font-amiri text-[#0f2318] leading-[1.5] text-center flex-1 py-0.5" :style="{ fontSize: fontSize + 'px' }" style="font-family: 'Amiri', serif">اَللّٰهُ</span>
             <span class="text-[11px] italic text-stone-500 shrink-0" :style="{ fontSize: Math.round(fontSize * 0.58) + 'px' }">Allāh</span>
           </div>
         </div>
@@ -460,8 +460,8 @@
               <component :is="isDark ? Moon : Sun" class="w-4 h-4" :class="isDark ? 'text-amber-300' : 'text-amber-600'" />
             </span>
             <div class="min-w-0">
-              <div class="text-[13px] font-semibold text-[#0f2318] leading-none">Mode</div>
-              <div class="text-[11px] text-stone-500 mt-1 leading-none">
+              <div class="text-[13px] font-semibold text-[#0f2318] leading-[1.4] py-0.5">Mode</div>
+              <div class="text-[11px] text-stone-500 mt-1 leading-[1.5]">
                 {{ isDark ? 'Gelap' : 'Terang' }} • {{ isDark ? 'Nyaman di malam' : 'Kertas terang' }}
               </div>
             </div>
