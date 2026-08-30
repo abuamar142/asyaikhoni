@@ -58,16 +58,17 @@
       <div class="sticky top-0 z-30 border-b border-[#e8e6de] bg-white/80 backdrop-blur-xl">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
           <div class="flex items-center justify-between h-[52px] gap-3">
-            <router-link
-              :to="{ name: 'amalan-list' }"
-              class="inline-flex items-center gap-2 text-[13px] font-medium text-stone-600 hover:text-emerald-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30 rounded-full px-2 -ml-2 py-1"
+            <BaseButton
+              as="router-link"
+              to="/amalan"
+              variant="ghost"
+              pill
+              size="sm"
             >
-              <span class="w-7 h-7 rounded-full bg-stone-50 border border-stone-200 inline-flex items-center justify-center">
-                <ArrowLeft class="w-3.5 h-3.5" />
-              </span>
+              <ArrowLeft class="w-4 h-4" />
               <span class="hidden sm:inline">Kembali ke daftar</span>
               <span class="sm:hidden">Daftar</span>
-            </router-link>
+            </BaseButton>
 
             <div class="flex items-center gap-2">
               <span
@@ -80,12 +81,13 @@
               <BaseButton
                 :variant="showSettings ? 'primary' : 'ghost'"
                 pill
+                size="sm"
                 class="w-9 h-9 !p-0 shrink-0"
                 aria-label="Pengaturan tampilan"
                 title="Pengaturan tampilan"
                 @click="showSettings = true"
               >
-                <Settings class="w-[18px] h-[18px] transition-transform duration-300" :class="[showSettings ? 'text-white rotate-45' : 'text-stone-500', showSettings ? '' : 'hover:rotate-12']" />
+                <Settings class="w-4 h-4 transition-transform duration-300" :class="[showSettings ? 'text-white rotate-45' : 'text-stone-500', showSettings ? '' : 'hover:rotate-12']" />
               </BaseButton>
               <BaseButton variant="secondary" pill size="sm" class="text-[13px]" @click="handleShare">
                 <Share2 class="w-4 h-4 text-stone-500" />
