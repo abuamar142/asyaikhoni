@@ -497,28 +497,61 @@ async function generateShare() {
       return
     }
 
+    // Build plain sanitized items with lyrics + slug fallback
+    const folderName = sharingData.value.folder ? sharingData.value.folder.name : null
+
     const payload = {
       title: shareForm.value.title,
       description: shareForm.value.description,
-      items: itemsToShare.map((item) => ({
-        amalan_id: item.amalan_id,
-        folder_path: null as string | null,
-        sort_order: 0,
-        version_at_share: item.content_version,
-      })),
+      items: itemsToShare.map((item, idx) => {
+        // Resolve lyrics: prefer item.lyrics, fallback to parsed content JSON (backwards compat)
+        let rawLyrics: any[] | null = null
+        if (item.lyrics && Array.isArray(item.lyrics) && item.lyrics.length > 0) {
+          rawLyrics = item.lyrics
+        } else if (item.content) {
+          try {
+            const parsed = JSON.parse(item.content)
+            if (Array.isArray(parsed) && parsed.length > 0 && parsed[0]?.arab) rawLyrics = parsed
+          } catch {
+            // ignore parse error, fallback to empty
+          }
+        }
+        const plainLyrics = rawLyrics
+          ? JSON.parse(
+              JSON.stringify(
+                rawLyrics.map((r: any) => ({
+                  arab: String(r?.arab ?? ''),
+                  latin: r?.latin == null ? null : String(r.latin),
+                })),
+              ),
+            )
+          : []
+
+        return {
+          amalan_id: String(item.amalan_id ?? ''),
+          title: String(item.judul ?? ''),
+          slug: String(item.slug || item.amalan_id || ''),
+          lyrics: plainLyrics,
+          folder_path: folderName,
+          sort_order: idx,
+          version_at_share: Number(item.content_version ?? 1),
+        }
+      }),
     }
 
-    if (sharingData.value.folder) {
-      const folderName = sharingData.value.folder.name
-      payload.items.forEach((item) => {
-        item.folder_path = folderName
-      })
-    }
+    // Ensure plain clone for DataCloneError safety (Vue proxies / Dexie)
+    const plainPayload = JSON.parse(JSON.stringify(payload))
 
-    shareResult.value = await createShareBundle(payload)
-  } catch (err) {
+    shareResult.value = await createShareBundle(plainPayload as any)
+  } catch (err: any) {
     console.error('Error generating share bundle:', err)
-    toast.error('Gagal membuat link share. Pastikan Anda online.')
+    const message = err?.message || ''
+    // Show specific error from shareService, not generic offline message
+    if (message === 'Anda sedang offline') toast.error('Anda sedang offline')
+    else if (message === 'Periksa koneksi internet') toast.error('Periksa koneksi internet')
+    else if (message === 'Fitur share belum tersedia di server (404)') toast.error('Fitur share belum tersedia di server (404)')
+    else if (message.startsWith('Gagal di server')) toast.error(message)
+    else toast.error(message || 'Gagal membuat link share.')
   } finally {
     generatingShare.value = false
   }
