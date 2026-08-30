@@ -70,10 +70,10 @@
         </template>
       </PageHero>
 
-      <div v-if="breadcrumbPath.length > 0 || currentFolderId !== null" class="relative container mx-auto px-4 sm:px-6 lg:px-8 bg-[#fdfcf8] pt-6 sm:pt-8 pb-3 mt-1">
+      <div v-if="breadcrumbPath.length > 0 || currentFolderId !== null" class="relative container mx-auto px-4 sm:px-6 lg:px-8 bg-[#fdfcf8] pt-3 sm:pt-4 pb-2 mt-0">
 
-        <!-- Breadcrumb nav — py gives internal breathing room, outer pt+mt isolates hero border-b -->
-        <div class="flex items-center gap-1.5 py-3 sm:py-4 text-[13px] flex-wrap">
+        <!-- Breadcrumb nav — compact ~20px total: outer pt-3+pb-2 + inner py-2 -->
+        <div class="flex items-center gap-1.5 py-2 sm:py-2.5 text-[13px] flex-wrap">
           <BaseButton
             variant="ghost"
             pill
