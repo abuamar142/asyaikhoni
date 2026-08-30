@@ -77,29 +77,21 @@
                 <BookmarkCheck class="w-3.5 h-3.5" /> Tersimpan
               </span>
               <!-- Gear settings button (replaces Latin pill) — visible on all breakpoints -->
-              <button
-                type="button"
-                class="inline-flex items-center justify-center w-9 h-9 rounded-full border transition-all duration-200 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30"
-                :class="
-                  showSettings
-                    ? 'bg-emerald-700 border-emerald-700 text-white shadow-[0_6px_16px_rgba(21,128,61,0.22)]'
-                    : 'bg-white border-[#e7e5e0] text-stone-600 hover:border-stone-300 hover:bg-stone-50'
-                "
+              <BaseButton
+                :variant="showSettings ? 'primary' : 'ghost'"
+                pill
+                class="w-9 h-9 !p-0 shrink-0"
                 aria-label="Pengaturan tampilan"
                 title="Pengaturan tampilan"
                 @click="showSettings = true"
               >
                 <Settings class="w-[18px] h-[18px] transition-transform duration-300" :class="[showSettings ? 'text-white rotate-45' : 'text-stone-500', showSettings ? '' : 'hover:rotate-12']" />
-              </button>
-              <button
-                type="button"
-                class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-[#e7e5e0] text-[13px] font-medium text-stone-700 hover:border-stone-300 hover:bg-stone-50 transition-colors shadow-sm"
-                @click="handleShare"
-              >
+              </BaseButton>
+              <BaseButton variant="secondary" pill size="sm" class="text-[13px]" @click="handleShare">
                 <Share2 class="w-4 h-4 text-stone-500" />
                 <span class="hidden sm:inline">Bagikan</span>
                 <span class="sm:hidden">Share</span>
-              </button>
+              </BaseButton>
             </div>
           </div>
         </div>
@@ -163,16 +155,12 @@
 
             <!-- actions -->
             <div class="mt-7 flex flex-wrap items-center justify-center gap-3">
-              <button
-                type="button"
+              <BaseButton
+                :variant="isSaved ? 'primary' : 'secondary'"
+                pill
                 :disabled="isSaving"
                 :aria-busy="isSaving ? 'true' : 'false'"
-                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border text-[13px] font-semibold transition-all duration-200 shadow-sm focus:outline-none focus-visible:ring-4 focus-visible:ring-emerald-500/15 touch-manipulation min-h-[44px] relative z-10 disabled:opacity-60 disabled:cursor-not-allowed active:scale-[0.98] select-none"
-                :class="
-                  isSaved
-                    ? 'bg-emerald-700 border-emerald-700 text-white hover:bg-emerald-800 shadow-[0_6px_16px_rgba(21,128,61,0.22)]'
-                    : 'bg-white border-[#e7e5e0] text-stone-700 hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-800'
-                "
+                class="text-[13px] min-h-[44px]"
                 @click="toggleOffline"
               >
                 <span
@@ -187,23 +175,25 @@
                   :class="isSaved ? 'text-white' : 'text-emerald-700'"
                 />
                 {{ isSaving ? 'Menyimpan…' : isSaved ? 'Tersimpan offline' : 'Simpan offline' }}
-              </button>
+              </BaseButton>
 
-              <button
+              <BaseButton
                 v-if="isSaved"
-                type="button"
-                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white border border-[#e7e5e0] text-[13px] font-semibold text-stone-700 hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-800 transition-colors shadow-sm focus:outline-none focus-visible:ring-4 focus-visible:ring-emerald-500/15 touch-manipulation min-h-[44px] active:scale-[0.98]"
+                variant="secondary"
+                pill
+                class="text-[13px] min-h-[44px]"
                 @click="openSaveToFolderModal"
               >
                 <FolderPlus class="w-4 h-4 text-emerald-700" />
                 Simpan ke folder lain
-              </button>
+              </BaseButton>
 
-              <button
+              <BaseButton
                 v-if="isSaved && hasUpdateAvailable"
-                type="button"
+                variant="warning"
+                pill
                 :disabled="isSaving"
-                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-amber-300 border border-amber-300 text-[#14532d] text-[13px] font-semibold hover:bg-amber-200 shadow-sm transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-400/30 touch-manipulation min-h-[44px] disabled:opacity-60 disabled:cursor-not-allowed active:scale-[0.98]"
+                class="text-[13px] min-h-[44px]"
                 @click="updateOffline"
               >
                 <span
@@ -212,16 +202,17 @@
                   aria-hidden="true"
                 ></span>
                 <RefreshCw v-else class="w-4 h-4" /> {{ isSaving ? 'Memperbarui…' : 'Update tersedia' }}
-              </button>
+              </BaseButton>
 
-              <button
+              <BaseButton
                 v-if="!isSaved"
-                type="button"
-                class="hidden sm:inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white border border-[#e7e5e0] text-stone-600 text-[13px] font-medium hover:bg-stone-50 transition-colors"
+                variant="secondary"
+                pill
+                class="hidden sm:inline-flex text-[13px]"
                 @click="handleShare"
               >
                 <Share2 class="w-4 h-4" /> Bagikan amalan
-              </button>
+              </BaseButton>
             </div>
 
             <p v-if="isSaved && localData" class="mt-3 text-[11px] tracking-wide text-stone-500">
@@ -367,20 +358,21 @@
               <div class="text-[11px] text-stone-500 mt-1 leading-none">Transliterasi di bawah Arab</div>
             </div>
           </div>
-          <button
-            type="button"
+          <BaseButton
+            :variant="showLatin ? 'primary' : 'ghost'"
+            pill
+            class="relative h-[28px] w-[48px] !p-0 shrink-0 cursor-pointer !justify-start !gap-0"
+            :class="showLatin ? '!bg-emerald-700 !border-emerald-700' : '!bg-stone-200 !border-stone-200'"
             role="switch"
             :aria-checked="showLatin ? 'true' : 'false'"
             :aria-label="showLatin ? 'Sembunyikan Latin' : 'Tampilkan Latin'"
-            class="relative inline-flex h-[28px] w-[48px] shrink-0 cursor-pointer items-center rounded-full border transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30"
-            :class="showLatin ? 'bg-emerald-700 border-emerald-700' : 'bg-stone-200 border-stone-200'"
             @click="toggleLatin"
           >
             <span
               class="inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition duration-200"
               :class="showLatin ? 'translate-x-[22px]' : 'translate-x-[3px]'"
             ></span>
-          </button>
+          </BaseButton>
         </div>
 
         <!-- Row2: Ukuran Huruf -->
@@ -397,26 +389,29 @@
                 </div>
               </div>
             </div>
-            <button
-              type="button"
-              class="text-[11px] font-semibold tracking-wide px-2.5 py-1 rounded-full bg-stone-50 border border-stone-200 text-stone-600 hover:bg-white hover:border-stone-300 hover:text-stone-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/20 inline-flex items-center gap-1"
-              @click="resetFontSize"
+            <BaseButton
+              variant="ghost"
+              pill
+              size="sm"
+              class="text-[11px] !bg-stone-50 hover:!bg-white"
               aria-label="Reset ukuran huruf"
+              @click="resetFontSize"
             >
               <RotateCcw class="w-3 h-3" /> Reset
-            </button>
+            </BaseButton>
           </div>
 
           <div class="flex items-center gap-2">
-            <button
-              type="button"
-              class="w-8 h-8 rounded-full bg-white border border-[#e7e5e0] inline-flex items-center justify-center text-stone-700 hover:bg-stone-50 hover:border-stone-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/20 shrink-0"
+            <BaseButton
+              variant="ghost"
+              pill
+              class="w-8 h-8 !p-0 shrink-0"
               :disabled="fontSize <= 8"
               aria-label="Kecilkan huruf"
               @click="decrease"
             >
               <span class="text-[12px] font-bold leading-none">A-</span>
-            </button>
+            </BaseButton>
 
             <input
               type="range"
@@ -429,15 +424,16 @@
               @input="setFontSize(Number(($event.target as HTMLInputElement).value))"
             />
 
-            <button
-              type="button"
-              class="w-8 h-8 rounded-full bg-white border border-[#e7e5e0] inline-flex items-center justify-center text-stone-700 hover:bg-stone-50 hover:border-stone-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/20 shrink-0"
+            <BaseButton
+              variant="ghost"
+              pill
+              class="w-8 h-8 !p-0 shrink-0"
               :disabled="fontSize >= 36"
               aria-label="Besarkan huruf"
               @click="increase"
             >
               <span class="text-[13px] font-bold leading-none">A+</span>
-            </button>
+            </BaseButton>
           </div>
 
           <!-- live preview -->
@@ -464,13 +460,14 @@
               </div>
             </div>
           </div>
-          <button
-            type="button"
+          <BaseButton
+            :variant="isDark ? 'primary' : 'ghost'"
+            pill
+            class="relative h-[28px] w-[48px] !p-0 shrink-0 cursor-pointer !justify-start !gap-0"
+            :class="isDark ? '!bg-[#1a2420] !border-[#1a2420]' : '!bg-stone-200 !border-stone-200'"
             role="switch"
             :aria-checked="isDark ? 'true' : 'false'"
             aria-label="Toggle mode gelap"
-            class="relative inline-flex h-[28px] w-[48px] shrink-0 cursor-pointer items-center rounded-full border transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30"
-            :class="isDark ? 'bg-[#1a2420] border-[#1a2420]' : 'bg-stone-200 border-stone-200'"
             @click="toggleDark"
           >
             <span
@@ -479,7 +476,7 @@
             >
               <component :is="isDark ? Moon : Sun" class="w-3 h-3" :class="isDark ? 'text-[#1a2420]' : 'text-amber-600'" />
             </span>
-          </button>
+          </BaseButton>
         </div>
       </div>
 
@@ -540,6 +537,7 @@ import EmptyState from '@/components/ui/EmptyState.vue'
 import PaperCard from '@/components/ui/PaperCard.vue'
 import LyricRow from '@/components/LyricRow.vue'
 import BaseModal from '@/components/ui/BaseModal.vue'
+import BaseButton from '@/components/ui/BaseButton.vue'
 
 const route = useRoute()
 const toast = useToast()

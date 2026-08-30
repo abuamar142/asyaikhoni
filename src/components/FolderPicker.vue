@@ -9,38 +9,42 @@
     <div class="p-5 space-y-3">
       <!-- Breadcrumb -->
       <div class="flex items-center gap-1.5 flex-wrap text-[13px] bg-stone-50 rounded-xl px-3 py-2.5 border border-stone-200">
-        <button
-          type="button"
-          class="inline-flex items-center gap-1.5 font-medium px-2.5 py-1 rounded-full transition-colors shrink-0"
-          :class="navId === null ? 'bg-emerald-700 text-white border border-emerald-700' : 'bg-white border border-stone-200 text-stone-600 hover:border-emerald-200 hover:text-emerald-800'"
+        <BaseButton
+          :variant="navId === null ? 'primary' : 'secondary'"
+          pill
+          size="sm"
+          class="shrink-0"
           @click="emit('update:navId', null)"
         >
           <Home class="w-3.5 h-3.5 shrink-0" />
           Root
-        </button>
+        </BaseButton>
         <template v-for="crumb in breadcrumb" :key="crumb.id">
           <ChevronRight class="w-4 h-4 text-stone-400 shrink-0" />
-          <button
-            type="button"
-            class="inline-flex items-center gap-1.5 font-medium px-2.5 py-1 rounded-full border transition-colors max-w-[10rem] truncate shrink-0"
-            :class="crumb.id === navId ? 'bg-emerald-700 text-white border-emerald-700' : 'bg-white border-stone-200 text-stone-600 hover:border-emerald-200 hover:text-emerald-800'"
+          <BaseButton
+            :variant="crumb.id === navId ? 'primary' : 'secondary'"
+            pill
+            size="sm"
+            class="max-w-[10rem] truncate shrink-0"
             @click="emit('update:navId', crumb.id ?? null)"
           >
             <Folder class="w-3.5 h-3.5 shrink-0" :class="crumb.id === navId ? 'text-white' : 'text-emerald-700'" />
             <span class="truncate">{{ crumb.name }}</span>
-          </button>
+          </BaseButton>
         </template>
       </div>
 
       <!-- Nav back control -->
       <div v-if="navId !== null" class="flex items-center gap-2">
-        <button
-          type="button"
-          class="inline-flex items-center gap-1.5 text-[12.5px] font-medium text-stone-600 bg-white border border-stone-200 hover:border-emerald-200 hover:text-emerald-800 hover:bg-emerald-50 px-3 py-1.5 rounded-full transition-colors"
+        <BaseButton
+          variant="secondary"
+          pill
+          size="sm"
+          class="text-[12.5px]"
           @click="goBack"
         >
           <ArrowLeft class="w-3.5 h-3.5" /> Kembali
-        </button>
+        </BaseButton>
         <span class="text-[12px] text-stone-400 truncate">
           Di dalam “{{ currentNavFolder?.name ?? '' }}”
         </span>
@@ -112,15 +116,16 @@
 
           <!-- disabled label or drill -->
           <span v-if="isDisabled(folder.id!)" class="inline-flex items-center gap-1 text-[11px] font-medium text-amber-700 shrink-0"><AlertCircle class="w-3 h-3" /> Sudah ada</span>
-          <button
+          <BaseButton
             v-else-if="hasChildren(folder.id!, folders)"
-            type="button"
-            class="w-8 h-8 rounded-full bg-white border border-stone-200 hover:border-emerald-200 hover:bg-emerald-50 text-stone-500 hover:text-emerald-700 inline-flex items-center justify-center shrink-0 transition-colors"
+            variant="ghost"
+            pill
+            class="w-8 h-8 !p-0 shrink-0"
             aria-label="Masuk ke folder"
             @click.stop="emit('update:navId', folder.id!)"
           >
             <ChevronRight class="w-4 h-4" />
-          </button>
+          </BaseButton>
         </div>
       </div>
     </div>
@@ -137,22 +142,16 @@
             Amalan ini sudah ada di folder ini
           </p>
           <div class="flex items-center gap-2">
-            <button
-              type="button"
-              class="px-5 py-2.5 rounded-full bg-white border border-stone-200 text-[13px] font-medium text-stone-700 hover:bg-stone-50 transition-colors"
-              @click="emit('close')"
-            >
-              Batal
-            </button>
-            <button
-              type="button"
+            <BaseButton variant="ghost" pill @click="emit('close')"> Batal </BaseButton>
+            <BaseButton
+              variant="primary"
+              pill
               :disabled="isConfirmDisabled"
-              class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-[13px] font-semibold shadow-sm transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
-              :class="isConfirmDisabled ? 'bg-stone-200 text-stone-500' : 'bg-emerald-700 text-white hover:bg-emerald-800'"
+              class="px-6"
               @click="emit('confirm')"
             >
               {{ confirmLabel }}
-            </button>
+            </BaseButton>
           </div>
         </div>
       </div>
@@ -166,6 +165,7 @@ import { Folder, ChevronRight, Home, ArrowLeft, AlertCircle } from 'lucide-vue-n
 import type { LocalFolder } from '@/utils/localDb'
 import { hasChildren, buildBreadcrumb, getFolderDepth, getFolderPath } from '@/utils/folderTree'
 import BaseModal from '@/components/ui/BaseModal.vue'
+import BaseButton from '@/components/ui/BaseButton.vue'
 
 const props = withDefaults(
   defineProps<{

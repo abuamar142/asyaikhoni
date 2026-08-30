@@ -33,14 +33,11 @@
         </template>
 
         <template #actions-right>
-          <router-link
-            :to="{ name: 'amalan-offline' }"
-            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white border border-[#e7e5e0] text-[13px] font-semibold text-[#1a2e1f] hover:border-emerald-200 hover:bg-emerald-50/60 hover:text-emerald-800 shadow-sm transition-all"
-          >
+          <BaseButton as="router-link" :to="{ name: 'amalan-offline' }" variant="secondary" pill class="text-[13px] !text-[#1a2e1f] hover:!text-emerald-800">
             <Bookmark class="w-4 h-4 text-emerald-700" />
             Koleksi Saya
             <ArrowUpRight class="w-3.5 h-3.5 text-stone-400" />
-          </router-link>
+          </BaseButton>
         </template>
 
         <template #stats-right>
@@ -72,12 +69,10 @@
 
             <!-- kategori dropdown -->
             <div class="relative w-full md:w-[340px] shrink-0" ref="dropdownRef">
-              <button
-                type="button"
-                class="w-full h-11 flex items-center justify-between gap-3 px-3.5 rounded-xl border bg-white text-left shadow-[0_1px_2px_rgba(16,30,20,0.06)] focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-300 transition-all"
-                :class="[
-                  showCategoryDropdown ? 'border-emerald-300 ring-4 ring-emerald-500/10' : 'border-[#d7ddd7] hover:border-[#c2cdc2]',
-                ]"
+              <BaseButton
+                variant="secondary"
+                class="w-full h-11 !rounded-xl !px-3.5 !justify-between !gap-3 text-left shadow-[0_1px_2px_rgba(16,30,20,0.06)] !py-0 !font-normal"
+                :class="[showCategoryDropdown ? '!border-emerald-300 ring-4 ring-emerald-500/10' : '!border-[#d7ddd7] hover:!border-[#c2cdc2]']"
                 @click="toggleDropdown"
                 :aria-expanded="showCategoryDropdown"
                 aria-haspopup="listbox"
@@ -104,7 +99,7 @@
                     :class="showCategoryDropdown ? 'rotate-180 text-emerald-700' : ''"
                   />
                 </span>
-              </button>
+              </BaseButton>
 
               <transition
                 enter-active-class="transition duration-150 ease-out"
@@ -167,20 +162,12 @@
                   </div>
 
                   <div class="p-3 border-t border-stone-100 bg-stone-50/60 flex items-center justify-between gap-3">
-                    <button
-                      type="button"
-                      class="text-[13px] font-medium text-stone-600 hover:text-stone-800 px-3 py-1.5 rounded-full hover:bg-white border border-transparent hover:border-stone-200 transition-colors"
-                      @click="closeDropdown"
-                    >
+                    <BaseButton variant="ghost" pill size="sm" class="text-[13px] !border-transparent hover:!border-stone-200 !bg-transparent hover:!bg-white" @click="closeDropdown">
                       Tutup
-                    </button>
-                    <button
-                      type="button"
-                      class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-emerald-700 text-white text-[13px] font-semibold hover:bg-emerald-800 shadow-sm transition-colors"
-                      @click="applyKategori"
-                    >
+                    </BaseButton>
+                    <BaseButton variant="primary" pill size="sm" class="text-[13px]" @click="applyKategori">
                       <Check class="w-4 h-4" /> Terapkan
-                    </button>
+                    </BaseButton>
                   </div>
                 </div>
               </transition>
@@ -196,14 +183,15 @@
                 class="inline-flex items-center gap-1.5 pl-3 pr-1 py-1 rounded-full bg-emerald-700 text-white text-[12.5px] font-medium shadow-sm"
               >
                 {{ categoryName(id) }}
-                <button
-                  type="button"
-                  class="w-5 h-5 rounded-full bg-white/15 hover:bg-white/25 inline-flex items-center justify-center transition-colors"
+                <BaseButton
+                  variant="ghost"
+                  pill
+                  class="w-5 h-5 !p-0 !min-w-0 shrink-0 !bg-white/15 !border-transparent !text-white hover:!bg-white/25"
                   :aria-label="`Hapus filter ${categoryName(id)}`"
                   @click="removeKategori(id)"
                 >
                   <X class="w-3 h-3" />
-                </button>
+                </BaseButton>
               </span>
               <span
                 v-if="!selectedKategoriIds.length"
@@ -222,14 +210,15 @@
               <template v-else> Memuat katalog… </template>
             </span>
 
-            <button
+            <BaseButton
               v-if="selectedKategoriIds.length || q"
-              type="button"
-              class="ml-auto inline-flex items-center gap-1.5 text-[13px] font-semibold text-emerald-800 hover:text-emerald-900 underline underline-offset-4 decoration-emerald-200 hover:decoration-emerald-700 transition-colors"
+              variant="ghost"
+              pill
+              class="ml-auto text-[13px] !bg-transparent !border-transparent !text-emerald-800 hover:!text-emerald-900 underline underline-offset-4 decoration-emerald-200 hover:decoration-emerald-700 !shadow-none"
               @click="resetFilters"
             >
               <RotateCcw class="w-3.5 h-3.5" /> Bersihkan filter
-            </button>
+            </BaseButton>
           </div>
         </div>
       </div>
@@ -268,13 +257,9 @@
         </div>
         <h3 class="font-serif text-lg font-semibold text-red-900">Gagal memuat amalan</h3>
         <p class="text-[13.5px] leading-[1.6] text-red-700/80 mt-1">{{ errorMessage || 'Terjadi kesalahan jaringan.' }}</p>
-        <button
-          type="button"
-          class="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-red-200 text-[13px] font-semibold text-red-700 hover:bg-red-50 transition-colors"
-          @click="() => $router.go(0)"
-        >
+        <BaseButton variant="ghost" pill class="mt-4 text-[13px] !border-red-200 !text-red-700 hover:!bg-red-50" @click="() => $router.go(0)">
           <RotateCcw class="w-4 h-4" /> Coba lagi
-        </button>
+        </BaseButton>
       </div>
 
       <!-- Empty -->
@@ -293,21 +278,9 @@
             </span>
           </template>
           <template #actions>
-            <button
-              type="button"
-              class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-emerald-700 text-white text-[13px] font-semibold hover:bg-emerald-800 shadow-sm transition-colors"
-              @click="resetFilters"
-            >
-              <RotateCcw class="w-4 h-4" /> Reset filter
-            </button>
+            <BaseButton variant="primary" pill @click="resetFilters"> <RotateCcw class="w-4 h-4" /> Reset filter </BaseButton>
             <span class="text-[13px] text-stone-400">atau</span>
-            <button
-              type="button"
-              class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white border border-[#e7e5e0] text-[13px] font-medium text-stone-700 hover:border-emerald-200 hover:text-emerald-800 transition-colors"
-              @click="q = ''"
-            >
-              Hapus pencarian
-            </button>
+            <BaseButton variant="secondary" pill @click="q = ''"> Hapus pencarian </BaseButton>
           </template>
         </EmptyState>
       </div>
@@ -346,6 +319,7 @@ import { useDebouncedRef } from '@/composables/useDebouncedRef'
 import SearchInput from '@/components/ui/SearchInput.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
 import AmalanCard from '@/components/AmalanCard.vue'
+import BaseButton from '@/components/ui/BaseButton.vue'
 import type { Category } from '@/services/categoryService'
 import {
   ArrowUpRight,

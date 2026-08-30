@@ -32,31 +32,24 @@
         </template>
 
         <template #actions-right>
-          <button
-            type="button"
-            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white border border-[#e7e5e0] text-[13px] font-semibold text-stone-700 hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-800 shadow-sm transition-all"
-            @click="isCreatingFolder = true"
-          >
+          <BaseButton variant="secondary" pill class="text-[13px]" @click="isCreatingFolder = true">
             <FolderPlus class="w-4 h-4 text-emerald-700" />
             Folder Baru
-          </button>
-          <button
+          </BaseButton>
+          <BaseButton
             v-if="currentFolderId !== null"
-            type="button"
-            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white border border-emerald-200 text-[13px] font-semibold text-emerald-800 hover:bg-emerald-50 shadow-sm transition-all"
+            variant="secondary"
+            pill
+            class="text-[13px] !border-emerald-200 !text-emerald-800 hover:!bg-emerald-50"
             @click="isCreatingFolder = true"
           >
             <FolderPlus class="w-4 h-4" />
             Buat Subfolder
-          </button>
-          <button
-            type="button"
-            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-emerald-700 text-white text-[13px] font-semibold hover:bg-emerald-800 shadow-sm transition-colors"
-            @click="startShare(null)"
-          >
+          </BaseButton>
+          <BaseButton variant="primary" pill class="text-[13px]" @click="startShare(null)">
             <Share2 class="w-4 h-4" />
             Bagikan Semua
-          </button>
+          </BaseButton>
         </template>
 
         <template #stats-right>
@@ -81,19 +74,26 @@
 
         <!-- Breadcrumb nav -->
         <div v-if="breadcrumbPath.length > 0 || currentFolderId !== null" class="flex items-center gap-1.5 pb-4 text-[13px] flex-wrap">
-          <button type="button" class="inline-flex items-center gap-1.5 text-emerald-800 hover:text-emerald-900 font-medium px-2.5 py-1 rounded-full hover:bg-emerald-50 transition-colors" @click="goToRoot">
+          <BaseButton
+            variant="ghost"
+            pill
+            size="sm"
+            class="!bg-emerald-50 !border-emerald-100 !text-emerald-800 hover:!bg-emerald-100"
+            @click="goToRoot"
+          >
             <ArrowLeft class="w-3.5 h-3.5" /> Koleksi
-          </button>
+          </BaseButton>
           <template v-for="(crumb, idx) in breadcrumbPath" :key="crumb.id">
             <ChevronRight class="w-4 h-4 text-stone-400 shrink-0" />
-            <button
+            <BaseButton
               v-if="idx < breadcrumbPath.length - 1"
-              type="button"
-              class="inline-flex items-center gap-1.5 font-medium text-stone-600 hover:text-emerald-800 bg-white border border-stone-200 hover:border-emerald-200 px-2.5 py-1 rounded-full transition-colors"
+              variant="secondary"
+              pill
+              size="sm"
               @click="goToBreadcrumb(crumb)"
             >
               <Folder class="w-3.5 h-3.5 text-emerald-700" /> {{ crumb.name }}
-            </button>
+            </BaseButton>
             <span
               v-else
               class="inline-flex items-center gap-1.5 font-medium text-stone-700 bg-white border border-stone-200 px-2.5 py-1 rounded-full"
@@ -130,28 +130,31 @@
                 <p class="text-[12px] text-stone-500">Folder koleksi</p>
               </div>
               <div class="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                <button
-                  type="button"
-                  class="w-8 h-8 rounded-full bg-white border border-stone-200 hover:border-emerald-200 hover:bg-emerald-50 text-stone-500 hover:text-emerald-700 inline-flex items-center justify-center transition-colors"
+                <BaseButton
+                  variant="ghost"
+                  pill
+                  class="w-8 h-8 !p-0 shrink-0"
                   title="Bagikan folder"
                   @click.stop="startShare(folder)"
                 >
                   <Share2 class="w-3.5 h-3.5" />
-                </button>
-                <button
-                  type="button"
-                  class="w-8 h-8 rounded-full bg-white border border-stone-200 hover:border-stone-300 text-stone-500 inline-flex items-center justify-center transition-colors"
+                </BaseButton>
+                <BaseButton
+                  variant="ghost"
+                  pill
+                  class="w-8 h-8 !p-0 shrink-0"
                   @click.stop="editFolder(folder)"
                 >
                   <Edit2 class="w-3.5 h-3.5" />
-                </button>
-                <button
-                  type="button"
-                  class="w-8 h-8 rounded-full bg-white border border-red-200 hover:bg-red-50 text-red-600 inline-flex items-center justify-center transition-colors"
+                </BaseButton>
+                <BaseButton
+                  variant="ghost"
+                  pill
+                  class="w-8 h-8 !p-0 shrink-0 !border-red-200 !text-red-600 hover:!bg-red-50"
                   @click.stop="confirmDeleteFolder(folder)"
                 >
                   <Trash2 class="w-3.5 h-3.5" />
-                </button>
+                </BaseButton>
               </div>
             </div>
           </div>
@@ -162,13 +165,9 @@
       <div v-if="currentFolderId !== null && displayFolders.length === 0" class="mb-6">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-[11px] tracking-[0.16em] font-semibold uppercase text-stone-500">Subfolder</h2>
-          <button
-            type="button"
-            class="inline-flex items-center gap-1.5 text-[12px] font-medium text-emerald-700 hover:text-emerald-800"
-            @click="isCreatingFolder = true"
-          >
+          <BaseButton variant="ghost" pill size="sm" class="text-[12px] !border-transparent !bg-transparent !text-emerald-700 hover:!text-emerald-800" @click="isCreatingFolder = true">
             <FolderPlus class="w-3.5 h-3.5" /> Buat Subfolder
-          </button>
+          </BaseButton>
         </div>
         <p class="text-[13px] text-stone-500">Belum ada subfolder di dalam "{{ currentFolder?.name }}".</p>
       </div>
@@ -189,22 +188,18 @@
           mode="offline"
         >
           <template #actions>
-            <button
-              type="button"
-              class="w-8 h-8 rounded-full bg-white border border-stone-200 hover:border-emerald-200 hover:bg-emerald-50 text-stone-500 hover:text-emerald-700 inline-flex items-center justify-center transition-colors"
-              title="Pindahkan ke folder"
-              @click="openMoveModal(item)"
-            >
+            <BaseButton variant="ghost" pill class="w-8 h-8 !p-0" title="Pindahkan ke folder" @click="openMoveModal(item)">
               <Move class="w-3.5 h-3.5" />
-            </button>
-            <button
-              type="button"
-              class="w-8 h-8 rounded-full bg-white border border-stone-200 hover:border-red-200 hover:bg-red-50 text-stone-500 hover:text-red-600 inline-flex items-center justify-center transition-colors"
+            </BaseButton>
+            <BaseButton
+              variant="ghost"
+              pill
+              class="w-8 h-8 !p-0 !border-red-200 !text-stone-500 hover:!bg-red-50 hover:!text-red-600 hover:!border-red-200"
               title="Hapus dari offline"
               @click="removeFromOffline(item)"
             >
               <Trash2 class="w-3.5 h-3.5" />
-            </button>
+            </BaseButton>
           </template>
         </AmalanCard>
       </div>
@@ -225,12 +220,7 @@
             </span>
           </template>
           <template #actions>
-            <router-link
-              :to="{ name: 'amalan-list' }"
-              class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-emerald-700 text-white text-[13px] font-semibold hover:bg-emerald-800 shadow-sm transition-colors"
-            >
-              <Library class="w-4 h-4" /> Jelajahi Amalan
-            </router-link>
+            <BaseButton as="router-link" :to="{ name: 'amalan-list' }" variant="primary" pill> <Library class="w-4 h-4" /> Jelajahi Amalan </BaseButton>
           </template>
         </EmptyState>
       </div>
@@ -261,8 +251,8 @@
       </div>
       <template #footer>
         <div class="flex items-center justify-end gap-3">
-          <button type="button" class="px-5 py-2.5 rounded-full bg-white border border-stone-200 text-[13px] font-medium text-stone-700 hover:bg-stone-50" @click="closeFolderModal">Batal</button>
-          <button type="button" class="px-6 py-2.5 rounded-full bg-emerald-700 text-white text-[13px] font-semibold hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm" :disabled="!folderForm.name.trim()" @click="saveFolder">Simpan</button>
+          <BaseButton variant="ghost" pill @click="closeFolderModal">Batal</BaseButton>
+          <BaseButton variant="primary" pill :disabled="!folderForm.name.trim()" class="px-6" @click="saveFolder">Simpan</BaseButton>
         </div>
       </template>
     </BaseModal>
@@ -323,24 +313,24 @@
           </div>
           <div class="flex items-center gap-2 p-2 bg-stone-50 rounded-xl border border-stone-200 mt-6">
             <input readonly :value="shareResult.share_url" class="bg-transparent border-none focus:ring-0 flex-1 px-3 text-[13px] text-stone-700 truncate" />
-            <button type="button" class="w-10 h-10 rounded-xl bg-emerald-700 text-white inline-flex items-center justify-center hover:bg-emerald-800 shrink-0" @click="copyShareLink">
+            <BaseButton variant="primary" class="!rounded-xl w-10 h-10 !p-0 shrink-0" @click="copyShareLink">
               <Copy class="w-4 h-4" />
-            </button>
+            </BaseButton>
           </div>
         </div>
       </div>
 
       <template #footer>
         <div v-if="!shareResult" class="flex items-center gap-3 justify-end">
-          <button type="button" class="px-5 py-2.5 rounded-full bg-white border border-stone-200 text-[13px] font-medium text-stone-700 hover:bg-stone-50" @click="sharingData = null">Batal</button>
-          <button type="button" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-emerald-700 text-white text-[13px] font-semibold hover:bg-emerald-800 disabled:opacity-50 shadow-sm" :disabled="!shareForm.title.trim() || generatingShare" @click="generateShare">
+          <BaseButton variant="ghost" pill @click="sharingData = null">Batal</BaseButton>
+          <BaseButton variant="primary" pill :disabled="!shareForm.title.trim() || generatingShare" @click="generateShare">
             <Share2 v-if="!generatingShare" class="w-4 h-4" />
             <span v-else class="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"></span>
             <span>{{ generatingShare ? 'Memproses…' : 'Buat Link Share' }}</span>
-          </button>
+          </BaseButton>
         </div>
         <div v-else>
-          <button type="button" class="w-full px-5 py-2.5 rounded-full bg-white border border-stone-200 text-[13px] font-medium text-stone-700 hover:bg-stone-50" @click="sharingData = null">Tutup</button>
+          <BaseButton variant="ghost" pill block @click="sharingData = null">Tutup</BaseButton>
         </div>
       </template>
     </BaseModal>
@@ -379,6 +369,7 @@ import FolderPicker from '@/components/FolderPicker.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
 import AmalanCard from '@/components/AmalanCard.vue'
 import BaseModal from '@/components/ui/BaseModal.vue'
+import BaseButton from '@/components/ui/BaseButton.vue'
 import { createShareBundle } from '@/services/shareService'
 import { toPlainLyrics } from '@/utils/lyric'
 import { buildBreadcrumb, collectDescendants, type Folder as TreeFolder } from '@/utils/folderTree'
