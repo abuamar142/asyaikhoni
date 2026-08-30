@@ -607,6 +607,8 @@ import { useLyricSettings } from '@/composables/useLyricSettings'
 import FolderPicker from '@/components/FolderPicker.vue'
 import { getFolderDepth } from '@/utils/folderTree'
 import { useOfflineAmalan } from '@/composables/useOfflineAmalan'
+import { useBodyLock } from '@/composables/useBodyLock'
+import { useEsc } from '@/composables/useEsc'
 
 const route = useRoute()
 const toast = useToast()
@@ -758,34 +760,10 @@ async function updateOffline() {
   await updateAllCopies(effectiveLyrics.value as any, amalan.value as any)
 }
 
-function onKeydown(e: KeyboardEvent) {
-  if (e.key === 'Escape' && showSettings.value) {
-    showSettings.value = false
-  }
-  if (e.key === 'Escape' && showSaveToFolderModal.value) {
-    closeSaveToFolderModal()
-  }
-}
-
-watch(showSettings, (open) => {
-  if (open) {
-    document.addEventListener('keydown', onKeydown)
-    document.documentElement.style.overflow = 'hidden'
-  } else {
-    document.removeEventListener('keydown', onKeydown)
-    if (!showSaveToFolderModal.value) document.documentElement.style.overflow = ''
-  }
-})
-
-watch(showSaveToFolderModal, (open) => {
-  if (open) {
-    document.addEventListener('keydown', onKeydown)
-    document.documentElement.style.overflow = 'hidden'
-  } else {
-    document.removeEventListener('keydown', onKeydown)
-    if (!showSettings.value) document.documentElement.style.overflow = ''
-  }
-})
+const isAnyModalOpen = computed(() => showSettings.value || showSaveToFolderModal.value)
+useBodyLock(isAnyModalOpen)
+useEsc(showSettings, () => (showSettings.value = false))
+useEsc(showSaveToFolderModal, () => closeSaveToFolderModal())
 
 onMounted(async () => {
   await checkOfflineStatus()
@@ -796,8 +774,6 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('scroll', onScroll)
-  document.removeEventListener('keydown', onKeydown)
-  document.documentElement.style.overflow = ''
 })
 
 watch(amalan, async () => {

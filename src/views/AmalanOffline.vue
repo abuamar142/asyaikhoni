@@ -342,7 +342,9 @@
 
 <script setup lang="ts">
 import AppHeader from '@/components/layout/AppHeader.vue'
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useBodyLock } from '@/composables/useBodyLock'
+import { useEsc } from '@/composables/useEsc'
 import { db, type LocalSavedAmalan, type LocalFolder, ensureDbReady, isIndexedDBAvailable } from '@/utils/localDb'
 import {
   Folder,
@@ -666,26 +668,7 @@ async function moveToFolder(folderId: number) {
   }
 }
 
-// ESC closes move modal + background scroll lock
-function onKeydown(e: KeyboardEvent) {
-  if (e.key === 'Escape' && showMoveModal.value) {
-    closeMoveModal()
-  }
-}
-watch(showMoveModal, (open) => {
-  if (open) {
-    document.addEventListener('keydown', onKeydown)
-    // prevent background scroll
-    document.documentElement.style.overflow = 'hidden'
-  } else {
-    document.removeEventListener('keydown', onKeydown)
-    document.documentElement.style.overflow = ''
-  }
-})
-onUnmounted(() => {
-  document.removeEventListener('keydown', onKeydown)
-  document.documentElement.style.overflow = ''
-})
+
 
 async function removeFromOffline(item: LocalSavedAmalan) {
   try {
@@ -798,6 +781,15 @@ function copyShareLink() {
   navigator.clipboard.writeText(shareResult.value.share_url)
   toast.success('Link berhasil disalin!')
 }
+
+// Body lock + Esc handling via composables (ora-2)
+const isFolderModalOpen = computed(() => isCreatingFolder.value || !!editingFolderData.value)
+const isShareModalOpen = computed(() => !!sharingData.value)
+const isAnyOfflineModalOpen = computed(() => showMoveModal.value || isFolderModalOpen.value || isShareModalOpen.value)
+useBodyLock(isAnyOfflineModalOpen)
+useEsc(showMoveModal, closeMoveModal)
+useEsc(isFolderModalOpen, closeFolderModal)
+useEsc(isShareModalOpen, () => (sharingData.value = null))
 </script>
 
 <style scoped>
