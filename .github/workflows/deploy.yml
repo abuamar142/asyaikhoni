@@ -2,17 +2,27 @@ name: Deploy Asyaikhoni to VPS
 
 on:
   push:
-    branches: [main]
+    branches: [main, development]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
+    timeout-minutes: 10
     steps:
       - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1
+        uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          script: /home/ubuntu/deploy-asyaikhoni.sh
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: |
+            set -euo pipefail
+            BRANCH="${{ github.ref_name }}"
+            echo "Deploying branch: $BRANCH"
+            /home/ubuntu/deploy-asyaikhoni.sh "$BRANCH"
