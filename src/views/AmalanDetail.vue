@@ -257,15 +257,8 @@
 
             <!-- lyrics paper -->
             <div v-else class="relative">
-              <div
-                class="amalan-paper"
-                :class="{ 'dark-paper': isDark }"
-                :style="{ '--arab': fontSize + 'px', '--latin': Math.round(fontSize * 0.58) + 'px' } as any"
-              >
-                <div class="amalan-paper__texture" aria-hidden="true"></div>
-                <div class="amalan-paper__inner-border" aria-hidden="true"></div>
-
-                <div class="amalan-paper__content">
+              <PaperCard :dark="isDark" :font-size="fontSize">
+                <template #header>
                   <!-- lyric title header — now INSIDE paper: JUDUL (arab + latin) → DIVIDER → LIRIK -->
                   <div v-if="arabTitle" class="lyric-title-header text-center mb-6 sm:mb-7">
                     <div
@@ -290,6 +283,7 @@
                       <span class="h-px w-12 sm:w-16 bg-[#e8ddd0]"></span>
                     </div>
                   </div>
+                </template>
 
                 <!-- LYRIC ROWS: 1 baris = 1 LyricRow, selalu center, • = split 2-col center -->
                 <div class="lyrics-container">
@@ -302,17 +296,18 @@
                   />
                 </div>
 
-                <!-- bottom ornament inside paper -->
-                <div class="mt-8 sm:mt-10 flex flex-col items-center gap-3" aria-hidden="true">
-                  <div class="flex items-center justify-center gap-2">
-                    <span class="h-px w-10 bg-[#e8ddd0]"></span>
-                    <span class="w-1.5 h-1.5 rotate-45 bg-emerald-700/50"></span>
-                    <span class="h-px w-10 bg-[#e8ddd0]"></span>
+                <template #footer>
+                  <!-- bottom ornament inside paper -->
+                  <div class="mt-8 sm:mt-10 flex flex-col items-center gap-3" aria-hidden="true">
+                    <div class="flex items-center justify-center gap-2">
+                      <span class="h-px w-10 bg-[#e8ddd0]"></span>
+                      <span class="w-1.5 h-1.5 rotate-45 bg-emerald-700/50"></span>
+                      <span class="h-px w-10 bg-[#e8ddd0]"></span>
+                    </div>
+                    <span class="text-[10px] tracking-[0.18em] uppercase font-semibold text-stone-400">— PPTQ Asy-Syaikhoni —</span>
                   </div>
-                  <span class="text-[10px] tracking-[0.18em] uppercase font-semibold text-stone-400">— PPTQ Asy-Syaikhoni —</span>
-                </div>
-              </div>
-            </div>
+                </template>
+              </PaperCard>
 
             <!-- outside bottom ornament -->
             <div class="mt-8 flex items-center justify-center gap-3">
@@ -580,6 +575,7 @@ import { useOfflineAmalan } from '@/composables/useOfflineAmalan'
 import { useBodyLock } from '@/composables/useBodyLock'
 import { useEsc } from '@/composables/useEsc'
 import EmptyState from '@/components/ui/EmptyState.vue'
+import PaperCard from '@/components/ui/PaperCard.vue'
 import LyricRow from '@/components/LyricRow.vue'
 
 const route = useRoute()
@@ -824,104 +820,6 @@ const loadingPage = computed(
 </script>
 
 <style scoped>
-/* ── Paper card ── */
-.amalan-paper {
-  position: relative;
-  background: #fdfcf8;
-  border: 1px solid #e8e6de;
-  border-radius: 20px;
-  box-shadow:
-    0 1px 2px rgba(31, 33, 26, 0.04),
-    0 8px 24px rgba(31, 33, 26, 0.06),
-    0 1px 0 rgba(255, 255, 255, 0.9) inset;
-  overflow: hidden;
-  transition:
-    background-color 260ms ease,
-    border-color 260ms ease,
-    box-shadow 260ms ease;
-}
-.amalan-paper__texture {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0.028;
-  background-image:
-    radial-gradient(circle at 1px 1px, #8a7a5a 1.2px, transparent 0),
-    radial-gradient(circle at 1px 1px, #c2b59b 0.9px, transparent 0);
-  background-size:
-    22px 22px,
-    22px 22px;
-  background-position:
-    0 0,
-    11px 11px;
-  transition: opacity 260ms ease;
-}
-.amalan-paper__inner-border {
-  position: absolute;
-  inset: 10px;
-  border: 1.35px dotted #e6ddd0;
-  border-radius: 14px;
-  pointer-events: none;
-  transition: border-color 260ms ease;
-}
-.amalan-paper__content {
-  position: relative;
-  padding: 28px 20px 26px;
-}
-@media (min-width: 640px) {
-  .amalan-paper__content {
-    padding: 40px 40px 36px;
-  }
-}
-@media (min-width: 768px) {
-  .amalan-paper__content {
-    padding: 44px 48px 40px;
-  }
-}
-
-/* ── Dark paper ── */
-.amalan-paper.dark-paper {
-  background: #1a2420;
-  border-color: #2a3a32;
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.14),
-    0 12px 32px rgba(0, 0, 0, 0.22),
-    0 1px 0 rgba(255, 255, 255, 0.04) inset;
-}
-.amalan-paper.dark-paper .amalan-paper__inner-border {
-  border-color: rgba(232, 230, 222, 0.1);
-}
-.amalan-paper.dark-paper .amalan-paper__texture {
-  opacity: 0.045;
-}
-.amalan-paper.dark-paper .title-ar,
-.amalan-paper.dark-paper :deep(.lyric-arab) {
-  color: #e8e6d8;
-}
-.amalan-paper.dark-paper .title-latin,
-.amalan-paper.dark-paper :deep(.lyric-latin) {
-  color: #9bb0a5;
-}
-.amalan-paper.dark-paper .lyric-title-ornament span:first-child,
-.amalan-paper.dark-paper .lyric-title-ornament span:last-child {
-  background: #2a3a32 !important;
-}
-.amalan-paper.dark-paper .lyric-title-ornament span:nth-child(2) {
-  background: rgba(52, 211, 153, 0.85) !important;
-  box-shadow: 0 0 0 4px #1a2420 !important;
-}
-.amalan-paper.dark-paper :deep(.lyric-row:hover) {
-  background: rgba(255, 255, 255, 0.04);
-}
-.amalan-paper.dark-paper :deep(.bullet) {
-  color: #34d399;
-  opacity: 0.65;
-}
-.amalan-paper.dark-paper :deep(.bullet--latin) {
-  color: #9bb0a5;
-  opacity: 0.5;
-}
-
 /* ── Lyrics: 1 baris = 1 row, selalu center, • = 2 kolom center ── */
 .lyrics-container {
   display: flex;
