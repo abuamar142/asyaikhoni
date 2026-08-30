@@ -561,133 +561,18 @@
       </Transition>
     </Teleport>
 
-    <!-- Fase 6: Simpan ke folder lain — allow same amalan in multiple folders -->
-    <Teleport to="body">
-      <Transition name="settings-fade">
-        <div
-          v-if="showSaveToFolderModal"
-          class="fixed inset-0 z-[75] flex items-center justify-center p-4 sm:p-6"
-          @keydown.esc="closeSaveToFolderModal"
-        >
-          <div
-            class="absolute inset-0 bg-[#0f1a16]/45 backdrop-blur-[6px]"
-            @click="closeSaveToFolderModal"
-            aria-hidden="true"
-          ></div>
-
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="save-to-folder-title"
-            class="relative w-full max-w-[420px] rounded-[20px] bg-[#fdfcf8] border border-[#e8e6de] shadow-[0_20px_60px_rgba(15,35,24,0.18),0_1px_0_rgba(255,255,255,0.9)_inset] overflow-hidden flex flex-col max-h-[90vh]"
-            @click.stop
-          >
-            <div class="h-1 bg-gradient-to-r from-emerald-700 via-emerald-600 to-amber-300 shrink-0"></div>
-
-            <div class="flex items-center justify-between px-5 pt-5 pb-4 border-b border-[#e8e6de]/70 shrink-0">
-              <div class="flex items-center gap-3">
-                <span class="w-8 h-8 rounded-full bg-emerald-700 inline-flex items-center justify-center shadow-[0_2px_8px_rgba(21,128,61,0.25)]">
-                  <FolderPlus class="w-4 h-4 text-white" />
-                </span>
-                <h2 id="save-to-folder-title" class="text-[14px] font-semibold tracking-[-0.01em] text-[#0f2318]">Simpan ke folder</h2>
-              </div>
-              <button
-                type="button"
-                class="w-8 h-8 rounded-full bg-white border border-[#e7e5e0] inline-flex items-center justify-center text-stone-500 hover:bg-stone-50 hover:text-stone-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30 shrink-0"
-                aria-label="Tutup"
-                @click="closeSaveToFolderModal"
-              >
-                <X class="w-4 h-4" />
-              </button>
-            </div>
-
-            <div class="p-5 space-y-4 overflow-y-auto overscroll-contain">
-              <p class="text-[12.5px] leading-relaxed text-stone-500">
-                Pilih folder tujuan untuk <span class="font-semibold text-stone-700">“{{ effectiveAmalan?.judul }}”</span>. Root tetap tersimpan; salinan baru akan dibuat di folder pilihan.
-              </p>
-
-              <div class="space-y-2">
-                <!-- Root option -->
-                <label
-                  class="flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors"
-                  :class="saveTargetFolderId === 0 ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-[#e8e6de] hover:border-stone-300'"
-                >
-                  <input
-                    type="radio"
-                    name="saveTargetFolder"
-                    :value="0"
-                    v-model="saveTargetFolderId"
-                    class="accent-emerald-700 w-4 h-4 shrink-0"
-                  />
-                  <span class="w-8 h-8 rounded-lg bg-stone-50 border border-stone-200 inline-flex items-center justify-center shrink-0">
-                    <Folder class="w-4 h-4 text-stone-500" />
-                  </span>
-                  <span class="flex-1 min-w-0">
-                    <span class="block text-[13px] font-semibold text-[#0f2318]">Koleksi Utama</span>
-                    <span class="block text-[11px] text-stone-500">Root · tanpa folder</span>
-                  </span>
-                  <span v-if="isSaved" class="text-[11px] font-medium text-emerald-700">Tersimpan ✓</span>
-                </label>
-
-                <!-- Empty folders hint -->
-                <div v-if="orderedFoldersForSave.length === 0" class="rounded-xl border border-dashed border-stone-200 bg-stone-50 p-4 text-center">
-                  <p class="text-[13px] text-stone-500">Belum ada folder.</p>
-                  <p class="text-[11px] text-stone-400 mt-1">Buat folder di <router-link :to="{ name: 'amalan-offline' }" class="text-emerald-700 underline underline-offset-2">Koleksi Saya</router-link> untuk menyimpan ke folder.</p>
-                </div>
-
-                <!-- Folder list with hierarchy indent -->
-                <label
-                  v-for="folder in orderedFoldersForSave"
-                  :key="folder.id"
-                  class="flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors"
-                  :class="saveTargetFolderId === folder.id ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-[#e8e6de] hover:border-stone-300'"
-                  :style="{ marginLeft: getFolderDepth(folder) * 16 + 'px' }"
-                >
-                  <input
-                    type="radio"
-                    name="saveTargetFolder"
-                    :value="folder.id"
-                    v-model="saveTargetFolderId"
-                    class="accent-emerald-700 w-4 h-4 shrink-0"
-                  />
-                  <span class="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-100 inline-flex items-center justify-center shrink-0">
-                    <Folder class="w-4 h-4 text-emerald-700" />
-                  </span>
-                  <span class="flex-1 min-w-0">
-                    <span class="block text-[13px] font-medium text-[#0f2318] truncate">{{ folder.name }}</span>
-                    <span v-if="getFolderDepth(folder) > 0" class="block text-[11px] text-stone-500 truncate">{{ getFolderPath(folder) }}</span>
-                    <span v-else class="block text-[11px] text-stone-500">Folder</span>
-                  </span>
-                </label>
-              </div>
-            </div>
-
-            <div class="px-5 pb-5 pt-3 border-t border-[#e8e6de]/70 flex items-center justify-end gap-3 shrink-0 bg-[#fdfcf8]">
-              <button
-                type="button"
-                class="px-5 py-2.5 rounded-full bg-white border border-stone-200 text-[13px] font-medium text-stone-700 hover:bg-stone-50 transition-colors"
-                @click="closeSaveToFolderModal"
-              >
-                Batal
-              </button>
-              <button
-                type="button"
-                :disabled="isSavingToFolder"
-                class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-emerald-700 text-white text-[13px] font-semibold hover:bg-emerald-800 disabled:opacity-60 disabled:cursor-not-allowed shadow-sm transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-emerald-500/20"
-                @click="confirmSaveToFolder"
-              >
-                <span
-                  v-if="isSavingToFolder"
-                  class="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"
-                ></span>
-                <FolderPlus v-else class="w-4 h-4" />
-                Simpan
-              </button>
-            </div>
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
+    <!-- Fase 6: Simpan ke folder lain — unified FolderPicker -->
+    <FolderPicker
+      :open="showSaveToFolderModal"
+      :folders="allFolders"
+      v-model:selectedId="saveTargetFolderId as any"
+      v-model:navId="saveNavId"
+      title="Simpan ke folder"
+      :subtitle="`Pilih folder tujuan untuk “${effectiveAmalan?.judul ?? ''}”. Tap baris untuk pilih, tap > untuk masuk.`"
+      confirm-label="Simpan"
+      @close="closeSaveToFolderModal"
+      @confirm="confirmSaveToFolder"
+    />
   </div>
 </template>
 
@@ -716,11 +601,11 @@ import {
   X,
   RotateCcw,
   FolderPlus,
-  Folder,
 } from 'lucide-vue-next'
 import { db, type LocalSavedAmalan, type LocalFolder, ensureDbReady, isIndexedDBAvailable } from '@/utils/localDb'
 import { useToast } from '@/composables/useToast'
 import { useLyricSettings } from '@/composables/useLyricSettings'
+import FolderPicker from '@/components/FolderPicker.vue'
 
 const route = useRoute()
 const toast = useToast()
@@ -818,7 +703,8 @@ const isSaving = ref(false)
 // Fase 6: allow same amalan saved to different folders — secondary action state
 const allFolders = ref<LocalFolder[]>([])
 const showSaveToFolderModal = ref(false)
-const saveTargetFolderId = ref<number>(0)
+const saveTargetFolderId = ref<number | null>(0)
+const saveNavId = ref<number | null>(null)
 const isSavingToFolder = ref(false)
 
 const availableFoldersForSave = computed(() => allFolders.value)
@@ -970,6 +856,7 @@ async function openSaveToFolderModal() {
   } else {
     saveTargetFolderId.value = 0
   }
+  saveNavId.value = null
   showSaveToFolderModal.value = true
 }
 
@@ -989,7 +876,11 @@ async function confirmSaveToFolder() {
     toast.error('Penyimpanan offline tidak tersedia di browser ini.')
     return
   }
-  const targetId = saveTargetFolderId.value
+  if (saveTargetFolderId.value == null) {
+    toast.error('Pilih folder tujuan terlebih dahulu.')
+    return
+  }
+  const targetId = saveTargetFolderId.value as number
   const idStr = String(src.id ?? (src as any).amalan_id ?? localData.value?.amalan_id ?? '')
   if (!idStr) {
     toast.error('Data amalan tidak valid.')
