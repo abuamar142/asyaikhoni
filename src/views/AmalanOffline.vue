@@ -70,9 +70,9 @@
         </template>
       </PageHero>
 
-      <div v-if="breadcrumbPath.length > 0 || currentFolderId !== null" class="relative container mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6">
+      <div v-if="breadcrumbPath.length > 0 || currentFolderId !== null" class="relative container mx-auto px-4 sm:px-6 lg:px-8 bg-[#fdfcf8] pt-6 sm:pt-8 pb-3 mt-1">
 
-        <!-- Breadcrumb nav -->
+        <!-- Breadcrumb nav — py gives internal breathing room, outer pt+mt isolates hero border-b -->
         <div class="flex items-center gap-1.5 py-3 sm:py-4 text-[13px] flex-wrap">
           <BaseButton
             variant="ghost"
