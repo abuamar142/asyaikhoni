@@ -147,14 +147,18 @@ if (typeof window !== 'undefined') {
   db.on('blocked', () => {
     console.warn('[localDb] DB upgrade blocked — close other tabs holding old DB')
   })
-  // Dexie fires versionchange when another tab upgrades; close to allow upgrade
+  // Dexie fires versionchange when another tab upgrades; close to allow the
+  // upgrade to proceed, then reload so this tab picks up the new version.
+  // Data is preserved — the DB is never deleted on upgrade conflicts.
   db.on('versionchange', () => {
-    console.warn('[localDb] versionchange — closing DB to allow upgrade')
+    console.warn('[localDb] versionchange — closing DB and reloading to pick up new version')
     db.close()
+    window.location.reload()
   })
 }
 
-/** Ensure DB is open and recover from VersionError / stale schema on old HP installs. */
+/** Ensure DB is open. On version conflicts, close cleanly and reload so the new
+ * version loads fresh — never delete/recreate, so saved koleksi/folders survive. */
 export async function ensureDbReady(): Promise<void> {
   try {
     if (!db.isOpen()) await db.open()
@@ -163,15 +167,12 @@ export async function ensureDbReady(): Promise<void> {
     const msg = err?.message || String(err)
     const isVersionErr = /VersionError|SchemaError|UpgradeError|DatabaseClosed/i.test(name + ' ' + msg)
     if (isVersionErr) {
-      console.error('[localDb] VersionError opening DB, deleting and recreating', err)
-      try {
-        db.close()
-        await db.delete()
-        await db.open()
-      } catch (e) {
-        console.error('[localDb] recreate failed', e)
-        throw e
+      console.error('[localDb] VersionError opening DB — closing and reloading to load new version', err)
+      db.close()
+      if (typeof window !== 'undefined') {
+        window.location.reload()
       }
+      // Page is reloading; do not throw — ensureDbReady re-runs after reload.
     } else {
       throw err
     }
