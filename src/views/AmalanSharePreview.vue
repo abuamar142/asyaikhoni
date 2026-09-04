@@ -33,7 +33,7 @@
               :disabled="importing"
             >
               <Download class="w-6 h-6" />
-              <span>{{ importing ? 'Mengimpor...' : 'Impor Koleksi' }}</span>
+              <span>{{ importLabel }}</span>
             </button>
           </div>
           <div class="mt-6 flex items-center gap-6 text-body-sm text-muted">
@@ -76,7 +76,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getShareBundle, getLocalBundle } from '@/services/shareService'
 import { downloadMarkdown, getById } from '@/services/amalanService'
@@ -94,6 +94,12 @@ const loading = ref(true)
 const error = ref(false)
 const bundle = ref<any>(null)
 const importing = ref(false)
+const importedCount = ref(0)
+const importTotal = ref(0)
+
+const importLabel = computed(() =>
+  importing.value ? `Mengimpor... (${importedCount.value}/${importTotal.value})` : 'Impor Koleksi'
+)
 
 function normalizeBundle(raw: any): any {
   if (!raw) return raw
@@ -178,10 +184,178 @@ onMounted(() => {
   loadBundle()
 })
 
+/**
+ * Run `worker` over `items` with at most `limit` promises in flight at once.
+ * Results are stored by index so the returned array preserves input order.
+ * If a worker rejects, no new work is started (in-flight workers finish).
+ */
+async function mapWithConcurrency<T, R>(
+  items: T[],
+  limit: number,
+  worker: (item: T, index: number) => Promise<R>,
+): Promise<R[]> {
+  const results: R[] = new Array(items.length)
+  let nextIndex = 0
+  let aborted = false
+
+  async function runWorker(): Promise<void> {
+    while (!aborted && nextIndex < items.length) {
+      const index = nextIndex++
+      try {
+        results[index] = await worker(items[index], index)
+      } catch (err) {
+        aborted = true
+        throw err
+      }
+    }
+  }
+
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, () => runWorker()))
+  return results
+}
+
+/**
+ * Recreate the folder hierarchy for one item, reusing folders already seen in
+ * this import via `folderMap`. Sequential — a parent folder must exist before
+ * its children.
+ */
+async function resolveFolderId(item: any, folderMap: Map<string, number>): Promise<number> {
+  if (!item.folder_path) return 0
+
+  const parts = item.folder_path.split('/').map((s: string) => s.trim()).filter(Boolean)
+  let parent_id: number | null = null
+  let pathAccumulator = ''
+
+  for (const part of parts) {
+    pathAccumulator = pathAccumulator ? `${pathAccumulator}/${part}` : part
+
+    if (folderMap.has(pathAccumulator)) {
+      parent_id = folderMap.get(pathAccumulator)!
+    } else {
+      // Check if folder exists in DB
+      const existing: LocalFolder | undefined = await db.folders.where({ name: part, parent_id }).first()
+      if (!existing) {
+        const newId = await db.folders.add({
+          name: part,
+          parent_id,
+          created_at: Date.now(),
+          updated_at: Date.now()
+        }) as number
+        folderMap.set(pathAccumulator, newId)
+        parent_id = newId
+      } else {
+        parent_id = existing.id!
+        folderMap.set(pathAccumulator, parent_id)
+      }
+    }
+  }
+  return parent_id || 0
+}
+
+/**
+ * Fetch + save a single shared amalan. Offline-first: prefers the lyrics that
+ * shipped inside the bundle, falls back to `getById` + `downloadMarkdown` from
+ * the server, and upserts by the compound key [amalan_id+folder_id] so the same
+ * amalan can live in different folders.
+ */
+async function importShareItem(item: any, folder_id: number): Promise<void> {
+  // Try to fetch full amalan from server, but fallback to bundle data for offline/local shares
+  let fullAmalan: any = null
+  let contentFromServer: string | null = null
+  try {
+    fullAmalan = await getById(item.amalan_id)
+    if (fullAmalan) {
+      try { contentFromServer = await downloadMarkdown(fullAmalan.id) } catch {}
+    }
+  } catch (e) {
+    // offline or not found — will use bundle data
+    console.warn('[share] getById failed, using bundle lyrics', e)
+  }
+
+  // Prefer bundle lyrics (offline-first), fallback to server lyrics
+  let plainLyrics: any[] | null = null
+  const bundleLyrics = (item as any).lyrics || (item.amalan as any)?.lyrics
+  if (Array.isArray(bundleLyrics) && bundleLyrics.length > 0) {
+    plainLyrics = JSON.parse(JSON.stringify(bundleLyrics.map((r: any) => ({
+      ...(r?.id != null ? { id: String(r.id) } : {}),
+      arab: String(r?.arab ?? ''),
+      latin: r?.latin == null ? null : String(r.latin),
+    }))))
+  } else if (fullAmalan && Array.isArray((fullAmalan as any).lyrics) && (fullAmalan as any).lyrics.length > 0) {
+    plainLyrics = JSON.parse(JSON.stringify((fullAmalan as any).lyrics.map((r: any) => ({
+      ...(r?.id != null ? { id: String(r.id) } : {}),
+      arab: String(r?.arab ?? ''),
+      latin: r?.latin == null ? null : String(r.latin),
+    }))))
+  }
+
+  // Determine metadata — prefer server, fallback to bundle
+  const amalanIdStr = String(fullAmalan?.id ?? item.amalan_id ?? '')
+  if (!amalanIdStr) return
+  const judul = String(fullAmalan?.judul ?? item.amalan?.judul ?? (item as any).title ?? '')
+  const slug = String(fullAmalan?.slug ?? item.amalan?.slug ?? (item as any).slug ?? amalanIdStr)
+  const ringkasan = fullAmalan?.ringkasan ?? item.amalan?.ringkasan ?? (item as any).ringkasan ?? null
+  const contentVersion = Number(fullAmalan?.content_version ?? (item as any).version_at_share ?? 1)
+  const serverUpdatedAt = String(fullAmalan?.updated_at ?? bundle.value.updated_at ?? bundle.value.created_at ?? new Date().toISOString())
+  const content = plainLyrics ? JSON.stringify(plainLyrics) : (contentFromServer ?? '[]')
+
+  // If neither server nor bundle provided lyrics/content, skip this item (avoid empty record)
+  // — still allow import with empty lyrics but with bundle title (useful for local fallback)
+
+  // Compound check: allow same amalan in different folders
+  let existingLocal: any = null
+  try {
+    existingLocal = await db.saved_amalan.where('[amalan_id+folder_id]').equals([amalanIdStr, folder_id]).first()
+  } catch (e) {
+    console.error('[share] compound check failed, fallback to amalan_id', e)
+    try { existingLocal = await db.saved_amalan.where('amalan_id').equals(amalanIdStr).first() } catch {}
+  }
+  const basePayload: any = {
+    folder_id,
+    content,
+    content_version: contentVersion,
+    server_updated_at: serverUpdatedAt,
+    last_synced_at: Date.now(),
+    has_update_available: false,
+  }
+  if (plainLyrics) {
+    basePayload.lyrics = plainLyrics
+    basePayload.content = JSON.stringify(plainLyrics)
+  }
+  const plainBase = JSON.parse(JSON.stringify(basePayload))
+  if (existingLocal) {
+    if (existingLocal.id != null) {
+      await db.saved_amalan.update(existingLocal.id, plainBase)
+    } else {
+      await db.saved_amalan.where('[amalan_id+folder_id]').equals([amalanIdStr, folder_id]).modify(plainBase)
+    }
+  } else {
+    const newRec: any = JSON.parse(JSON.stringify({
+      amalan_id: amalanIdStr,
+      judul,
+      slug,
+      ringkasan: ringkasan == null ? null : String(ringkasan),
+      content,
+      content_version: contentVersion,
+      server_updated_at: serverUpdatedAt,
+      saved_at: Date.now(),
+      last_synced_at: Date.now(),
+      has_update_available: false,
+      folder_id,
+    }))
+    if (plainLyrics) {
+      newRec.lyrics = plainLyrics
+      newRec.content = JSON.stringify(plainLyrics)
+    }
+    await db.saved_amalan.add(newRec)
+  }
+}
+
 async function importBundle() {
   if (!bundle.value) return
   
   importing.value = true
+  importedCount.value = 0
   try {
     if (!isIndexedDBAvailable()) {
       toast.error('Penyimpanan offline tidak tersedia di browser ini.')
@@ -190,137 +364,39 @@ async function importBundle() {
     }
     try { await ensureDbReady() } catch {}
     const folderMap = new Map<string, number>()
-    
-    for (const item of bundle.value.share_bundle_items) {
-      let folder_id = 0
-      
-      // Create folders if they don't exist
-      if (item.folder_path) {
-        const parts = item.folder_path.split('/').map((s: string) => s.trim()).filter(Boolean)
-        let parent_id: number | null = null
-        let pathAccumulator = ''
-        
-        for (const part of parts) {
-          pathAccumulator = pathAccumulator ? `${pathAccumulator}/${part}` : part
-          
-          if (folderMap.has(pathAccumulator)) {
-            parent_id = folderMap.get(pathAccumulator)!
-          } else {
-            // Check if folder exists in DB
-            const existing: LocalFolder | undefined = await db.folders.where({ name: part, parent_id }).first()
-            if (!existing) {
-              const newId = await db.folders.add({
-                name: part,
-                parent_id,
-                created_at: Date.now(),
-                updated_at: Date.now()
-              }) as number
-              folderMap.set(pathAccumulator, newId)
-              parent_id = newId
-            } else {
-              parent_id = existing.id!
-              folderMap.set(pathAccumulator, parent_id)
-            }
-          }
-        }
-        folder_id = parent_id || 0
-      }
-      
-      // Try to fetch full amalan from server, but fallback to bundle data for offline/local shares
-      let fullAmalan: any = null
-      let contentFromServer: string | null = null
-      try {
-        fullAmalan = await getById(item.amalan_id)
-        if (fullAmalan) {
-          try { contentFromServer = await downloadMarkdown(fullAmalan.id) } catch {}
-        }
-      } catch (e) {
-        // offline or not found — will use bundle data
-        console.warn('[share] getById failed, using bundle lyrics', e)
-      }
+    const items: any[] = bundle.value.share_bundle_items
 
-      // Prefer bundle lyrics (offline-first), fallback to server lyrics
-      let plainLyrics: any[] | null = null
-      const bundleLyrics = (item as any).lyrics || (item.amalan as any)?.lyrics
-      if (Array.isArray(bundleLyrics) && bundleLyrics.length > 0) {
-        plainLyrics = JSON.parse(JSON.stringify(bundleLyrics.map((r: any) => ({
-          ...(r?.id != null ? { id: String(r.id) } : {}),
-          arab: String(r?.arab ?? ''),
-          latin: r?.latin == null ? null : String(r.latin),
-        }))))
-      } else if (fullAmalan && Array.isArray((fullAmalan as any).lyrics) && (fullAmalan as any).lyrics.length > 0) {
-        plainLyrics = JSON.parse(JSON.stringify((fullAmalan as any).lyrics.map((r: any) => ({
-          ...(r?.id != null ? { id: String(r.id) } : {}),
-          arab: String(r?.arab ?? ''),
-          latin: r?.latin == null ? null : String(r.latin),
-        }))))
-      }
+    // Phase 1 — recreate the folder hierarchy for every item. Kept sequential
+    // because parent folders must exist before children (shared `folderMap`).
+    const folderIds = new Array<number>(items.length)
+    for (let i = 0; i < items.length; i++) {
+      folderIds[i] = await resolveFolderId(items[i], folderMap)
+    }
 
-      // Determine metadata — prefer server, fallback to bundle
-      const amalanIdStr = String(fullAmalan?.id ?? item.amalan_id ?? '')
-      if (!amalanIdStr) continue
-      const judul = String(fullAmalan?.judul ?? item.amalan?.judul ?? (item as any).title ?? '')
-      const slug = String(fullAmalan?.slug ?? item.amalan?.slug ?? (item as any).slug ?? amalanIdStr)
-      const ringkasan = fullAmalan?.ringkasan ?? item.amalan?.ringkasan ?? (item as any).ringkasan ?? null
-      const contentVersion = Number(fullAmalan?.content_version ?? (item as any).version_at_share ?? 1)
-      const serverUpdatedAt = String(fullAmalan?.updated_at ?? bundle.value.updated_at ?? bundle.value.created_at ?? new Date().toISOString())
-      const content = plainLyrics ? JSON.stringify(plainLyrics) : (contentFromServer ?? '[]')
-
-      // If neither server nor bundle provided lyrics/content, skip this item (avoid empty record)
-      if (!plainLyrics && !contentFromServer) {
-        // still allow import with empty lyrics but with bundle title — useful for local fallback
-        // we already have plainLyrics null, content = '[]'
+    // Collapse duplicate [amalan_id+folder_id] entries (last occurrence wins —
+    // same final state as the old sequential update-last flow) so concurrent
+    // workers never race on the unique compound index.
+    const workItems: Array<{ item: any; folder_id: number }> = []
+    {
+      const lastIndex = new Map<string, number>()
+      for (let i = 0; i < items.length; i++) {
+        lastIndex.set(`${String(items[i].amalan_id ?? '')}::${folderIds[i]}`, i)
       }
-        
-      // Compound check: allow same amalan in different folders
-      let existingLocal: any = null
-      try {
-        existingLocal = await db.saved_amalan.where('[amalan_id+folder_id]').equals([amalanIdStr, folder_id]).first()
-      } catch (e) {
-        console.error('[share] compound check failed, fallback to amalan_id', e)
-        try { existingLocal = await db.saved_amalan.where('amalan_id').equals(amalanIdStr).first() } catch {}
-      }
-      const basePayload: any = {
-        folder_id,
-        content,
-        content_version: contentVersion,
-        server_updated_at: serverUpdatedAt,
-        last_synced_at: Date.now(),
-        has_update_available: false,
-      }
-      if (plainLyrics) {
-        basePayload.lyrics = plainLyrics
-        basePayload.content = JSON.stringify(plainLyrics)
-      }
-      const plainBase = JSON.parse(JSON.stringify(basePayload))
-      if (existingLocal) {
-        if (existingLocal.id != null) {
-          await db.saved_amalan.update(existingLocal.id, plainBase)
-        } else {
-          await db.saved_amalan.where('[amalan_id+folder_id]').equals([amalanIdStr, folder_id]).modify(plainBase)
+      for (let i = 0; i < items.length; i++) {
+        if (lastIndex.get(`${String(items[i].amalan_id ?? '')}::${folderIds[i]}`) === i) {
+          workItems.push({ item: items[i], folder_id: folderIds[i] })
         }
-      } else {
-        const newRec: any = JSON.parse(JSON.stringify({
-          amalan_id: amalanIdStr,
-          judul,
-          slug,
-          ringkasan: ringkasan == null ? null : String(ringkasan),
-          content,
-          content_version: contentVersion,
-          server_updated_at: serverUpdatedAt,
-          saved_at: Date.now(),
-          last_synced_at: Date.now(),
-          has_update_available: false,
-          folder_id,
-        }))
-        if (plainLyrics) {
-          newRec.lyrics = plainLyrics
-          newRec.content = JSON.stringify(plainLyrics)
-        }
-        await db.saved_amalan.add(newRec)
       }
     }
-    
+
+    // Phase 2 — fetch + import each item in parallel (bounded concurrency).
+    // Each worker keeps its own dedupe/offline-first logic inside `importShareItem`.
+    importTotal.value = workItems.length
+    await mapWithConcurrency(workItems, 4, async ({ item, folder_id }) => {
+      await importShareItem(item, folder_id)
+      importedCount.value++
+    })
+
     toast.success('Koleksi berhasil diimpor ke koleksi offline Anda.')
     router.push({ name: 'amalan-offline' })
   } catch (err) {
