@@ -530,8 +530,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount, onServerPrefetch } from 'vue'
 import { useRoute } from 'vue-router'
+import { useHead } from '@unhead/vue'
 import { useAmalanBySlugQuery } from '@/composables/useAmalanQueries'
 import {
   Download,
@@ -582,7 +583,12 @@ const {
   data: amalan,
   isLoading: loadingAmalan,
   isError: amalanError,
+  suspense,
 } = useAmalanBySlugQuery(slug)
+
+// SSR/prerender: suspend the render until the query resolves so the static HTML
+// contains the real lyric content (the router guard has usually already cached it).
+onServerPrefetch(suspense)
 
 // offline composable — encapsulates IndexedDB logic (ora-2)
 const {
@@ -635,6 +641,58 @@ const effectiveAmalan = computed(() => {
 const displayCategories = computed(() => {
   return (effectiveAmalan.value?.categories as any[]) || []
 })
+
+// ── Per-page SEO head (injected into prerendered HTML + SPA client) ──
+const SITE_URL = 'https://asyaikhoni.abuamar.online'
+
+const seoHead = computed(() => {
+  const judul = (effectiveAmalan.value?.judul || '').trim()
+  const fallback = String(slug.value || '')
+  const title = `Lirik Sholawat ${judul || fallback} — Arab, Latin & Arti`
+  const description =
+    effectiveAmalan.value?.ringkasan?.trim() ||
+    `Lirik sholawat ${judul || fallback} — Arab, Latin dan arti. Khazanah amalan PPTQ Asy-Syaikhoni.`
+  const canonical = `${SITE_URL}/amalan/${fallback}`
+
+  // JSON-LD is only emitted once real data exists; during prerender the guard
+  // prefetch + onServerPrefetch resolve data before render, so the static HTML
+  // always carries the structured data.
+  const jsonLd = judul
+    ? [
+        {
+          type: 'application/ld+json',
+          textContent: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'MusicComposition',
+            name: judul,
+            inLanguage: ['ar', 'id'],
+            url: canonical,
+            isPartOf: {
+              '@type': 'WebSite',
+              name: 'Asy-Syaikhoni',
+            },
+          }),
+        },
+      ]
+    : undefined
+
+  return {
+    title,
+    meta: [
+      { name: 'description', content: description },
+      { property: 'og:title', content: title },
+      { property: 'og:description', content: description },
+      { property: 'og:type', content: 'article' },
+      { property: 'og:url', content: canonical },
+      { property: 'og:site_name', content: 'Asy-Syaikhoni' },
+      { name: 'twitter:card', content: 'summary' },
+    ],
+    link: [{ rel: 'canonical', href: canonical }],
+    script: jsonLd,
+  }
+})
+
+useHead(seoHead)
 
 const effectiveLyrics = computed(() => {
   const online = (amalan.value as any)?.lyrics

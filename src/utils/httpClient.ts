@@ -11,7 +11,8 @@ class HttpClient {
   private token: string | null = null
 
   constructor() {
-    this.token = localStorage.getItem('auth_token')
+    // SSR/prerender-safe: there is never a token on the server (lazy re-read on client is fine)
+    this.token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null
   }
 
   setToken(token: string | null) {

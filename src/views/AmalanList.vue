@@ -329,6 +329,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
+import { useHead } from '@unhead/vue'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import PageHero from '@/components/ui/PageHero.vue'
 import { useAmalanListQuery } from '@/composables/useAmalanQueries'
@@ -397,6 +398,38 @@ const totalAmalan = computed(() => data.value?.total ?? 0)
 const hasMore = computed(() => itemsList.value.length < totalAmalan.value)
 const isEmpty = computed(() => !loading.value && itemsList.value.length === 0)
 const errorMessage = computed(() => (error?.value instanceof Error ? error.value.message : ''))
+
+// ── Per-page SEO head (injected into prerendered HTML + SPA client) ──
+const AMALAN_LIST_URL = 'https://asyaikhoni.abuamar.online/amalan'
+const AMALAN_LIST_DESC =
+  'Khazanah doa, wirid, dan tuntunan ibadah yang diamalkan di lingkungan Pondok Pesantren Asy-Syaikhoni — tersusun rapi untuk dibaca, dihafal, dan diamalkan sehari-hari.'
+
+useHead(() => ({
+  title: 'Kumpulan Lirik Sholawat — Arab, Latin & Arti',
+  meta: [
+    { name: 'description', content: AMALAN_LIST_DESC },
+    { property: 'og:title', content: 'Kumpulan Lirik Sholawat — Arab, Latin & Arti' },
+    { property: 'og:description', content: AMALAN_LIST_DESC },
+    { property: 'og:type', content: 'website' },
+    { property: 'og:url', content: AMALAN_LIST_URL },
+    { property: 'og:site_name', content: 'Asy-Syaikhoni' },
+    { name: 'twitter:card', content: 'summary' },
+  ],
+  link: [{ rel: 'canonical', href: AMALAN_LIST_URL }],
+  script: [
+    {
+      type: 'application/ld+json',
+      textContent: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'CollectionPage',
+        name: 'Kumpulan Lirik Sholawat — Arab, Latin & Arti',
+        description: AMALAN_LIST_DESC,
+        url: AMALAN_LIST_URL,
+        ...(totalAmalan.value ? { numberOfItems: totalAmalan.value } : {}),
+      }),
+    },
+  ],
+}))
 
 function loadMore() {
   if (isFetching.value || !hasMore.value) return
