@@ -62,6 +62,23 @@ export default defineConfig({
               },
             },
           },
+          {
+            // API GET caching (default base: https://backend.abuamar.online, see src/utils/httpClient.ts)
+            // POST/PUT/DELETE requests are never cached — this route only matches GET.
+            urlPattern: /^https:\/\/backend\.abuamar\.online\/api\/.*/i,
+            handler: 'StaleWhileRevalidate',
+            method: 'GET',
+            options: {
+              cacheName: 'api-cache',
+              expiration: {
+                maxEntries: 60,
+                maxAgeSeconds: 7 * 24 * 3600, // <== 7 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
         ],
       },
     }),

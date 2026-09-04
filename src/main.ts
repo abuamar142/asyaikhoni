@@ -29,3 +29,15 @@ app.use(router)
 app.use(VueQueryPlugin, { queryClient })
 
 app.mount('#app')
+
+// Fire-and-forget persistent storage request (PWA): ask the browser to keep
+// our cache/quota data across sessions. If denied, log the storage estimate.
+if (navigator.storage?.persist) {
+  navigator.storage.persist().then((persisted) => {
+    if (!persisted) {
+      navigator.storage.estimate().then((estimate) => {
+        console.info('[pwa] storage persist denied; estimate:', estimate)
+      })
+    }
+  })
+}

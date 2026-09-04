@@ -105,8 +105,35 @@
       </div>
 
     <div class="relative container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10">
-      <!-- Folders / Subfolders grid (filtered by currentFolderId) -->
-      <div v-if="displayFolders.length > 0" class="mb-10">
+      <!-- Search toolbar — filter saved amalan client-side (judul/ringkasan) -->
+      <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-8">
+        <div class="flex-1 min-w-0">
+          <SearchInput v-model="q" placeholder="Cari judul atau ringkasan amalan…" />
+        </div>
+        <div class="flex flex-wrap items-center gap-2 shrink-0">
+          <span class="text-[12.5px] text-stone-500">
+            <template v-if="isSearching">
+              Menampilkan <span class="font-semibold text-stone-700">{{ filteredAmalan.length }}</span> amalan untuk
+              “{{ qDebounced }}”
+            </template>
+            <template v-else>
+              <span class="font-semibold text-stone-700">{{ savedAmalan.length }}</span> amalan di koleksi ini
+            </template>
+          </span>
+          <BaseButton
+            v-if="q"
+            variant="ghost"
+            pill
+            class="text-[13px] !bg-transparent !border-transparent !text-emerald-800 hover:!text-emerald-900 underline underline-offset-4 decoration-emerald-200 hover:decoration-emerald-700 !shadow-none"
+            @click="resetSearch"
+          >
+            <RotateCcw class="w-3.5 h-3.5" /> Bersihkan
+          </BaseButton>
+        </div>
+      </div>
+
+      <!-- Folders / Subfolders grid (filtered by currentFolderId; flattened away while searching) -->
+      <div v-if="displayFolders.length > 0 && !isSearching" class="mb-10">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-[11px] tracking-[0.16em] font-semibold uppercase text-stone-500">
             {{ currentFolderId === null ? 'Folder Anda' : `Subfolder di ${currentFolder?.name ?? ''}` }}
@@ -162,7 +189,7 @@
       </div>
 
       <!-- When inside a folder with no subfolders but also check empty handling: show Buat Subfolder hint -->
-      <div v-if="currentFolderId !== null && displayFolders.length === 0" class="mb-6">
+      <div v-if="currentFolderId !== null && displayFolders.length === 0 && !isSearching" class="mb-6">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-[11px] tracking-[0.16em] font-semibold uppercase text-stone-500">Subfolder</h2>
           <BaseButton variant="ghost" pill size="sm" class="text-[12px] !border-transparent !bg-transparent !text-emerald-700 hover:!text-emerald-800" @click="isCreatingFolder = true">
@@ -173,16 +200,16 @@
       </div>
 
       <!-- Saved amalan heading -->
-      <div v-if="savedAmalan.length > 0" class="flex items-center justify-between mb-4">
+      <div v-if="savedAmalan.length > 0 && !isSearching" class="flex items-center justify-between mb-4">
         <h2 class="text-[11px] tracking-[0.16em] font-semibold uppercase text-stone-500">
           Amalan tersimpan <span class="normal-case tracking-normal font-medium text-stone-400">· {{ savedAmalan.length }}</span>
         </h2>
         <div class="h-px flex-1 mx-4 bg-[#ece9e0] hidden sm:block"></div>
       </div>
 
-      <div v-if="savedAmalan.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
+      <div v-if="filteredAmalan.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
         <AmalanCard
-          v-for="item in savedAmalan"
+          v-for="item in filteredAmalan"
           :key="item.id"
           :item="item as any"
           mode="offline"
@@ -204,8 +231,32 @@
         </AmalanCard>
       </div>
 
+      <!-- Search no-results -->
+      <div
+        v-else-if="isSearching && !(allFolders.length === 0 && savedAmalan.length === 0)"
+        class="flex flex-col items-center justify-center py-16 md:py-20"
+      >
+        <EmptyState
+          title="Tidak ada amalan ditemukan"
+          description="Coba ubah kata kunci pencarian untuk judul atau ringkasan amalan."
+        >
+          <template #icon>
+            <BookHeart class="h-9 w-9 text-emerald-700" :stroke-width="1.6" />
+            <span
+              class="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-amber-300 shadow-sm"
+              aria-hidden="true"
+            >
+              <Search class="h-3 w-3 text-[#14532d]" />
+            </span>
+          </template>
+          <template #actions>
+            <BaseButton variant="primary" pill @click="resetSearch"> <RotateCcw class="w-4 h-4" /> Reset pencarian </BaseButton>
+          </template>
+        </EmptyState>
+      </div>
+
       <!-- Empty state -->
-      <div v-if="allFolders.length === 0 && savedAmalan.length === 0" class="flex flex-col items-center justify-center py-16 md:py-20">
+      <div v-else-if="allFolders.length === 0 && savedAmalan.length === 0" class="flex flex-col items-center justify-center py-16 md:py-20">
         <EmptyState
           title="Belum ada amalan tersimpan"
           description="Jelajahi katalog dan ketuk “Simpan offline” pada halaman detail amalan untuk membacanya kapan saja tanpa koneksi."
@@ -348,6 +399,7 @@ import PageHero from '@/components/ui/PageHero.vue'
 import { ref, computed, onMounted } from 'vue'
 import { useBodyLock } from '@/composables/useBodyLock'
 import { useEsc } from '@/composables/useEsc'
+import { useDebouncedRef } from '@/composables/useDebouncedRef'
 import { db, type LocalSavedAmalan, type LocalFolder, ensureDbReady, isIndexedDBAvailable } from '@/utils/localDb'
 import {
   Folder,
@@ -365,7 +417,10 @@ import {
   X,
   ArrowLeft,
   Library,
+  Search,
+  RotateCcw,
 } from 'lucide-vue-next'
+import SearchInput from '@/components/ui/SearchInput.vue'
 import { useToast } from '@/composables/useToast'
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue'
 import FolderPicker from '@/components/FolderPicker.vue'
@@ -391,6 +446,26 @@ const currentFolder = computed<LocalFolder | null>(() => {
 const displayFolders = computed(() => allFolders.value.filter((f) => (f.parent_id ?? null) === currentFolderId.value))
 
 const breadcrumbPath = computed(() => buildBreadcrumb(currentFolderId.value, allFolders.value))
+
+// Search — filter visible saved amalan client-side by judul/ringkasan (debounced, like AmalanList)
+const q = ref('')
+const qDebounced = useDebouncedRef(q, 400)
+
+const isSearching = computed(() => qDebounced.value.trim().length > 0)
+
+const filteredAmalan = computed(() => {
+  const term = qDebounced.value.trim().toLowerCase()
+  if (!term) return savedAmalan.value
+  return savedAmalan.value.filter((item) => {
+    const judul = (item.judul ?? '').toLowerCase()
+    const ringkasan = (item.ringkasan ?? '').toLowerCase()
+    return judul.includes(term) || ringkasan.includes(term)
+  })
+})
+
+function resetSearch() {
+  q.value = ''
+}
 
 async function loadData() {
   try {

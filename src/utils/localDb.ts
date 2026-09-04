@@ -30,9 +30,18 @@ export interface LocalFolder {
   updated_at: number
 }
 
+export interface AmalanProgress {
+  amalan_id: string
+  slug: string
+  content_version: number
+  checked_indices: number[]
+  updated_at: number
+}
+
 export class MyDatabase extends Dexie {
   saved_amalan!: Table<LocalSavedAmalan>
   folders!: Table<LocalFolder>
+  amalan_progress!: Table<AmalanProgress>
 
   constructor() {
     super('AmalanOfflineDB')
@@ -122,6 +131,12 @@ export class MyDatabase extends Dexie {
           }
         }
       })
+    // v5: hafalan progress checklist — per-amalan checked lyric indices (keyed by amalan_id, slug indexed for offline fallback lookup)
+    this.version(5).stores({
+      saved_amalan: '++id, &[amalan_id+folder_id], folder_id, amalan_id, slug, has_update_available',
+      folders: '++id, name, parent_id',
+      amalan_progress: 'amalan_id, slug',
+    })
   }
 }
 
