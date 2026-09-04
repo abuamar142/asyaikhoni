@@ -29,7 +29,7 @@ type AmalanResponse = {
   amalan: Amalan
 }
 
-type AmalanListResponse = {
+export type AmalanList = {
   amalan: Amalan[]
   total: number
   limit: number
@@ -57,13 +57,12 @@ export async function listPublic(params?: {
   kategoriIds?: string[]
   limit?: number
   offset?: number
-}) {
+}): Promise<AmalanList> {
   const searchParams = buildAmalanParams(params)
   const query = searchParams.toString()
-  const result = await api.get<AmalanListResponse>(
+  return api.get<AmalanList>(
     `/api/v1/asyaikhoni/amalan${query ? `?${query}` : ''}`,
   )
-  return result.amalan
 }
 
 export async function getBySlug(slug: string) {

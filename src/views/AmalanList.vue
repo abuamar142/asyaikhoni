@@ -24,7 +24,7 @@
               <Library class="w-3.5 h-3.5" />
             </span>
             <span class="text-[13px] font-medium text-emerald-900"
-              ><span class="font-semibold">{{ itemsList.length }}</span>
+              ><span class="font-semibold">{{ totalAmalan }}</span>
               <span class="text-emerald-700/80"> amalan</span>
             </span>
             <span class="w-px h-4 bg-emerald-200"></span>
@@ -48,7 +48,7 @@
             class="font-serif text-5xl font-[300] tracking-[-0.04em] leading-[1.1] text-[#12291a] py-0.5 overflow-visible"
             style="font-family: 'Fraunces', Georgia, serif"
           >
-            {{ String(itemsList.length || 0).padStart(2, '0') }}
+            {{ String(totalAmalan || 0).padStart(2, '0') }}
           </div>
           <div class="text-sm text-stone-500 mt-1.5">amalan tersimpan</div>
           <div class="mt-5 h-px w-24 bg-gradient-to-r from-transparent to-emerald-200"></div>
@@ -204,7 +204,7 @@
             <span class="hidden sm:block mx-1 h-4 w-px bg-stone-200"></span>
             <span class="text-[12.5px] text-stone-500">
               <template v-if="!loading && !error">
-                Menampilkan <span class="font-semibold text-stone-700">{{ itemsList.length }}</span> amalan
+                Menampilkan <span class="font-semibold text-stone-700">{{ totalAmalan }}</span> amalan
                 <span v-if="q" class="text-stone-500">untuk “{{ q }}”</span>
               </template>
               <template v-else> Memuat katalog… </template>
@@ -296,8 +296,26 @@
         />
       </div>
 
+      <!-- Load more -->
+      <div v-if="!loading && !error && hasMore" class="mt-10 flex flex-col items-center gap-3">
+        <span class="text-[11px] tracking-[0.16em] uppercase font-semibold text-stone-400">
+          {{ itemsList.length }} dari {{ totalAmalan }} dimuat
+        </span>
+        <BaseButton
+          variant="secondary"
+          pill
+          class="text-[13px] !px-6 !py-2.5"
+          :disabled="isFetching"
+          @click="loadMore"
+        >
+          <Loader2 v-if="isFetching" class="w-4 h-4 text-emerald-700 animate-spin" />
+          <ChevronDown v-else class="w-4 h-4 text-stone-400" />
+          {{ isFetching ? 'Memuat…' : 'Muat lebih banyak' }}
+        </BaseButton>
+      </div>
+
       <!-- bottom subtle meta -->
-      <div v-if="!loading && !isEmpty && !error" class="mt-10 flex items-center justify-center gap-3 text-[11px] tracking-[0.12em] uppercase text-stone-400">
+      <div v-if="!loading && !isEmpty && !error && !hasMore" class="mt-10 flex items-center justify-center gap-3 text-[11px] tracking-[0.12em] uppercase text-stone-400">
         <span class="h-px w-8 bg-stone-200 hidden sm:block"></span>
         <span>Akhir katalog</span>
         <span class="w-1 h-1 rounded-full bg-stone-300"></span>
@@ -310,7 +328,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import PageHero from '@/components/ui/PageHero.vue'
 import { useAmalanListQuery } from '@/composables/useAmalanQueries'
@@ -333,6 +351,7 @@ import {
   BookHeart,
   Search,
   AlertTriangle,
+  Loader2,
 } from 'lucide-vue-next'
 
 const q = ref('')
@@ -356,15 +375,33 @@ function categoryName(id: string) {
   return categoryOptions.value.find((c) => c.id === id)?.nama || id
 }
 
+// Pagination — single query with accumulated limit: the query key includes
+// `limit`, so "load more" grows the page size and the API returns the full
+// accumulated list. Search/filter changes reset the limit back to the first page.
+const PAGE_SIZE = 12
+const limit = ref(PAGE_SIZE)
+
 const queryParams = computed(() => ({
   q: qDebounced.value || undefined,
   kategoriIds: selectedKategoriIds.value.length ? selectedKategoriIds.value : undefined,
+  limit: limit.value,
 }))
 
-const { data, isLoading: loading, error } = useAmalanListQuery(queryParams)
-const itemsList = computed(() => data.value || [])
+watch([qDebounced, selectedKategoriIds], () => {
+  limit.value = PAGE_SIZE
+})
+
+const { data, isLoading: loading, isFetching, error } = useAmalanListQuery(queryParams)
+const itemsList = computed(() => data.value?.amalan || [])
+const totalAmalan = computed(() => data.value?.total ?? 0)
+const hasMore = computed(() => itemsList.value.length < totalAmalan.value)
 const isEmpty = computed(() => !loading.value && itemsList.value.length === 0)
 const errorMessage = computed(() => (error?.value instanceof Error ? error.value.message : ''))
+
+function loadMore() {
+  if (isFetching.value || !hasMore.value) return
+  limit.value = Math.min(limit.value + PAGE_SIZE, totalAmalan.value)
+}
 
 function resetFilters() {
   q.value = ''

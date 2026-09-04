@@ -26,6 +26,8 @@ export function useAmalanListQuery(
   return useQuery(() => ({
     queryKey: amalanKeys.list({ scope: 'public', ...unref(params) }),
     queryFn: () => amalanService.listPublic(unref(params)),
+    // Keep the previous page visible while a larger page (load more) is fetching
+    placeholderData: (previousData) => previousData,
   }))
 }
 
