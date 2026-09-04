@@ -254,26 +254,6 @@
 
             <!-- lyrics paper -->
             <div v-else class="relative">
-              <!-- hafalan progress indicator -->
-              <div class="mb-4 sm:mb-5 flex items-center justify-center gap-2.5">
-                <span
-                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100 text-[11px] font-semibold tracking-[0.08em] uppercase text-emerald-800"
-                >
-                  <CheckCircle2 class="w-3.5 h-3.5" /> {{ progressText }}
-                </span>
-                <BaseButton
-                  v-if="checkedLines.size > 0"
-                  variant="ghost"
-                  pill
-                  size="sm"
-                  class="text-[11px] !border-transparent !bg-transparent !text-stone-500 hover:!text-emerald-800"
-                  title="Reset progres hafalan"
-                  @click="resetProgress"
-                >
-                  <RotateCcw class="w-3 h-3" /> Reset
-                </BaseButton>
-              </div>
-
               <PaperCard :dark="isDark" :font-size="fontSize">
                 <template #header>
                   <!-- lyric title header — now INSIDE paper: JUDUL (arab + latin) → DIVIDER → LIRIK -->
@@ -310,9 +290,6 @@
                     :row="row as any"
                     :showLatin="showLatin"
                     :fontSize="fontSize"
-                    :checked="checkedLines.has(idx)"
-                    :toggleable="true"
-                    @toggle="toggleLine(idx)"
                   />
                 </div>
 
@@ -333,7 +310,6 @@
             <div class="mt-8 flex items-center justify-center gap-3">
               <span class="h-px w-10 bg-stone-200"></span>
               <span class="w-1 h-1 rounded-full bg-emerald-600"></span>
-              <span class="text-stone-400 text-[10px] tracking-[0.16em] uppercase font-semibold">selesai</span>
               <span class="w-1 h-1 rounded-full bg-emerald-600"></span>
               <span class="h-px w-10 bg-stone-200"></span>
             </div>
@@ -561,7 +537,6 @@ import { useLyricSettings } from '@/composables/useLyricSettings'
 import FolderPicker from '@/components/FolderPicker.vue'
 import { getFolderDepth } from '@/utils/folderTree'
 import { useOfflineAmalan } from '@/composables/useOfflineAmalan'
-import { useAmalanProgress } from '@/composables/useAmalanProgress'
 import { useBodyLock } from '@/composables/useBodyLock'
 import { useEsc } from '@/composables/useEsc'
 import EmptyState from '@/components/ui/EmptyState.vue'
@@ -710,23 +685,6 @@ const effectiveLyrics = computed(() => {
 
 const hasLyrics = computed(() => effectiveLyrics.value.length > 0)
 const hasAnyLatin = computed(() => effectiveLyrics.value.some((r: any) => !!r.latin))
-
-// hafalan progress — per-baris checklist persisted in Dexie (amalan_progress)
-const amalanId = computed(() => {
-  const id = (effectiveAmalan.value as any)?.id
-  return id != null ? String(id) : null
-})
-const contentVersion = computed(() => {
-  const v = (effectiveAmalan.value as any)?.content_version
-  return v != null && Number.isFinite(Number(v)) ? Number(v) : null
-})
-const totalLyricLines = computed(() => effectiveLyrics.value.length)
-const { checked: checkedLines, progressText, toggle: toggleLine, reset: resetProgress } = useAmalanProgress(
-  amalanId,
-  slug,
-  contentVersion,
-  totalLyricLines,
-)
 
 // Phase 6 UI state — folder picker modal
 const showSaveToFolderModal = ref(false)

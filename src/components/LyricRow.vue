@@ -1,9 +1,7 @@
 <template>
   <div
     class="lyric-row"
-    :class="{ 'lyric-row--toggleable': toggleable, 'lyric-row--checked': checked }"
     :style="rowStyle as any"
-    @click="onRowClick"
   >
     <!-- Arab: always center, if • then 2 cols center with bullet -->
     <div
@@ -57,25 +55,11 @@ const props = withDefaults(
     row: LyricRowType
     showLatin: boolean
     fontSize?: number
-    /** render in "checked" (hafalan selesai) state — reduced opacity + strike on latin */
-    checked?: boolean
-    /** enable tap-to-toggle affordance (emits `toggle` on click); default keeps rendering identical */
-    toggleable?: boolean
   }>(),
   {
     fontSize: undefined,
-    checked: false,
-    toggleable: false,
   },
 )
-
-const emit = defineEmits<{
-  (e: 'toggle'): void
-}>()
-
-function onRowClick() {
-  if (props.toggleable) emit('toggle')
-}
 
 function splitBullet(text: string): [string, string] {
   const parts = text.split('•').map((s) => s.trim())
@@ -225,23 +209,5 @@ const rowStyle = computed(() => {
 /* when Latin hidden, tighten rhythm - handled via v-if, but keep transition */
 .lyric-row:has(.lyric-latin) {
   gap: 6px;
-}
-
-/* hafalan progress: toggleable row + checked state (minimal — no layout change) */
-.lyric-row--toggleable {
-  cursor: pointer;
-}
-.lyric-row--checked {
-  opacity: 0.5;
-  transition:
-    background-color 180ms ease,
-    opacity 180ms ease;
-}
-.lyric-row--checked .lyric-latin,
-.lyric-row--checked .latin-single,
-.lyric-row--checked .latin-cell {
-  text-decoration: line-through;
-  text-decoration-thickness: 1px;
-  text-decoration-color: rgba(110, 125, 113, 0.6);
 }
 </style>
