@@ -25,4 +25,4 @@ jobs:
             set -euo pipefail
             BRANCH="${{ github.ref_name }}"
             echo "Deploying branch: $BRANCH"
-            /home/ubuntu/deploy-asyaikhoni.sh "$BRANCH"
+            /opt/ops/bin/deploy-asyaikhoni.sh "$BRANCH"
