@@ -92,6 +92,18 @@ export default defineConfig(({ mode }) => {
                 cacheableResponse: {
                   statuses: [0, 200],
                 },
+                plugins: [
+                  {
+                    // Only JSON is cacheable. When the API is unreachable the
+                    // host can answer with the SPA shell (HTTP 200, text/html);
+                    // caching that would poison this cache with a body the
+                    // client cannot parse and keep serving it for 7 days.
+                    cacheWillUpdate: async ({ response }: { response: Response }) =>
+                      (response.headers.get('content-type') || '').includes('application/json')
+                        ? response
+                        : null,
+                  },
+                ],
               },
             },
           ],
