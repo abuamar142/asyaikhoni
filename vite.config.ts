@@ -1,3 +1,4 @@
+import { readdirSync } from 'node:fs'
 import { fileURLToPath, URL } from 'node:url'
 
 import { defineConfig, loadEnv } from 'vite'
@@ -119,17 +120,34 @@ export default defineConfig(({ mode }) => {
       formatting: 'prettify',
       script: 'async',
       async onFinished() {
-        // Fetch the live slug list (same source as includedRoutes) so every lyric
-        // page is listed. The sitemap plugin auto-discovers all prerendered HTML
-        // files in dist; dynamicRoutes adds the API-derived pages explicitly.
+        // The sitemap plugin globs every prerendered .html in dist AND appends
+        // `dynamicRoutes`, with no dedupe — so each /amalan/:slug page (written
+        // by includedRoutes and also listed here) appeared twice. Prerendered
+        // files are already discovered by the glob, so the slug list is only a
+        // fallback for slugs that failed to render; filter those against the
+        // routes the build actually produced.
+        const renderedRoutes = new Set(
+          readdirSync('dist', { recursive: true })
+            .map((entry) => String(entry))
+            .filter((file) => file.endsWith('.html'))
+            .map((file) => `/${file.replace(/index\.html$/, '').replace(/\.html$/, '')}`),
+        )
+
         let slugs: string[] = []
         try {
           const res = await fetch(`${apiBase}/api/v1/asyaikhoni/amalan?limit=100`)
           if (res.ok) {
-            const json: any = await res.json()
-            const amalan = json?.data?.amalan
+            const json: unknown = await res.json()
+            // API boundary: validate the one field we consume instead of
+            // trusting an inline cast.
+            const amalan =
+              json && typeof json === 'object' && 'data' in json && json.data && typeof json.data === 'object' && 'amalan' in json.data
+                ? json.data.amalan
+                : undefined
             if (Array.isArray(amalan)) {
-              slugs = amalan.map((a: any) => String(a?.slug)).filter(Boolean)
+              slugs = amalan
+                .map((a) => (a && typeof a === 'object' && 'slug' in a ? String(a.slug) : ''))
+                .filter(Boolean)
             }
           }
         } catch {
@@ -138,7 +156,9 @@ export default defineConfig(({ mode }) => {
 
         generateSitemap({
           hostname: 'https://asyaikhoni.abuamar.online',
-          dynamicRoutes: slugs.map((s) => `/amalan/${s}`),
+          dynamicRoutes: slugs
+            .map((s) => `/amalan/${s}`)
+            .filter((route) => !renderedRoutes.has(route)),
           exclude: ['/amalan/koleksi'],
         })
       },
