@@ -83,6 +83,23 @@ bun run preview      # vite preview
 ```
 
 - **Env:** `VITE_API_BASE_URL` (lihat `.env.example`, lokal `.env.local` sudah `.gitignore`). Default `https://backend.abuamar.online`.
-- **Vercel:** `vercel.json` — `buildCommand: npm run build`, `outputDirectory: dist`, SPA rewrite `/(.*) → /index.html`, cache `Cache-Control: immutable` untuk `/assets/*`.
-- **PWA:** `VitePWA` autoUpdate, manifest `PPTQ Asy-Syaikhoni`, theme `#16a34a`, Workbox `globPatterns` + `runtimeCaching` google fonts CacheFirst 365d, chunk `vendor`/`icons`.
-- **Deploy manual:** `bun run build` lalu upload `dist/`.
+- **API:** `backend.abuamar.online` dilayani container `portfolio-cms` (Next.js + Payload, `/opt/portfolio-cms`, port 3001) lewat vhost nginx `backend`; datanya MongoDB di container `portfolio-db`. Endpoint publik ada di `app/api/v1/asyaikhoni/*` repo **portfolio-cms** — bukan repo ini.
+- **PWA:** `VitePWA` autoUpdate, manifest `PPTQ Asy-Syaikhoni`, theme `#16a34a`, ikon PNG 192/512 (+ maskable), Workbox `globPatterns` + `runtimeCaching` google fonts CacheFirst 365d dan `api-cache` (hanya respons `application/json`), chunk `vendor`/`icons`.
+- **SSG:** `vite-ssg` prerender `/`, `/sejarah`, `/amalan`, tiap `/amalan/:slug` (slug dari API), sitemap + robots; `onFinished` menyaring slug yang sudah ter-render agar sitemap tidak duplikat.
+
+### Deploy produksi (VPS)
+
+Push ke `main` → GitHub Actions (`.github/workflows/deploy.yml`) → SSH ke VPS →
+`/opt/ops/bin/deploy-asyaikhoni.sh main`:
+
+1. `git fetch` + checkout/pull branch, `bun install --frozen-lockfile`, `bun run build`
+2. rsync `dist/` ke staging, lalu swap atomik ke `/var/www/asyaikhoni`
+3. `chown www-data`, `nginx -t`, reload, health check HTTPS, notifikasi Telegram
+
+| Branch | Web root | Domain |
+|---|---|---|
+| `main` | `/var/www/asyaikhoni` | `asyaikhoni.abuamar.online` |
+| `development` | `/var/www/dev-asyaikhoni` | `asyaikhoni-dev.abuamar.online` |
+
+Deploy API/CMS terpisah: push ke `main` repo `portfolio-cms` → `/opt/ops/bin/deploy-cms.sh main`.
+Manual: `bun run build` lalu upload `dist/`.
