@@ -23,16 +23,25 @@ export default defineConfig(({ mode }) => {
           theme_color: '#16a34a', // emerald-600
           background_color: '#ffffff',
           display: 'standalone',
+          // PNG (not SVG): iOS/Android install prompts and social previews
+          // reject SVG icons. 192/512 are the PWA-required sizes; the maskable
+          // entry keeps the logo intact inside Android's adaptive icon crop.
           icons: [
             {
-              src: 'logo.svg',
+              src: 'icons/icon-192.png',
               sizes: '192x192',
-              type: 'image/svg+xml',
+              type: 'image/png',
             },
             {
-              src: 'logo.svg',
+              src: 'icons/icon-512.png',
               sizes: '512x512',
-              type: 'image/svg+xml',
+              type: 'image/png',
+            },
+            {
+              src: 'icons/icon-512.png',
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'maskable',
             },
           ],
         },
