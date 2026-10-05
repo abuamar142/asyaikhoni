@@ -154,8 +154,11 @@
 
             <!-- actions -->
             <div class="mt-7 flex flex-wrap items-center justify-center gap-3">
+              <!-- Hierarki hero (audit #3): primary untuk aksi utama "Simpan
+                   offline" saat BELUM tersimpan; secondary untuk state
+                   "Tersimpan offline" — aksi lain tetap secondary. -->
               <BaseButton
-                :variant="isSaved ? 'primary' : 'secondary'"
+                :variant="isSaved ? 'secondary' : 'primary'"
                 pill
                 size="md"
                 :disabled="isSaving"
@@ -172,7 +175,7 @@
                   v-else
                   :is="isSaved ? CheckCircle2 : Download"
                   class="w-4 h-4 shrink-0"
-                  :class="isSaved ? 'text-white' : 'text-emerald-700'"
+                  :class="isSaved ? 'text-emerald-700' : 'text-white'"
                 />
                 {{ isSaving ? 'Menyimpan…' : isSaved ? 'Tersimpan offline' : 'Simpan offline' }}
               </BaseButton>

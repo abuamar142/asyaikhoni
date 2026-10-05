@@ -6,20 +6,24 @@
       class="pointer-events-none absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-200/50 to-transparent"
     ></div>
 
-    <!-- arc decoration -->
+    <!-- arc decoration — concentric rings sharing one center pushed past the
+         top-right corner. The old mixed offsets (two rings tangent at the
+         corner, one shifted) tangled into a boxy pattern over the hero stats
+         around ~1024px (audit #2); nested rings + lower inner opacities keep
+         the arcs reading as smooth circles, clear of the stats numbers. -->
     <div
       v-if="showArc"
       aria-hidden="true"
       class="pointer-events-none absolute inset-0 overflow-hidden"
     >
       <div
-        class="absolute -right-20 -top-10 hidden lg:block w-[520px] h-[520px] rounded-full border border-emerald-900/5"
+        class="absolute -right-[360px] -top-[360px] hidden lg:block w-[520px] h-[520px] rounded-full border border-emerald-900/5"
       ></div>
       <div
-        class="absolute -right-16 -top-16 hidden lg:block w-[420px] h-[420px] rounded-full border border-emerald-100/70"
+        class="absolute -right-[310px] -top-[310px] hidden lg:block w-[420px] h-[420px] rounded-full border border-emerald-100/40"
       ></div>
       <div
-        class="absolute -right-16 -top-16 hidden lg:block w-[320px] h-[320px] rounded-full border border-emerald-100/50"
+        class="absolute -right-[260px] -top-[260px] hidden lg:block w-[320px] h-[320px] rounded-full border border-emerald-100/25"
       ></div>
     </div>
 

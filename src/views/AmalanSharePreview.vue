@@ -1,14 +1,17 @@
 <template>
-  <div class="min-h-screen bg-white py-12">
-    <div class="container mx-auto px-4 max-w-4xl">
+  <div class="min-h-screen bg-white">
+    <AppHeader />
+    <!-- offset for fixed header h-16 (64px) — matches AmalanList/AmalanOffline -->
+    <div class="pt-16">
+      <div class="container mx-auto px-4 max-w-4xl py-12">
       <!-- Loading State -->
       <div v-if="loading" class="flex flex-col items-center justify-center py-20">
         <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand mb-4"></div>
         <p class="text-body-md text-muted">Memuat koleksi yang dibagikan...</p>
       </div>
 
-      <!-- Error State -->
-      <div v-else-if="error || !bundle" class="text-center py-20">
+      <!-- Error State — hanya saat benar-benar tidak ada bundle (audit #4) -->
+      <div v-else-if="!bundle" class="text-center py-20">
         <div class="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
           <AlertCircle class="w-10 h-10" />
         </div>
@@ -71,6 +74,7 @@
           </div>
         </div>
       </div>
+      </div>
     </div>
   </div>
 </template>
@@ -78,7 +82,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getShareBundle, getLocalBundle } from '@/services/shareService'
+import AppHeader from '@/components/layout/AppHeader.vue'
+import { getShareBundle, getLocalBundle, isLocalFallbackError } from '@/services/shareService'
 import { downloadMarkdown, getById } from '@/services/amalanService'
 import { db, type LocalFolder, ensureDbReady, isIndexedDBAvailable } from '@/utils/localDb'
 import { 
@@ -90,9 +95,25 @@ const route = useRoute()
 const router = useRouter()
 const toast = useToast()
 
+// Bentuk view untuk state halaman — dinormalisasi longgar oleh normalizeBundle
+// sebelum masuk ke ref (boundary state tanpa `any`, audit #4).
+type ShareBundleItemView = {
+  id: string | number
+  folder_path?: string | null
+  amalan: { judul: string; ringkasan?: string | null }
+}
+type ShareBundleView = {
+  title: string
+  description?: string | null
+  created_at: string
+  updated_at?: string
+  // Set oleh buildLocalBundle untuk bundle yang hanya hidup di perangkat ini.
+  is_local?: boolean
+  _local?: boolean
+  share_bundle_items: ShareBundleItemView[]
+}
 const loading = ref(true)
-const error = ref(false)
-const bundle = ref<any>(null)
+const bundle = ref<ShareBundleView | null>(null)
 const importing = ref(false)
 const importedCount = ref(0)
 const importTotal = ref(0)
@@ -148,35 +169,47 @@ function normalizeBundle(raw: any): any {
   return b
 }
 
+// Load sequence: hanya invokasi terbaru yang boleh menulis state, supaya
+// respons basi tidak pernah menimpa hasil lebih baru (audit race #4).
+let loadSeq = 0
+
 async function loadBundle() {
   const shareId = route.params.share_id as string
+  const seq = ++loadSeq
   try {
     loading.value = true
-    const fetched: any = await getShareBundle(shareId)
+    const fetched = await getShareBundle(shareId)
+    // Success always wins: stale success tetap mendarat bila state masih kosong,
+    // tapi tidak menimpa bundle yang sudah dimuat invokasi lebih baru.
+    if (seq !== loadSeq && bundle.value) return
     bundle.value = normalizeBundle(fetched)
   } catch (err) {
+    // Sukses menang: fetch/fallback yang gagal tidak boleh membalik state sukses
+    // menjadi error (audit race #4).
+    if (bundle.value) return
     console.error('Error loading bundle:', err)
-    // final fallback: try localStorage directly
+    // final fallback: try localStorage directly — kebijakan yang sama dengan
+    // shareService.getShareBundle: hanya network-error/404, tidak untuk 401/5xx.
     try {
-      const local = getLocalBundle(shareId)
-      if (local) {
-        bundle.value = normalizeBundle(local)
-        error.value = false
-        return
-      }
-      // also try hash / query fallback (if any)
-      const hash = window.location.hash || ''
-      if (hash.includes('local')) {
-        const local2 = getLocalBundle(shareId)
-        if (local2) {
-          bundle.value = normalizeBundle(local2)
+      if (isLocalFallbackError(err)) {
+        const local = getLocalBundle(shareId)
+        if (local) {
+          bundle.value = normalizeBundle(local)
           return
+        }
+        // also try hash / query fallback (if any)
+        const hash = window.location.hash || ''
+        if (hash.includes('local')) {
+          const local2 = getLocalBundle(shareId)
+          if (local2) {
+            bundle.value = normalizeBundle(local2)
+            return
+          }
         }
       }
     } catch {}
-    error.value = true
   } finally {
-    loading.value = false
+    if (seq === loadSeq) loading.value = false
   }
 }
 
@@ -296,7 +329,7 @@ async function importShareItem(item: any, folder_id: number): Promise<void> {
   const slug = String(fullAmalan?.slug ?? item.amalan?.slug ?? (item as any).slug ?? amalanIdStr)
   const ringkasan = fullAmalan?.ringkasan ?? item.amalan?.ringkasan ?? (item as any).ringkasan ?? null
   const contentVersion = Number(fullAmalan?.content_version ?? (item as any).version_at_share ?? 1)
-  const serverUpdatedAt = String(fullAmalan?.updated_at ?? bundle.value.updated_at ?? bundle.value.created_at ?? new Date().toISOString())
+  const serverUpdatedAt = String(fullAmalan?.updated_at ?? bundle.value?.updated_at ?? bundle.value?.created_at ?? new Date().toISOString())
   const content = plainLyrics ? JSON.stringify(plainLyrics) : (contentFromServer ?? '[]')
 
   // If neither server nor bundle provided lyrics/content, skip this item (avoid empty record)

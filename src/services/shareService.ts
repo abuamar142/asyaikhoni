@@ -171,13 +171,32 @@ export async function createShareBundle(payload: ShareBundlePayload) {
   }
 }
 
-export async function getShareBundle(publicShareId: string) {
+// Fallback lokal hanya untuk network-error/404 (bukan 401/403/5xx) — dipakai
+// getShareBundle dan loadBundle di AmalanSharePreview (audit race #4: hasil
+// gagal tidak boleh menimpa state sukses dengan bundle lokal yang keliru).
+export function isLocalFallbackError(err: unknown): boolean {
+  // httpClient errors: Error + status/statusCode/code; fetch failures: TypeError "Failed to fetch".
+  if (!(err instanceof Error)) return false
+  const message = err.message
+  const named = err as Error & { status?: number; statusCode?: number; code?: number }
+  const status = named.status ?? named.statusCode ?? named.code
+  const isNetworkError =
+    /Failed to fetch|NetworkError|Network request failed|Load failed/i.test(message) ||
+    (err.name === 'TypeError' && /fetch/i.test(message))
+  const is404 = status === 404 || /\b404\b|not.?found/i.test(message)
+  return isNetworkError || is404
+}
+
+export async function getShareBundle(publicShareId: string): Promise<unknown> {
   try {
-    const result = await api.get<{ bundle: any }>(`/api/v1/asyaikhoni/share/${publicShareId}`)
-    return (result as any)?.bundle ?? result
-  } catch (err: any) {
-    const local = getLocalBundle(publicShareId)
-    if (local) return local
+    const result = await api.get<{ bundle?: unknown }>(`/api/v1/asyaikhoni/share/${publicShareId}`)
+    return result?.bundle ?? result
+  } catch (err: unknown) {
+    // 401/403/5xx harus surface sebagai error, jangan ditimpa bundle lokal.
+    if (isLocalFallbackError(err)) {
+      const local = getLocalBundle(publicShareId)
+      if (local) return local
+    }
     throw err
   }
 }

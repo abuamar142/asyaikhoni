@@ -298,8 +298,10 @@
 
       <!-- Load more -->
       <div v-if="!loading && !error && hasMore" class="mt-10 flex flex-col items-center gap-3">
+        <!-- Angka total sudah tampil di meta row toolbar — jangan diulang
+             (audit #5); load-more hanya menampilkan progres muat. -->
         <span class="text-[11px] tracking-[0.16em] uppercase font-semibold text-stone-400">
-          {{ itemsList.length }} dari {{ totalAmalan }} dimuat
+          {{ itemsList.length }} amalan ditampilkan
         </span>
         <BaseButton
           variant="secondary"

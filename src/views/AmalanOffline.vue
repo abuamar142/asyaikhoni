@@ -65,7 +65,7 @@
           <div class="text-sm text-stone-500 mt-1.5">{{ allFolders.length }} folder · offline</div>
           <div class="mt-5 h-px w-24 bg-gradient-to-r from-transparent to-emerald-200"></div>
           <div class="mt-3 text-[11px] leading-[1.5] text-stone-500 max-w-[18rem] text-pretty">
-            Tersimpan di perangkat. Atur dalam folder dan bagikan sebagai koleksi.
+            Khusus di perangkat ini.
           </div>
         </template>
       </PageHero>
@@ -105,8 +105,9 @@
       </div>
 
     <div class="relative container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10">
-      <!-- Search toolbar — filter saved amalan client-side (judul/ringkasan) -->
-      <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-8">
+      <!-- Search toolbar — filter saved amalan client-side (judul/ringkasan).
+           Hidden while the collection is empty: nothing to search/count there. -->
+      <div v-if="!isCollectionEmpty" class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-8">
         <div class="flex-1 min-w-0">
           <SearchInput v-model="q" placeholder="Cari judul atau ringkasan amalan…" />
         </div>
@@ -240,7 +241,7 @@
 
       <!-- Search no-results -->
       <div
-        v-else-if="isSearching && !(allFolders.length === 0 && savedAmalan.length === 0)"
+        v-else-if="isSearching && !isCollectionEmpty"
         class="flex flex-col items-center justify-center py-16 md:py-20"
       >
         <EmptyState
@@ -263,7 +264,7 @@
       </div>
 
       <!-- Empty state -->
-      <div v-else-if="allFolders.length === 0 && savedAmalan.length === 0" class="flex flex-col items-center justify-center py-16 md:py-20">
+      <div v-else-if="isCollectionEmpty" class="flex flex-col items-center justify-center py-16 md:py-20">
         <EmptyState
           title="Belum ada amalan tersimpan"
           description="Jelajahi katalog dan ketuk “Simpan offline” pada halaman detail amalan untuk membacanya kapan saja tanpa koneksi."
@@ -473,6 +474,10 @@ const filteredAmalan = computed(() => {
 function resetSearch() {
   q.value = ''
 }
+
+// Empty when no folders AND no saved amalan — search toolbar is hidden in this
+// state (audit #1: the "0 amalan" row above the empty state was redundant).
+const isCollectionEmpty = computed(() => allFolders.value.length === 0 && savedAmalan.value.length === 0)
 
 async function loadData() {
   try {
