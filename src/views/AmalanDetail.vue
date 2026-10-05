@@ -551,6 +551,7 @@ const slug = computed(() => route.params.slug as string)
 const {
   data: amalan,
   isLoading: loadingAmalan,
+  isPending: pendingAmalan,
   isError: amalanError,
   suspense,
 } = useAmalanBySlugQuery(slug)
@@ -831,8 +832,17 @@ async function handleShare() {
   }
 }
 
+// getBySlug swallows errors into `null`, so a 404 resolves "successfully"
+// with no data — without the isPending gate the second clause stayed true
+// forever and the page kept showing the loading skeleton instead of the
+// Not Found state. Pending = query not settled yet; settled-null = not found.
 const loadingPage = computed(
-  () => loadingAmalan.value || (!effectiveAmalan.value && !amalanError.value && !hasOfflineFallback.value),
+  () =>
+    loadingAmalan.value ||
+    (pendingAmalan.value &&
+      !effectiveAmalan.value &&
+      !amalanError.value &&
+      !hasOfflineFallback.value),
 )
 </script>
 
