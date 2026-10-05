@@ -572,7 +572,7 @@ const {
   toggleRoot,
   saveToFolder,
   updateAllCopies,
-} = useOfflineAmalan(amalan as any, slug)
+} = useOfflineAmalan(amalan, slug)
 
 // effective amalan: online or offline fallback — also checks content JSON for old v1 records (HP)
 const hasOfflineFallback = computed(() => {
@@ -602,13 +602,13 @@ const effectiveAmalan = computed(() => {
       urutan: null,
       aktif: true,
       content_version: localData.value.content_version,
-    } as any
+    }
   }
   return null
 })
 
 const displayCategories = computed(() => {
-  return (effectiveAmalan.value?.categories as any[]) || []
+  return effectiveAmalan.value?.categories || []
 })
 
 // ── Per-page SEO head (injected into prerendered HTML + SPA client) ──
@@ -664,7 +664,7 @@ const seoHead = computed(() => {
 useHead(seoHead)
 
 const effectiveLyrics = computed(() => {
-  const online = (amalan.value as any)?.lyrics
+  const online = amalan.value?.lyrics
   if (online && Array.isArray(online) && online.length > 0) return online
   const offline = localData.value?.lyrics
   if (offline && Array.isArray(offline) && offline.length > 0) return offline
@@ -678,7 +678,7 @@ const effectiveLyrics = computed(() => {
 })
 
 const hasLyrics = computed(() => effectiveLyrics.value.length > 0)
-const hasAnyLatin = computed(() => effectiveLyrics.value.some((r: any) => !!r.latin))
+const hasAnyLatin = computed(() => effectiveLyrics.value.some((r) => !!r.latin))
 
 // Phase 6 UI state — folder picker modal
 const showSaveToFolderModal = ref(false)
@@ -713,21 +713,21 @@ function closeSaveToFolderModal() {
 
 async function confirmSaveToFolder() {
   const ok = await saveToFolder(saveTargetFolderId.value as number, {
-    amalan: effectiveAmalan.value as any,
-    lyrics: effectiveLyrics.value as any,
+    amalan: effectiveAmalan.value,
+    lyrics: effectiveLyrics.value,
   })
   if (ok) closeSaveToFolderModal()
 }
 
 async function toggleOffline() {
   await toggleRoot({
-    amalan: effectiveAmalan.value as any,
-    lyrics: effectiveLyrics.value as any,
+    amalan: effectiveAmalan.value,
+    lyrics: effectiveLyrics.value,
   })
 }
 
 async function updateOffline() {
-  await updateAllCopies(effectiveLyrics.value as any, amalan.value as any)
+  await updateAllCopies(effectiveLyrics.value, amalan.value)
 }
 
 const isAnyModalOpen = computed(() => showSettings.value || showSaveToFolderModal.value)
@@ -804,7 +804,7 @@ const hasTitleLatin = computed(() => !!latinTitle.value)
 const readingMinutes = computed(() => {
   const lyrics = effectiveLyrics.value
   if (!lyrics.length) return 0
-  const text = lyrics.map((r: any) => `${r.arab} ${r.latin || ''}`).join(' ')
+  const text = lyrics.map((r) => `${r.arab} ${r.latin || ''}`).join(' ')
   const words = text.trim().split(/\s+/).length
   return Math.max(1, Math.round(words / 180))
 })

@@ -436,7 +436,7 @@ import EmptyState from '@/components/ui/EmptyState.vue'
 import AmalanCard from '@/components/AmalanCard.vue'
 import BaseModal from '@/components/ui/BaseModal.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
-import { createShareBundle } from '@/services/shareService'
+import { createShareBundle, type ShareBundlePayload } from '@/services/shareService'
 import { toPlainLyrics } from '@/utils/lyric'
 import { buildBreadcrumb, collectDescendants, type Folder as TreeFolder } from '@/utils/folderTree'
 
@@ -615,7 +615,7 @@ const moveAmalan = ref<LocalSavedAmalan | null>(null)
 const moveNavId = ref<number | null>(null)
 const moveSelectedId = ref<number | null>(null)
 
-const moveSourceFolderId = computed(() => (moveAmalan.value as any)?.folder_id ?? 0)
+const moveSourceFolderId = computed(() => moveAmalan.value?.folder_id ?? 0)
 const disabledMoveIds = computed(() => new Set<number>([moveSourceFolderId.value]))
 
 function openMoveModal(item: LocalSavedAmalan) {
@@ -652,7 +652,7 @@ async function confirmMove() {
 async function moveToFolder(folderId: number) {
   if (!movingItem.value) return
 
-  const amalanId = String((movingItem.value as any).amalan_id ?? '')
+  const amalanId = String(movingItem.value?.amalan_id ?? '')
   if (!amalanId) {
     toast.error('Data amalan tidak valid.')
     return
@@ -670,15 +670,16 @@ async function moveToFolder(folderId: number) {
 
   try {
     await ensureDbReady()
-    const currentFolder = (movingItem.value as any).folder_id ?? 0
-    if ((movingItem.value as any).id != null) {
+    const currentFolder = movingItem.value.folder_id ?? 0
+    if (movingItem.value.id != null) {
       try {
-        await db.saved_amalan.update((movingItem.value as any).id!, { folder_id: folderId })
-      } catch (err: any) {
+        await db.saved_amalan.update(movingItem.value.id, { folder_id: folderId })
+      } catch (err: unknown) {
         // fallback for compound primary without ++id: delete old compound and add new
-        const msg = err?.name || err?.message || ''
+        const e = err as { name?: string; message?: string } | null | undefined
+        const msg = e?.name || e?.message || ''
         if (/ConstraintError|DataError|InvalidState/i.test(msg)) {
-          const oldData: any = { ...movingItem.value, folder_id: folderId }
+          const oldData: LocalSavedAmalan = { ...movingItem.value, folder_id: folderId }
           delete oldData.id
           const plain = JSON.parse(JSON.stringify(oldData))
           await db.saved_amalan.where('[amalan_id+folder_id]').equals([amalanId, currentFolder]).delete()
@@ -689,7 +690,7 @@ async function moveToFolder(folderId: number) {
       }
     } else {
       // no numeric id — use compound delete+add
-      const oldData: any = { ...movingItem.value, folder_id: folderId }
+      const oldData: LocalSavedAmalan = { ...movingItem.value, folder_id: folderId }
       const plain = JSON.parse(JSON.stringify(oldData))
       delete plain.id
       await db.saved_amalan.where('[amalan_id+folder_id]').equals([amalanId, currentFolder]).delete()
@@ -701,9 +702,10 @@ async function moveToFolder(folderId: number) {
     moveAmalan.value = null
     showMoveModal.value = false
     loadData()
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[offline] moveToFolder failed', err)
-    const msg = err?.message || ''
+    const e = err as { message?: string } | null | undefined
+    const msg = e?.message || ''
     if (/ConstraintError|already exists|unique/i.test(msg)) {
       toast.error('Sudah ada di folder tersebut')
     } else {
@@ -717,15 +719,15 @@ async function moveToFolder(folderId: number) {
 async function removeFromOffline(item: LocalSavedAmalan) {
   try {
     await ensureDbReady()
-    if ((item as any).id != null) {
+    if (item.id != null) {
       try {
-        await db.saved_amalan.delete((item as any).id)
+        await db.saved_amalan.delete(item.id)
       } catch {
         // fallback compound delete if primary is compound
-        await db.saved_amalan.where('[amalan_id+folder_id]').equals([String((item as any).amalan_id), (item as any).folder_id ?? 0]).delete()
+        await db.saved_amalan.where('[amalan_id+folder_id]').equals([String(item.amalan_id), item.folder_id ?? 0]).delete()
       }
     } else {
-      await db.saved_amalan.where('[amalan_id+folder_id]').equals([String((item as any).amalan_id), (item as any).folder_id ?? 0]).delete()
+      await db.saved_amalan.where('[amalan_id+folder_id]').equals([String(item.amalan_id), item.folder_id ?? 0]).delete()
     }
     toast.success('Dihapus dari koleksi offline.')
     loadData()
@@ -772,12 +774,12 @@ async function generateShare() {
     // Build plain sanitized items with lyrics + slug fallback
     const folderName = sharingData.value.folder ? sharingData.value.folder.name : null
 
-    const payload = {
+    const payload: ShareBundlePayload = {
       title: shareForm.value.title,
       description: shareForm.value.description,
       items: itemsToShare.map((item, idx) => {
         // Resolve lyrics: prefer item.lyrics, fallback to parsed content JSON (backwards compat)
-        let rawLyrics: any[] | null = null
+        let rawLyrics: LocalSavedAmalan['lyrics'] | null = null
         if (item.lyrics && Array.isArray(item.lyrics) && item.lyrics.length > 0) {
           rawLyrics = item.lyrics
         } else if (item.content) {
@@ -788,7 +790,7 @@ async function generateShare() {
             // ignore parse error, fallback to empty
           }
         }
-        const plainLyrics = rawLyrics ? toPlainLyrics(rawLyrics as any) : []
+        const plainLyrics = rawLyrics ? toPlainLyrics(rawLyrics) : []
 
         return {
           amalan_id: String(item.amalan_id ?? ''),
@@ -803,9 +805,9 @@ async function generateShare() {
     }
 
     // Ensure plain clone for DataCloneError safety (Vue proxies / Dexie)
-    const plainPayload = JSON.parse(JSON.stringify(payload))
+    const plainPayload = JSON.parse(JSON.stringify(payload)) as ShareBundlePayload
 
-    const result: any = await createShareBundle(plainPayload as any)
+    const result = await createShareBundle(plainPayload)
     shareResult.value = result
     // Offline-first fallback: if server 404/network, shareService returns is_local=true
     if (result?.is_local) {
@@ -820,9 +822,10 @@ async function generateShare() {
         await navigator.clipboard.writeText(result.share_url)
       } catch {}
     }
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Error generating share bundle:', err)
-    const message = err?.message || ''
+    const e = err as { message?: string } | null | undefined
+    const message = e?.message || ''
     // Show specific error from shareService, not generic offline message
     if (message === 'Anda sedang offline') toast.error('Anda sedang offline')
     else if (message === 'Periksa koneksi internet') toast.error('Periksa koneksi internet')
