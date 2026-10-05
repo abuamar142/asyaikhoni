@@ -17,7 +17,7 @@ export async function fetchAmalanSlugs(): Promise<string[]> {
     const json = await res.json()
     const amalan = json?.data?.amalan
     if (!Array.isArray(amalan)) return []
-    return amalan.map((a: any) => String(a?.slug)).filter(Boolean)
+    return amalan.map((a: { slug?: string }) => String(a?.slug)).filter(Boolean)
   } catch {
     return []
   }
