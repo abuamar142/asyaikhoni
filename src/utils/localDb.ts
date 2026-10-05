@@ -51,7 +51,7 @@ export class MyDatabase extends Dexie {
         await tx
           .table('saved_amalan')
           .toCollection()
-          .modify((item: any) => {
+          .modify((item: Partial<LocalSavedAmalan>) => {
             if (!item.lyrics && item.content) {
               try {
                 const parsed = JSON.parse(item.content)
@@ -78,7 +78,7 @@ export class MyDatabase extends Dexie {
         return tx
           .table('folders')
           .toCollection()
-          .modify((f: any) => {
+          .modify((f: Partial<LocalFolder>) => {
             if (f.parent_id === undefined) f.parent_id = null
           })
       })
@@ -91,13 +91,13 @@ export class MyDatabase extends Dexie {
       .upgrade(async (tx) => {
         const table = tx.table('saved_amalan')
         // ensure folder_id defaults to 0 (root) for old records
-        await table.toCollection().modify((item: any) => {
+        await table.toCollection().modify((item: Partial<LocalSavedAmalan>) => {
           if (item.folder_id == null) item.folder_id = 0
         })
         // deduplicate by [amalan_id+folder_id], keep newest by saved_at/last_synced_at
         const all = await table.toArray()
-        const grouped = new Map<string, any[]>()
-        for (const item of all) {
+        const grouped = new Map<string, Partial<LocalSavedAmalan>[]>()
+        for (const item of all as Partial<LocalSavedAmalan>[]) {
           const amalanId = String(item.amalan_id ?? '')
           const folderId = item.folder_id ?? 0
           const key = `${amalanId}::${folderId}`
@@ -106,7 +106,7 @@ export class MyDatabase extends Dexie {
         }
         for (const [, items] of grouped) {
           if (items.length > 1) {
-            items.sort((a: any, b: any) => {
+            items.sort((a, b) => {
               const at = a.saved_at ?? a.last_synced_at ?? 0
               const bt = b.saved_at ?? b.last_synced_at ?? 0
               return bt - at
@@ -168,9 +168,10 @@ if (typeof window !== 'undefined') {
 export async function ensureDbReady(): Promise<void> {
   try {
     if (!db.isOpen()) await db.open()
-  } catch (err: any) {
-    const name = err?.name || ''
-    const msg = err?.message || String(err)
+  } catch (err: unknown) {
+    const e = err as { name?: string; message?: string } | null | undefined
+    const name = e?.name || ''
+    const msg = e?.message || String(err)
     const isVersionErr = /VersionError|SchemaError|UpgradeError|DatabaseClosed/i.test(name + ' ' + msg)
     if (isVersionErr) {
       console.error('[localDb] VersionError opening DB — closing and reloading to load new version', err)
