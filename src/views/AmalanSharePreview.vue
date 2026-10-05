@@ -83,9 +83,10 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppHeader from '@/components/layout/AppHeader.vue'
-import { getShareBundle, getLocalBundle, isLocalFallbackError } from '@/services/shareService'
-import { downloadMarkdown, getById } from '@/services/amalanService'
-import { db, type LocalFolder, ensureDbReady, isIndexedDBAvailable } from '@/utils/localDb'
+import { getShareBundle, getLocalBundle, isLocalFallbackError, type RawShareBundle } from '@/services/shareService'
+import { downloadMarkdown, getById, type Amalan } from '@/services/amalanService'
+import { db, type LocalFolder, type LocalSavedAmalan, ensureDbReady, isIndexedDBAvailable } from '@/utils/localDb'
+import type { LyricRow } from '@/utils/lyric'
 import { 
   Download, BookOpen, Calendar, FileText, Folder, AlertCircle 
 } from 'lucide-vue-next'
@@ -99,8 +100,20 @@ const toast = useToast()
 // sebelum masuk ke ref (boundary state tanpa `any`, audit #4).
 type ShareBundleItemView = {
   id: string | number
+  amalan_id?: string
+  title?: string
+  slug?: string
   folder_path?: string | null
-  amalan: { judul: string; ringkasan?: string | null }
+  sort_order?: number
+  version_at_share?: number
+  lyrics?: unknown[]
+  amalan: {
+    judul?: string
+    ringkasan?: string | null
+    slug?: string
+    lyrics?: unknown[]
+    folder_path?: string | null
+  }
 }
 type ShareBundleView = {
   title: string
@@ -122,17 +135,18 @@ const importLabel = computed(() =>
   importing.value ? `Mengimpor... (${importedCount.value}/${importTotal.value})` : 'Impor Koleksi'
 )
 
-function normalizeBundle(raw: any): any {
-  if (!raw) return raw
+function normalizeBundle(raw: RawShareBundle | null | undefined): ShareBundleView | null {
+  if (!raw) return null
   const b = { ...raw }
   // ensure share_bundle_items exists
   if (!Array.isArray(b.share_bundle_items)) {
     if (Array.isArray(b.shareBundleItems)) b.share_bundle_items = b.shareBundleItems
     else if (Array.isArray(b.items)) {
-      b.share_bundle_items = b.items.map((it: any, idx: number) => ({
+      b.share_bundle_items = b.items.map((it, idx) => ({
         id: `${b.public_share_id ?? b.id ?? 'local'}-${idx}`,
         amalan_id: it.amalan_id ?? it.slug ?? '',
-        title: it.title ?? (it as any).judul ?? '',
+        title: it.title ?? it.judul ?? '',
+        judul: it.title ?? it.judul ?? '',
         slug: it.slug ?? it.amalan_id ?? '',
         folder_path: it.folder_path ?? null,
         sort_order: it.sort_order ?? idx,
@@ -140,10 +154,10 @@ function normalizeBundle(raw: any): any {
         lyrics: it.lyrics ?? [],
         amalan: {
           id: it.amalan_id ?? it.slug ?? '',
-          judul: it.title ?? (it as any).judul ?? '',
-          title: it.title ?? (it as any).judul ?? '',
+          judul: it.title ?? it.judul ?? '',
+          title: it.title ?? it.judul ?? '',
           slug: it.slug ?? it.amalan_id ?? '',
-          ringkasan: (it as any).ringkasan ?? null,
+          ringkasan: it.ringkasan ?? null,
           lyrics: it.lyrics ?? [],
           folder_path: it.folder_path ?? null,
         },
@@ -154,19 +168,19 @@ function normalizeBundle(raw: any): any {
     }
   }
   // ensure each item has amalan sub-object
-  b.share_bundle_items = (b.share_bundle_items as any[]).map((it: any) => ({
+  b.share_bundle_items = b.share_bundle_items.map((it) => ({
     ...it,
     amalan: it.amalan ?? {
       id: it.amalan_id ?? it.slug ?? '',
-      judul: it.title ?? (it as any).judul ?? '',
-      title: it.title ?? (it as any).judul ?? '',
+      judul: it.title ?? it.judul ?? '',
+      title: it.title ?? it.judul ?? '',
       slug: it.slug ?? it.amalan_id ?? '',
-      ringkasan: (it as any).ringkasan ?? null,
+      ringkasan: it.ringkasan ?? null,
       lyrics: it.lyrics ?? [],
     },
     folder_path: it.folder_path ?? it.amalan?.folder_path ?? null,
   }))
-  return b
+  return { ...b, share_bundle_items: b.share_bundle_items } as ShareBundleView
 }
 
 // Load sequence: hanya invokasi terbaru yang boleh menulis state, supaya
@@ -252,7 +266,7 @@ async function mapWithConcurrency<T, R>(
  * this import via `folderMap`. Sequential — a parent folder must exist before
  * its children.
  */
-async function resolveFolderId(item: any, folderMap: Map<string, number>): Promise<number> {
+async function resolveFolderId(item: ShareBundleItemView, folderMap: Map<string, number>): Promise<number> {
   if (!item.folder_path) return 0
 
   const parts = item.folder_path.split('/').map((s: string) => s.trim()).filter(Boolean)
@@ -291,12 +305,13 @@ async function resolveFolderId(item: any, folderMap: Map<string, number>): Promi
  * the server, and upserts by the compound key [amalan_id+folder_id] so the same
  * amalan can live in different folders.
  */
-async function importShareItem(item: any, folder_id: number): Promise<void> {
+async function importShareItem(item: ShareBundleItemView, folder_id: number): Promise<void> {
   // Try to fetch full amalan from server, but fallback to bundle data for offline/local shares
-  let fullAmalan: any = null
+  let fullAmalan: Amalan | null = null
   let contentFromServer: string | null = null
   try {
-    fullAmalan = await getById(item.amalan_id)
+    // String(undefined) → 'undefined' — sama dengan perilaku lama (item apa adanya)
+    fullAmalan = await getById(String(item.amalan_id))
     if (fullAmalan) {
       try { contentFromServer = await downloadMarkdown(fullAmalan.id) } catch {}
     }
@@ -306,16 +321,18 @@ async function importShareItem(item: any, folder_id: number): Promise<void> {
   }
 
   // Prefer bundle lyrics (offline-first), fallback to server lyrics
-  let plainLyrics: any[] | null = null
-  const bundleLyrics = (item as any).lyrics || (item.amalan as any)?.lyrics
+  let plainLyrics: LyricRow[] | null = null
+  const bundleLyrics = (item.lyrics || item.amalan?.lyrics) as
+    | Array<{ id?: unknown; arab?: unknown; latin?: unknown }>
+    | undefined
   if (Array.isArray(bundleLyrics) && bundleLyrics.length > 0) {
-    plainLyrics = JSON.parse(JSON.stringify(bundleLyrics.map((r: any) => ({
+    plainLyrics = JSON.parse(JSON.stringify(bundleLyrics.map((r: { id?: unknown; arab?: unknown; latin?: unknown }) => ({
       ...(r?.id != null ? { id: String(r.id) } : {}),
       arab: String(r?.arab ?? ''),
       latin: r?.latin == null ? null : String(r.latin),
     }))))
-  } else if (fullAmalan && Array.isArray((fullAmalan as any).lyrics) && (fullAmalan as any).lyrics.length > 0) {
-    plainLyrics = JSON.parse(JSON.stringify((fullAmalan as any).lyrics.map((r: any) => ({
+  } else if (fullAmalan && Array.isArray(fullAmalan.lyrics) && fullAmalan.lyrics.length > 0) {
+    plainLyrics = JSON.parse(JSON.stringify(fullAmalan.lyrics.map((r) => ({
       ...(r?.id != null ? { id: String(r.id) } : {}),
       arab: String(r?.arab ?? ''),
       latin: r?.latin == null ? null : String(r.latin),
@@ -325,10 +342,10 @@ async function importShareItem(item: any, folder_id: number): Promise<void> {
   // Determine metadata — prefer server, fallback to bundle
   const amalanIdStr = String(fullAmalan?.id ?? item.amalan_id ?? '')
   if (!amalanIdStr) return
-  const judul = String(fullAmalan?.judul ?? item.amalan?.judul ?? (item as any).title ?? '')
-  const slug = String(fullAmalan?.slug ?? item.amalan?.slug ?? (item as any).slug ?? amalanIdStr)
-  const ringkasan = fullAmalan?.ringkasan ?? item.amalan?.ringkasan ?? (item as any).ringkasan ?? null
-  const contentVersion = Number(fullAmalan?.content_version ?? (item as any).version_at_share ?? 1)
+  const judul = String(fullAmalan?.judul ?? item.amalan?.judul ?? item.title ?? '')
+  const slug = String(fullAmalan?.slug ?? item.amalan?.slug ?? item.slug ?? amalanIdStr)
+  const ringkasan = fullAmalan?.ringkasan ?? item.amalan?.ringkasan ?? null
+  const contentVersion = Number(fullAmalan?.content_version ?? item.version_at_share ?? 1)
   const serverUpdatedAt = String(fullAmalan?.updated_at ?? bundle.value?.updated_at ?? bundle.value?.created_at ?? new Date().toISOString())
   const content = plainLyrics ? JSON.stringify(plainLyrics) : (contentFromServer ?? '[]')
 
@@ -336,14 +353,14 @@ async function importShareItem(item: any, folder_id: number): Promise<void> {
   // — still allow import with empty lyrics but with bundle title (useful for local fallback)
 
   // Compound check: allow same amalan in different folders
-  let existingLocal: any = null
+  let existingLocal: LocalSavedAmalan | null | undefined = null
   try {
     existingLocal = await db.saved_amalan.where('[amalan_id+folder_id]').equals([amalanIdStr, folder_id]).first()
   } catch (e) {
     console.error('[share] compound check failed, fallback to amalan_id', e)
-    try { existingLocal = await db.saved_amalan.where('amalan_id').equals(amalanIdStr).first() } catch {}
+    try { existingLocal = await db.saved_amalan.where('amalan_id').equals(amalanIdStr).first() ?? null } catch {}
   }
-  const basePayload: any = {
+  const basePayload: Partial<LocalSavedAmalan> = {
     folder_id,
     content,
     content_version: contentVersion,
@@ -363,7 +380,7 @@ async function importShareItem(item: any, folder_id: number): Promise<void> {
       await db.saved_amalan.where('[amalan_id+folder_id]').equals([amalanIdStr, folder_id]).modify(plainBase)
     }
   } else {
-    const newRec: any = JSON.parse(JSON.stringify({
+    const newRec: LocalSavedAmalan = JSON.parse(JSON.stringify({
       amalan_id: amalanIdStr,
       judul,
       slug,
@@ -397,7 +414,7 @@ async function importBundle() {
     }
     try { await ensureDbReady() } catch {}
     const folderMap = new Map<string, number>()
-    const items: any[] = bundle.value.share_bundle_items
+    const items: ShareBundleItemView[] = bundle.value.share_bundle_items
 
     // Phase 1 — recreate the folder hierarchy for every item. Kept sequential
     // because parent folders must exist before children (shared `folderMap`).
@@ -409,7 +426,7 @@ async function importBundle() {
     // Collapse duplicate [amalan_id+folder_id] entries (last occurrence wins —
     // same final state as the old sequential update-last flow) so concurrent
     // workers never race on the unique compound index.
-    const workItems: Array<{ item: any; folder_id: number }> = []
+    const workItems: Array<{ item: ShareBundleItemView; folder_id: number }> = []
     {
       const lastIndex = new Map<string, number>()
       for (let i = 0; i < items.length; i++) {

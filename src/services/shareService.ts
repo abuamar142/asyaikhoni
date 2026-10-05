@@ -15,24 +15,129 @@ export interface ShareBundlePayload {
   }[]
 }
 
+/** Baris lyric yang sudah dishaping di dalam bundle share. */
+export interface ShareBundleLyric {
+  id?: string
+  arab: string
+  latin: string | null
+}
+
+/** Item bundle hasil buildLocalBundle — bentuk pasti bundle lokal. */
+export interface ShareBundleItem {
+  id: string
+  amalan_id: string
+  title: string
+  slug: string
+  folder_path: string | null
+  sort_order: number
+  version_at_share: number
+  lyrics: ShareBundleLyric[]
+  amalan: {
+    id: string
+    judul: string
+    title: string
+    slug: string
+    ringkasan: null
+    lyrics: ShareBundleLyric[]
+    folder_path: string | null
+  }
+  _raw: ShareBundlePayload['items'][number]
+}
+
+/** Bundle lokal yang dibangun buildLocalBundle (offline-first share). */
+export interface LocalShareBundle {
+  public_share_id: string
+  id: string
+  title: string
+  description: string | null
+  items: ShareBundlePayload['items']
+  share_bundle_items: ShareBundleItem[]
+  shareBundleItems: ShareBundleItem[]
+  created_at: string
+  updated_at: string
+  createdAt: string
+  updatedAt: string
+  is_local: true
+  _local: true
+}
+
+/** Item bundle mentah dari server — field longgar karena versi API bisa
+ *  berbeda; konsumen (AmalanSharePreview) menormalkan lewat normalizeBundle. */
+export interface RawShareBundleItem {
+  id?: string | number
+  amalan_id?: string
+  title?: string
+  judul?: string
+  slug?: string
+  ringkasan?: string | null
+  folder_path?: string | null
+  sort_order?: number
+  version_at_share?: number
+  lyrics?: unknown[]
+  amalan?: {
+    id?: string | number
+    judul?: string
+    title?: string
+    slug?: string
+    ringkasan?: string | null
+    lyrics?: unknown[]
+    folder_path?: string | null
+  } | null
+  _raw?: unknown
+}
+
+/** Bundle mentah dari server — field opsional, ternormalisasi di view. */
+export interface RawShareBundle {
+  public_share_id?: string
+  id?: string | number
+  title?: string
+  description?: string | null
+  items?: RawShareBundleItem[]
+  share_bundle_items?: RawShareBundleItem[]
+  shareBundleItems?: RawShareBundleItem[]
+  created_at?: string
+  updated_at?: string
+  createdAt?: string
+  updatedAt?: string
+  is_local?: boolean
+  _local?: boolean
+}
+
+/** Hasil createShareBundle — link share siap pakai (server atau lokal). */
+export interface CreateShareResult {
+  public_share_id: string
+  share_url: string
+  is_local: boolean
+}
+
+/** Respons API create share — data wrapper sudah dilepas httpClient;
+ *  bentuknya longgar karena server bisa membalas `{bundle}` atau datar. */
+interface CreateShareResponse {
+  bundle?: { public_share_id?: string }
+  public_share_id?: string
+  share_url?: string
+  id?: string
+  is_local?: boolean
+}
+
 const LOCAL_PREFIX = 'share_bundle:'
 
 function generateLocalId(): string {
   try {
-    if (typeof crypto !== 'undefined' && typeof (crypto as any).randomUUID === 'function') {
-      return (crypto as any).randomUUID().slice(0, 8)
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+      return crypto.randomUUID().slice(0, 8)
     }
   } catch {}
   return Math.random().toString(36).slice(2, 10)
 }
 
-function saveLocalBundle(id: string, bundle: any) {
+function saveLocalBundle(id: string, bundle: LocalShareBundle) {
   try {
     localStorage.setItem(LOCAL_PREFIX + id, JSON.stringify(bundle))
   } catch {}
 }
 
-export function getLocalBundle(id: string): any | null {
+export function getLocalBundle(id: string): RawShareBundle | null {
   try {
     const raw = localStorage.getItem(LOCAL_PREFIX + id)
     if (!raw) return null
@@ -42,18 +147,18 @@ export function getLocalBundle(id: string): any | null {
   }
 }
 
-function buildLocalBundle(payload: ShareBundlePayload, public_share_id: string) {
+function buildLocalBundle(payload: ShareBundlePayload, public_share_id: string): LocalShareBundle {
   const now = new Date().toISOString()
-  const items = payload.items.map((it, idx) => ({
-    amalan_id: String((it as any).amalan_id ?? ''),
-    title: String((it as any).title ?? ''),
-    slug: String((it as any).slug ?? (it as any).amalan_id ?? ''),
-    lyrics: Array.isArray((it as any).lyrics) ? (it as any).lyrics : [],
-    folder_path: (it as any).folder_path == null ? null : String((it as any).folder_path),
-    sort_order: Number((it as any).sort_order ?? idx),
-    version_at_share: Number((it as any).version_at_share ?? 1),
+  const items: ShareBundlePayload['items'] = payload.items.map((it, idx) => ({
+    amalan_id: String(it.amalan_id ?? ''),
+    title: String(it.title ?? ''),
+    slug: String(it.slug ?? it.amalan_id ?? ''),
+    lyrics: Array.isArray(it.lyrics) ? it.lyrics : [],
+    folder_path: it.folder_path == null ? null : String(it.folder_path),
+    sort_order: Number(it.sort_order ?? idx),
+    version_at_share: Number(it.version_at_share ?? 1),
   }))
-  const share_bundle_items = items.map((it: any, idx: number) => ({
+  const share_bundle_items: ShareBundleItem[] = items.map((it, idx) => ({
     id: `${public_share_id}-${idx}`,
     amalan_id: it.amalan_id,
     title: it.title,
@@ -90,17 +195,17 @@ function buildLocalBundle(payload: ShareBundlePayload, public_share_id: string) 
   }
 }
 
-export async function createShareBundle(payload: ShareBundlePayload) {
+export async function createShareBundle(payload: ShareBundlePayload): Promise<CreateShareResult> {
   // Plain clone to avoid DataCloneError from Vue reactive proxies / Dexie objects
   const plainPayload = JSON.parse(JSON.stringify(payload)) as ShareBundlePayload
 
   // Ensure each item's lyrics is a plain sanitized array
   if (plainPayload.items && Array.isArray(plainPayload.items)) {
-    plainPayload.items = plainPayload.items.map((item: any) => ({
+    plainPayload.items = plainPayload.items.map((item) => ({
       amalan_id: String(item.amalan_id ?? ''),
       title: String(item.title ?? ''),
       slug: String(item.slug ?? item.amalan_id ?? ''),
-      lyrics: Array.isArray(item.lyrics) ? toPlainLyrics(item.lyrics as any) : [],
+      lyrics: Array.isArray(item.lyrics) ? toPlainLyrics(item.lyrics) : [],
       folder_path: item.folder_path == null ? null : String(item.folder_path),
       sort_order: Number(item.sort_order ?? 0),
       version_at_share: Number(item.version_at_share ?? 1),
@@ -108,24 +213,23 @@ export async function createShareBundle(payload: ShareBundlePayload) {
   }
 
   try {
-    const result = await api.post<{ bundle: { public_share_id: string } }>(
+    const result = await api.post<CreateShareResponse & RawShareBundle>(
       '/api/v1/asyaikhoni/share',
       plainPayload,
     )
-    const bundleId =
-      (result as any)?.bundle?.public_share_id ??
-      (result as any)?.public_share_id ??
-      (result as any)?.id
+    const bundleId = result?.bundle?.public_share_id ?? result?.public_share_id ?? result?.id
     if (!bundleId) throw new Error('Gagal membuat link share.')
     return {
       public_share_id: bundleId,
       share_url: `${window.location.origin}/amalan/share/${bundleId}`,
-      is_local: false as const,
+      is_local: false,
     }
-  } catch (err: any) {
-    const message: string = err?.message || String(err) || ''
-    const name: string = err?.name || ''
-    const status: number | undefined = err?.status ?? err?.statusCode ?? err?.code
+  } catch (err: unknown) {
+    // httpClient errors: Error + status/statusCode/code; fetch failures: TypeError.
+    const e = err as { message?: string; name?: string; status?: number; statusCode?: number; code?: number } | null | undefined
+    const message: string = e?.message || String(err) || ''
+    const name: string = e?.name || ''
+    const status: number | undefined = e?.status ?? e?.statusCode ?? e?.code
 
     if (
       /Failed to fetch|NetworkError|Network request failed|Load failed/i.test(message) ||
@@ -138,7 +242,7 @@ export async function createShareBundle(payload: ShareBundlePayload) {
       return {
         public_share_id: localId,
         share_url: `${window.location.origin}/amalan/share/${localId}`,
-        is_local: true as const,
+        is_local: true,
       }
     }
 
@@ -150,7 +254,7 @@ export async function createShareBundle(payload: ShareBundlePayload) {
       return {
         public_share_id: localId,
         share_url: `${window.location.origin}/amalan/share/${localId}`,
-        is_local: true as const,
+        is_local: true,
       }
     }
 
@@ -187,9 +291,11 @@ export function isLocalFallbackError(err: unknown): boolean {
   return isNetworkError || is404
 }
 
-export async function getShareBundle(publicShareId: string): Promise<unknown> {
+export async function getShareBundle(publicShareId: string): Promise<RawShareBundle> {
   try {
-    const result = await api.get<{ bundle?: unknown }>(`/api/v1/asyaikhoni/share/${publicShareId}`)
+    const result = await api.get<RawShareBundle & { bundle?: RawShareBundle }>(
+      `/api/v1/asyaikhoni/share/${publicShareId}`,
+    )
     return result?.bundle ?? result
   } catch (err: unknown) {
     // 401/403/5xx harus surface sebagai error, jangan ditimpa bundle lokal.
