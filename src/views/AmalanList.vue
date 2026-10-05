@@ -476,11 +476,6 @@ function resetFilters() {
   tempSelectedKategoriIds.value = []
 }
 
-function resetKategori() {
-  selectedKategoriIds.value = []
-  tempSelectedKategoriIds.value = []
-}
-
 function resetKategoriTemp() {
   tempSelectedKategoriIds.value = []
 }

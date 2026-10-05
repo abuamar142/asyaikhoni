@@ -407,7 +407,6 @@ import AppHeader from '@/components/layout/AppHeader.vue'
 import PageHero from '@/components/ui/PageHero.vue'
 import { ref, computed, onMounted } from 'vue'
 import { useBodyLock } from '@/composables/useBodyLock'
-import { useEsc } from '@/composables/useEsc'
 import { useDebouncedRef } from '@/composables/useDebouncedRef'
 import { db, type LocalSavedAmalan, type LocalFolder, ensureDbReady, isIndexedDBAvailable } from '@/utils/localDb'
 import {
@@ -423,7 +422,6 @@ import {
   ChevronRight,
   Copy,
   CheckCircle,
-  X,
   ArrowLeft,
   Library,
   Search,
@@ -594,11 +592,6 @@ function openFolder(folder: LocalFolder) {
   loadData()
 }
 
-function closeFolder() {
-  currentFolderId.value = null
-  loadData()
-}
-
 function goToRoot() {
   currentFolderId.value = null
   loadData()
@@ -606,16 +599,6 @@ function goToRoot() {
 
 function goToBreadcrumb(folder: TreeFolder) {
   currentFolderId.value = folder.id!
-  loadData()
-}
-
-// kept for template backward compat if referenced elsewhere
-function goBack() {
-  if (currentFolder.value?.parent_id != null) {
-    currentFolderId.value = currentFolder.value.parent_id
-  } else {
-    currentFolderId.value = null
-  }
   loadData()
 }
 
@@ -627,21 +610,8 @@ const moveAmalan = ref<LocalSavedAmalan | null>(null)
 const moveNavId = ref<number | null>(null)
 const moveSelectedId = ref<number | null>(null)
 
-const displayMoveFolders = computed(() => allFolders.value.filter((f) => (f.parent_id ?? null) === moveNavId.value))
-const moveBreadcrumb = computed(() => buildBreadcrumb(moveNavId.value, allFolders.value))
-const moveTargetFolderId = computed(() => moveSelectedId.value ?? moveNavId.value ?? 0)
 const moveSourceFolderId = computed(() => (moveAmalan.value as any)?.folder_id ?? 0)
-const isMoveToCurrentFolder = computed(() => moveSourceFolderId.value === moveTargetFolderId.value)
-const moveCurrentFolder = computed<LocalFolder | null>(() => {
-  if (moveNavId.value == null) return null
-  return allFolders.value.find((f) => f.id === moveNavId.value) ?? null
-})
 const disabledMoveIds = computed(() => new Set<number>([moveSourceFolderId.value]))
-
-function showMoveToFolder(item: LocalSavedAmalan) {
-  // legacy entry point — delegate to drill-down modal
-  openMoveModal(item)
-}
 
 function openMoveModal(item: LocalSavedAmalan) {
   moveAmalan.value = item
@@ -656,26 +626,6 @@ function closeMoveModal() {
   moveAmalan.value = null
   movingItem.value = null
   moveSelectedId.value = null
-}
-
-function enterMoveFolder(folder: LocalFolder) {
-  if (folder.id == null) return
-  moveNavId.value = folder.id
-}
-
-function moveGoBack() {
-  if (moveNavId.value == null) return
-  const cur = allFolders.value.find((f) => f.id === moveNavId.value)
-  moveNavId.value = cur?.parent_id ?? null
-}
-
-function moveGoRoot() {
-  moveNavId.value = null
-}
-
-function moveGoToCrumb(folder: LocalFolder) {
-  if (folder.id == null) return
-  moveNavId.value = folder.id
 }
 
 async function confirmMove() {

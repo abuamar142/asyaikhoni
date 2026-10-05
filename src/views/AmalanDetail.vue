@@ -522,7 +522,6 @@ import {
   Sun,
   Moon,
   Type,
-  X,
   RotateCcw,
   FolderPlus,
 } from 'lucide-vue-next'
@@ -532,7 +531,6 @@ import FolderPicker from '@/components/FolderPicker.vue'
 import { getFolderDepth } from '@/utils/folderTree'
 import { useOfflineAmalan } from '@/composables/useOfflineAmalan'
 import { useBodyLock } from '@/composables/useBodyLock'
-import { useEsc } from '@/composables/useEsc'
 import EmptyState from '@/components/ui/EmptyState.vue'
 import PaperCard from '@/components/ui/PaperCard.vue'
 import LyricRow from '@/components/LyricRow.vue'
@@ -544,7 +542,6 @@ const toast = useToast()
 const { showLatin, toggleLatin, fontSize, isDark, increase, decrease, setFontSize, resetFontSize, toggleDark } = useLyricSettings()
 
 const showSettings = ref(false)
-const settingsCardRef = ref<HTMLElement | null>(null)
 
 const slug = computed(() => route.params.slug as string)
 
@@ -567,7 +564,6 @@ const {
   hasUpdate: hasUpdateAvailable,
   allFolders,
   isSaving,
-  isSavingToFolder,
   loadFolders,
   checkStatus: checkOfflineStatus,
   toggleRoot,

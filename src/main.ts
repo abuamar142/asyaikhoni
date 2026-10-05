@@ -82,7 +82,7 @@ export const createApp = ViteSSG(
  * mirroring vite-ssg's default filter — see DefaultIncludedRoutes) plus one exact
  * real path per amalan slug fetched from the API, e.g. `/amalan/nurul-huda-wal-haqq`.
  */
-export async function includedRoutes(paths: string[], routes: any[]) {
+export async function includedRoutes(paths: string[]) {
   const staticPaths = paths.filter((p) => !p.includes(':') && !p.includes('*'))
   const slugs = await fetchAmalanSlugs()
   return staticPaths.concat(slugs.map((s: string) => `/amalan/${s}`))
