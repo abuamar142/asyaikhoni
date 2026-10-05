@@ -329,6 +329,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useHead } from '@unhead/vue'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import PageHero from '@/components/ui/PageHero.vue'
@@ -362,6 +363,9 @@ const tempSelectedKategoriIds = ref<string[]>([])
 const showCategoryDropdown = ref(false)
 const dropdownRef = ref<HTMLElement | null>(null)
 
+const route = useRoute()
+const router = useRouter()
+
 const { data: categories } = useCategoryListQuery()
 const categoryOptions = computed<Category[]>(() => categories?.value || [])
 const activeCategoryLabel = computed(() => {
@@ -388,8 +392,38 @@ const queryParams = computed(() => ({
   limit: limit.value,
 }))
 
+// ── URL query sync — deep-linking + back/forward for search & kategori filters ──
+// State → URL; driven by the debounced watch below.
+function syncFiltersToRoute() {
+  const qValue = qDebounced.value || undefined
+  const kategoriValue = selectedKategoriIds.value.join(',') || undefined
+  const currentQ = typeof route.query.q === 'string' ? route.query.q : undefined
+  const currentKategori = typeof route.query.kategori === 'string' ? route.query.kategori : undefined
+  if (currentQ === qValue && currentKategori === kategoriValue) return
+  router.replace({ query: { ...route.query, q: qValue, kategori: kategoriValue } })
+}
+
+// URL → state (deep link on mount + browser back/forward).
+watch(
+  [() => route.query.q, () => route.query.kategori],
+  ([qParam, kategoriParam]) => {
+    const qValue = typeof qParam === 'string' ? qParam : ''
+    if (qValue !== q.value) q.value = qValue
+    const ids =
+      typeof kategoriParam === 'string' && kategoriParam
+        ? kategoriParam.split(',').filter(Boolean)
+        : []
+    if (ids.join(',') !== selectedKategoriIds.value.join(',')) {
+      selectedKategoriIds.value = ids
+      tempSelectedKategoriIds.value = [...ids]
+    }
+  },
+  { immediate: true },
+)
+
 watch([qDebounced, selectedKategoriIds], () => {
   limit.value = PAGE_SIZE
+  syncFiltersToRoute()
 })
 
 const { data, isLoading: loading, isFetching, error } = useAmalanListQuery(queryParams)

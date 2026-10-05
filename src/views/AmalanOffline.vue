@@ -144,8 +144,12 @@
           <div
             v-for="folder in displayFolders"
             :key="folder.id"
-            class="group relative p-5 md:p-6 rounded-[18px] border border-[#e8e6de] bg-white hover:border-emerald-200 hover:shadow-[0_12px_28px_rgba(16,40,22,0.08)] hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
+            class="group relative p-5 md:p-6 rounded-[18px] border border-[#e8e6de] bg-white hover:border-emerald-200 hover:shadow-[0_12px_28px_rgba(16,40,22,0.08)] hover:-translate-y-0.5 transition-all duration-300 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30"
+            role="button"
+            tabindex="0"
             @click="openFolder(folder)"
+            @keydown.enter.prevent="openFolder(folder)"
+            @keydown.space.prevent="openFolder(folder)"
           >
             <div class="absolute top-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-emerald-200/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
             <div class="flex items-center gap-4">
@@ -162,6 +166,7 @@
                   pill
                   class="w-8 h-8 !p-0 shrink-0"
                   title="Bagikan folder"
+                  aria-label="Bagikan folder"
                   @click.stop="startShare(folder)"
                 >
                   <Share2 class="w-3.5 h-3.5" />
@@ -170,6 +175,7 @@
                   variant="ghost"
                   pill
                   class="w-8 h-8 !p-0 shrink-0"
+                  aria-label="Edit folder"
                   @click.stop="editFolder(folder)"
                 >
                   <Edit2 class="w-3.5 h-3.5" />
@@ -178,6 +184,7 @@
                   variant="ghost"
                   pill
                   class="w-8 h-8 !p-0 shrink-0 !border-red-200 !text-red-600 hover:!bg-red-50"
+                  aria-label="Hapus folder"
                   @click.stop="confirmDeleteFolder(folder)"
                 >
                   <Trash2 class="w-3.5 h-3.5" />
@@ -215,14 +222,14 @@
           mode="offline"
         >
           <template #actions>
-            <BaseButton variant="ghost" pill class="w-8 h-8 !p-0" title="Pindahkan ke folder" @click="openMoveModal(item)">
+            <BaseButton variant="ghost" pill class="w-8 h-8 !p-0" aria-label="Pindahkan ke folder" @click="openMoveModal(item)">
               <Move class="w-3.5 h-3.5" />
             </BaseButton>
             <BaseButton
               variant="ghost"
               pill
               class="w-8 h-8 !p-0 !border-red-200 !text-stone-500 hover:!bg-red-50 hover:!text-red-600 hover:!border-red-200"
-              title="Hapus dari offline"
+              aria-label="Hapus dari offline"
               @click="removeFromOffline(item)"
             >
               <Trash2 class="w-3.5 h-3.5" />
@@ -295,6 +302,8 @@
         <input
           v-model="folderForm.name"
           type="text"
+          name="folder-name"
+          autocomplete="off"
           placeholder="Contoh: Wirid Harian"
           class="w-full px-4 py-3 rounded-xl border border-[#d7ddd7] bg-white text-[14px] text-[#12291a] placeholder:text-stone-400 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-300 transition-all"
           @keyup.enter="saveFolder"
@@ -351,11 +360,11 @@
         <div v-if="!shareResult" class="space-y-4">
           <div>
             <label class="block text-[12px] font-semibold tracking-[0.08em] uppercase text-stone-600 mb-2">Judul Koleksi</label>
-            <input v-model="shareForm.title" type="text" class="w-full px-4 py-3 rounded-xl border border-[#d7ddd7] bg-white text-[14px] focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-300 placeholder:text-stone-400" placeholder="Koleksi Wirid Saya" />
+            <input v-model="shareForm.title" type="text" name="share-title" autocomplete="off" class="w-full px-4 py-3 rounded-xl border border-[#d7ddd7] bg-white text-[14px] focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-300 placeholder:text-stone-400" placeholder="Koleksi Wirid Saya" />
           </div>
           <div>
             <label class="block text-[12px] font-semibold tracking-[0.08em] uppercase text-stone-600 mb-2">Deskripsi (Opsional)</label>
-            <textarea v-model="shareForm.description" class="w-full px-4 py-3 rounded-xl border border-[#d7ddd7] bg-white text-[14px] focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-300 placeholder:text-stone-400" rows="3" placeholder="Kumpulan doa dan wirid pilihan…"></textarea>
+            <textarea v-model="shareForm.description" name="share-description" autocomplete="off" class="w-full px-4 py-3 rounded-xl border border-[#d7ddd7] bg-white text-[14px] focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-300 placeholder:text-stone-400" rows="3" placeholder="Kumpulan doa dan wirid pilihan…"></textarea>
           </div>
         </div>
         <div v-else class="text-center">
@@ -367,7 +376,7 @@
           </p>
           <div class="flex items-center gap-2 p-2 bg-stone-50 rounded-xl border border-stone-200 mt-4">
             <input readonly :value="shareResult.share_url" class="bg-transparent border-none focus:ring-0 flex-1 px-3 text-[13px] text-stone-700 truncate" />
-            <BaseButton variant="primary" class="!rounded-xl w-10 h-10 !p-0 shrink-0" @click="copyShareLink">
+            <BaseButton variant="primary" class="!rounded-xl w-10 h-10 !p-0 shrink-0" aria-label="Salin link share" @click="copyShareLink">
               <Copy class="w-4 h-4" />
             </BaseButton>
           </div>

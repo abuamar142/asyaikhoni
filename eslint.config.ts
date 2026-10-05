@@ -14,7 +14,8 @@ export default defineConfigWithVueTs(
     files: ['**/*.{ts,mts,tsx,vue}'],
   },
 
-  globalIgnores(['**/dist/**', '**/dist-ssr/**', '**/coverage/**']),
+  // db/ = Supabase local stack data (root-owned Docker volumes, no lintable source)
+  globalIgnores(['**/dist/**', '**/dist-ssr/**', '**/coverage/**', '**/db/**']),
 
   pluginVue.configs['flat/essential'],
   vueTsConfigs.recommended,

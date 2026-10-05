@@ -1,6 +1,6 @@
 <template>
   <article
-    class="group relative flex flex-col rounded-[18px] border bg-white p-6 md:p-7 transition-all duration-300 hover:-translate-y-1 will-change-transform"
+    class="group relative flex flex-col rounded-[18px] border bg-white p-6 md:p-7 transition-[border-color,box-shadow,transform,background-color] duration-300 hover:-translate-y-1 will-change-transform"
     :class="[
       isHighlighted
         ? 'border-emerald-100 shadow-[0_1px_2px_rgba(16,40,22,0.06)] hover:shadow-[0_16px_40px_-16px_rgba(16,40,22,0.16)]'
@@ -18,6 +18,7 @@
       v-if="saved"
       class="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-amber-300 border-2 border-white shadow-sm inline-flex items-center justify-center text-[#14532d]"
       title="Tersimpan"
+      aria-hidden="true"
     >
       <Bookmark class="w-3.5 h-3.5" :stroke-width="2" />
     </div>

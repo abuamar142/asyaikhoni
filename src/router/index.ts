@@ -92,20 +92,15 @@ const router = createRouter({
           }
         }, 100)
       })
+    } else if (to.path === from.path) {
+      // Query-only navigation (e.g. filter/search state sync on list pages):
+      // keep the current scroll position instead of jumping to top.
+      return false
     } else {
       // Default scroll ke top dengan smooth behavior
       return { top: 0, behavior: 'smooth' }
     }
   },
-})
-
-// Middleware setelah navigasi selesai
-router.afterEach((to, from) => {
-  // Scroll to top jika bukan navigation dengan hash.
-  // window guard: afterEach fires during vite-ssg prerender too, where window is undefined.
-  if (!to.hash && to.path === from.path && typeof window !== 'undefined') {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
 })
 
 export default router

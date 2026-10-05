@@ -41,12 +41,9 @@
           description="Tautan mungkin salah atau konten telah dipindahkan."
         >
           <template #actions>
-            <router-link
-              :to="{ name: 'amalan-list' }"
-              class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-emerald-700 text-white text-[13px] font-semibold hover:bg-emerald-800 shadow-sm transition-colors"
-            >
+            <BaseButton as="router-link" :to="{ name: 'amalan-list' }" variant="primary" pill>
               <ArrowLeft class="w-4 h-4" /> Kembali ke daftar
-            </router-link>
+            </BaseButton>
           </template>
         </EmptyState>
       </div>
@@ -326,12 +323,9 @@
       <div class="border-t border-[#e8e6de] bg-white">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div class="max-w-[640px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-            <router-link
-              :to="{ name: 'amalan-list' }"
-              class="inline-flex items-center gap-2 text-[13px] font-medium text-stone-600 hover:text-emerald-800 transition-colors"
-            >
+            <BaseButton as="router-link" :to="{ name: 'amalan-list' }" variant="ghost">
               <ArrowLeft class="w-4 h-4" /> Kembali ke daftar amalan
-            </router-link>
+            </BaseButton>
             <div class="flex items-center gap-2 text-[11px] tracking-[0.14em] uppercase text-stone-400">
               <span class="w-6 h-px bg-stone-200 hidden sm:block"></span>
               <span>PPTQ Asy-Syaikhôni</span>
