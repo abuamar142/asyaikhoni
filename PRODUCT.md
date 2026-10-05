@@ -82,8 +82,8 @@ bun run format       # prettier --write src/
 bun run preview      # vite preview
 ```
 
-- **Env:** `VITE_API_BASE_URL` (lihat `.env.example`, lokal `.env.local` sudah `.gitignore`). Default `https://backend.abuamar.online`.
-- **API:** `backend.abuamar.online` dilayani container `portfolio-cms` (Next.js + Payload, `/opt/portfolio-cms`, port 3001) lewat vhost nginx `backend`; datanya MongoDB di container `portfolio-db`. Endpoint publik ada di `app/api/v1/asyaikhoni/*` repo **portfolio-cms** — bukan repo ini.
+- **Env:** `VITE_API_BASE_URL` (lihat `.env.example`, lokal `.env.local` sudah `.gitignore`). Default `https://asyaikhoni-service.abuamar.online`.
+- **API:** REST API publik `asyaikhoni-service.abuamar.online` dilayani container `asyaikhoni-service` (Go + Postgres, port 8093). CMS panel: [cms.abuamar.online](https://cms.abuamar.online).
 - **PWA:** `VitePWA` autoUpdate, manifest `PPTQ Asy-Syaikhoni`, theme `#16a34a`, ikon PNG 192/512 (+ maskable), Workbox `globPatterns` + `runtimeCaching` google fonts CacheFirst 365d dan `api-cache` (hanya respons `application/json`), chunk `vendor`/`icons`.
 - **SSG:** `vite-ssg` prerender `/`, `/sejarah`, `/amalan`, tiap `/amalan/:slug` (slug dari API), sitemap + robots; `onFinished` menyaring slug yang sudah ter-render agar sitemap tidak duplikat.
 
@@ -101,5 +101,5 @@ Push ke `main` → GitHub Actions (`.github/workflows/deploy.yml`) → SSH ke VP
 | `main` | `/var/www/asyaikhoni` | `asyaikhoni.abuamar.online` |
 | `development` | `/var/www/dev-asyaikhoni` | `asyaikhoni-dev.abuamar.online` |
 
-Deploy API/CMS terpisah: push ke `main` repo `portfolio-cms` → `/opt/ops/bin/deploy-cms.sh main`.
+API publik (`asyaikhoni-service.abuamar.online`) dan CMS panel (`cms.abuamar.online`) dikelola terpisah.
 Manual: `bun run build` lalu upload `dist/`.

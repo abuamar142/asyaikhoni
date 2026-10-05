@@ -25,7 +25,7 @@ bun run build      # type-check + vite build → dist/
 bun run preview    # preview dist
 ```
 
-`VITE_API_BASE_URL` default `https://backend.abuamar.online` (lihat `.env.example`).
+`VITE_API_BASE_URL` default `https://asyaikhoni-service.abuamar.online` (lihat `.env.example`).
 
 ## 🧩 Stack Ringkas
 
@@ -55,7 +55,7 @@ Produksi jalan di VPS, bukan Vercel:
 | `main` | [asyaikhoni.abuamar.online](https://asyaikhoni.abuamar.online) | `/var/www/asyaikhoni` |
 | `development` | [asyaikhoni-dev.abuamar.online](https://asyaikhoni-dev.abuamar.online) | `/var/www/dev-asyaikhoni` |
 
-API publik (`backend.abuamar.online`) dilayani repo terpisah **portfolio-cms** (Next.js + Payload, container Docker di VPS). Manual: `bun run build` lalu upload `dist/`.
+API publik (`asyaikhoni-service.abuamar.online`) dilayani container `asyaikhoni-service` (Go + Postgres). CMS panel: [cms.abuamar.online](https://cms.abuamar.online). Manual: `bun run build` lalu upload `dist/`.
 
 ---
 

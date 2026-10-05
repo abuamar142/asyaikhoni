@@ -9,7 +9,7 @@ import generateSitemap from 'vite-ssg-sitemap'
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
-  const apiBase = env.VITE_API_BASE_URL || 'https://backend.abuamar.online'
+  const apiBase = env.VITE_API_BASE_URL || 'https://asyaikhoni-service.abuamar.online'
 
   return {
     plugins: [
@@ -78,9 +78,9 @@ export default defineConfig(({ mode }) => {
               },
             },
             {
-              // API GET caching (default base: https://backend.abuamar.online, see src/utils/httpClient.ts)
+              // API GET caching (default base: https://asyaikhoni-service.abuamar.online, see src/utils/httpClient.ts)
               // POST/PUT/DELETE requests are never cached — this route only matches GET.
-              urlPattern: /^https:\/\/backend\.abuamar\.online\/api\/.*/i,
+              urlPattern: /^https:\/\/asyaikhoni-service\.abuamar\.online\/api\/.*/i,
               handler: 'StaleWhileRevalidate',
               method: 'GET',
               options: {

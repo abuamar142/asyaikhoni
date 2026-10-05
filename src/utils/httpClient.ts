@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://backend.abuamar.online'
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://asyaikhoni-service.abuamar.online'
 
 interface ApiResponse<T = unknown> {
   success: boolean

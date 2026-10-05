@@ -3,7 +3,7 @@
 // still replaced by Vite with the loaded .env values.
 
 export const PRERENDER_API_BASE =
-  import.meta.env.VITE_API_BASE_URL || 'https://backend.abuamar.online'
+  import.meta.env.VITE_API_BASE_URL || 'https://asyaikhoni-service.abuamar.online'
 
 /**
  * Fetch every amalan slug from the public API. Used to expand the dynamic
