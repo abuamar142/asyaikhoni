@@ -4,8 +4,10 @@ name: Deploy Asyaikhoni to VPS
 # /var/www/dev-asyaikhoni sudah dihapus. Deploy hanya untuk main (prod);
 # deploy-asyaikhoni.sh juga menolak branch lain.
 on:
-  push:
-    branches: [main]
+  # Disabled 2026-11-16: GitHub Actions akun terkunci billing (setiap run gagal).
+  # Deploy prod lewat pull-deploy.timer di VPS. Hidupkan lagi bila billing beres.
+  # push:
+  #   branches: [main]
   workflow_dispatch:
 
 concurrency:
