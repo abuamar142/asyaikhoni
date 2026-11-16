@@ -1,8 +1,11 @@
 name: Deploy Asyaikhoni to VPS
 
+# Environment development dimatikan 2026-11-16: vhost, cert LE, DNS, dan
+# /var/www/dev-asyaikhoni sudah dihapus. Deploy hanya untuk main (prod);
+# deploy-asyaikhoni.sh juga menolak branch lain.
 on:
   push:
-    branches: [main, development]
+    branches: [main]
   workflow_dispatch:
 
 concurrency:
