@@ -7,7 +7,7 @@
       aria-hidden="true"
     >
       <div
-        class="h-full bg-emerald-700 transition-[width] duration-150 ease-out will-change-[width]"
+        class="h-full bg-emerald-700 transition-[width] duration-150 ease-out"
         :style="{ width: progress + '%' }"
       ></div>
     </div>
@@ -29,7 +29,7 @@
           </div>
         </div>
       </div>
-      <p class="text-center text-[13px] tracking-wide text-stone-400 pb-10">Memuat khazanah…</p>
+      <p class="text-center text-[13px] tracking-wide text-stone-500 pb-10">Memuat khazanah…</p>
     </div>
 
     <!-- Not Found -->
@@ -168,7 +168,7 @@
               >
                 <span
                   v-if="isSaving"
-                  class="w-4 h-4 rounded-full border-2 border-current border-t-transparent animate-spin shrink-0"
+                  class="w-4 h-4 rounded-full border-2 border-current border-t-transparent motion-safe:animate-spin shrink-0"
                   aria-hidden="true"
                 ></span>
                 <component
@@ -203,7 +203,7 @@
               >
                 <span
                   v-if="isSaving"
-                  class="w-4 h-4 rounded-full border-2 border-current border-t-transparent animate-spin shrink-0"
+                  class="w-4 h-4 rounded-full border-2 border-current border-t-transparent motion-safe:animate-spin shrink-0"
                   aria-hidden="true"
                 ></span>
                 <RefreshCw v-else class="w-4 h-4 shrink-0" /> {{ isSaving ? 'Memperbarui…' : 'Update tersedia' }}
@@ -226,7 +226,7 @@
               <span v-if="hasUpdateAvailable" class="text-amber-700 font-medium">· Pembaruan tersedia</span>
             </p>
 
-            <p v-else class="mt-3 text-[11px] tracking-wide text-stone-400">Simpan untuk akses tanpa koneksi di Koleksi Saya</p>
+            <p v-else class="mt-3 text-[11px] tracking-wide text-stone-500">Simpan untuk akses tanpa koneksi di Koleksi Saya</p>
           </div>
         </div>
       </div>
@@ -269,7 +269,7 @@
                     <div
                       v-if="hasTitleLatin"
                       v-show="showLatin"
-                      class="title-latin latin text-center text-[15px] sm:text-[16px] italic leading-[1.6] text-[#6e7d71] mt-2"
+                      class="title-latin latin text-center text-[15px] sm:text-[16px] italic leading-[1.6] text-[#5f6d62] mt-2"
                       style="font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif"
                     >
                       {{ latinTitle }}
@@ -301,7 +301,7 @@
                       <span class="w-1.5 h-1.5 rotate-45 bg-emerald-700/50"></span>
                       <span class="h-px w-10 bg-[#e8ddd0]"></span>
                     </div>
-                    <span class="text-[10px] tracking-[0.18em] uppercase font-semibold text-stone-400">— PPTQ Asy-Syaikhoni —</span>
+                    <span class="text-[10px] tracking-[0.18em] uppercase font-semibold text-stone-500">— PPTQ Asy-Syaikhoni —</span>
                   </div>
                 </template>
               </PaperCard>
@@ -315,7 +315,7 @@
             </div>
 
             <!-- latin hint when hidden -->
-            <p v-if="!showLatin && hasAnyLatin" class="mt-4 text-center text-[11px] tracking-wide text-stone-400">
+            <p v-if="!showLatin && hasAnyLatin" class="mt-4 text-center text-[11px] tracking-wide text-stone-500">
               Transliterasi Latin disembunyikan — buka <span class="inline-flex items-center gap-1 font-medium text-stone-600"><Settings class="w-3 h-3" /> Pengaturan</span> untuk menampilkan kembali.
             </p>
           </div>
@@ -329,7 +329,7 @@
             <BaseButton as="router-link" :to="{ name: 'amalan-list' }" variant="ghost">
               <ArrowLeft class="w-4 h-4" /> Kembali ke daftar amalan
             </BaseButton>
-            <div class="flex items-center gap-2 text-[11px] tracking-[0.14em] uppercase text-stone-400">
+            <div class="flex items-center gap-2 text-[11px] tracking-[0.14em] uppercase text-stone-500">
               <span class="w-6 h-px bg-stone-200 hidden sm:block"></span>
               <span>PPTQ Asy-Syaikhôni</span>
               <span class="w-1 h-1 rounded-full bg-stone-300"></span>
@@ -371,7 +371,7 @@
             @click="toggleLatin"
           >
             <span
-              class="absolute top-1/2 -translate-y-1/2 left-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-sm transition duration-200 will-change-transform"
+              class="absolute top-1/2 -translate-y-1/2 left-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-sm transition duration-200"
               :class="showLatin ? 'translate-x-6' : 'translate-x-0'"
             ></span>
           </BaseButton>
@@ -473,7 +473,7 @@
             @click="toggleDark"
           >
             <span
-              class="absolute top-1/2 -translate-y-1/2 left-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-sm transition duration-200 will-change-transform"
+              class="absolute top-1/2 -translate-y-1/2 left-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-sm transition duration-200"
               :class="isDark ? 'translate-x-6' : 'translate-x-0'"
             >
               <component :is="isDark ? Moon : Sun" class="h-4 w-4 shrink-0" :class="isDark ? 'text-slate-600' : 'text-amber-600'" />
@@ -483,7 +483,7 @@
       </div>
 
       <template #footer>
-        <p class="text-[11px] leading-relaxed text-stone-400 text-center">Pengaturan disimpan otomatis di perangkat ini.</p>
+        <p class="text-[11px] leading-relaxed text-stone-500 text-center">Pengaturan disimpan otomatis di perangkat ini.</p>
       </template>
     </BaseModal>
 

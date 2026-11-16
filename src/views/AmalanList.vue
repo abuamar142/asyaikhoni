@@ -36,12 +36,12 @@
           <BaseButton as="router-link" :to="{ name: 'amalan-offline' }" variant="secondary" pill class="text-[13px] !text-[#1a2e1f] hover:!text-emerald-800">
             <Bookmark class="w-4 h-4 text-emerald-700" />
             Koleksi Saya
-            <ArrowUpRight class="w-3.5 h-3.5 text-stone-400" />
+            <ArrowUpRight class="w-3.5 h-3.5 text-stone-500" />
           </BaseButton>
         </template>
 
         <template #stats-right>
-          <div class="text-[11px] tracking-[0.16em] uppercase font-semibold text-stone-400 mb-2">
+          <div class="text-[11px] tracking-[0.16em] uppercase font-semibold text-stone-500 mb-2">
             Katalog terdokumentasi
           </div>
           <div
@@ -95,7 +95,7 @@
                     >{{ selectedKategoriIds.length }}</span
                   >
                   <ChevronDown
-                    class="w-4 h-4 text-stone-400 transition-transform duration-200"
+                    class="w-4 h-4 text-stone-500 transition-transform duration-200"
                     :class="showCategoryDropdown ? 'rotate-180 text-emerald-700' : ''"
                   />
                 </span>
@@ -202,7 +202,7 @@
             </div>
 
             <span class="hidden sm:block mx-1 h-4 w-px bg-stone-200"></span>
-            <span class="text-[12.5px] text-stone-500">
+            <span class="text-[12.5px] text-stone-500" role="status" aria-live="polite">
               <template v-if="!loading && !error">
                 Menampilkan <span class="font-semibold text-stone-700">{{ totalAmalan }}</span> amalan
                 <span v-if="q" class="text-stone-500">untuk “{{ q }}”</span>
@@ -279,7 +279,7 @@
           </template>
           <template #actions>
             <BaseButton variant="primary" pill @click="resetFilters"> <RotateCcw class="w-4 h-4" /> Reset filter </BaseButton>
-            <span class="text-[13px] text-stone-400">atau</span>
+            <span class="text-[13px] text-stone-500">atau</span>
             <BaseButton variant="secondary" pill @click="q = ''"> Hapus pencarian </BaseButton>
           </template>
         </EmptyState>
@@ -300,7 +300,7 @@
       <div v-if="!loading && !error && hasMore" class="mt-10 flex flex-col items-center gap-3">
         <!-- Angka total sudah tampil di meta row toolbar — jangan diulang
              (audit #5); load-more hanya menampilkan progres muat. -->
-        <span class="text-[11px] tracking-[0.16em] uppercase font-semibold text-stone-400">
+        <span class="text-[11px] tracking-[0.16em] uppercase font-semibold text-stone-500">
           {{ itemsList.length }} amalan ditampilkan
         </span>
         <BaseButton
@@ -310,14 +310,14 @@
           :disabled="isFetching"
           @click="loadMore"
         >
-          <Loader2 v-if="isFetching" class="w-4 h-4 text-emerald-700 animate-spin" />
-          <ChevronDown v-else class="w-4 h-4 text-stone-400" />
+          <Loader2 v-if="isFetching" class="w-4 h-4 text-emerald-700 motion-safe:animate-spin" />
+          <ChevronDown v-else class="w-4 h-4 text-stone-500" />
           {{ isFetching ? 'Memuat…' : 'Muat lebih banyak' }}
         </BaseButton>
       </div>
 
       <!-- bottom subtle meta -->
-      <div v-if="!loading && !isEmpty && !error && !hasMore" class="mt-10 flex items-center justify-center gap-3 text-[11px] tracking-[0.12em] uppercase text-stone-400">
+      <div v-if="!loading && !isEmpty && !error && !hasMore" class="mt-10 flex items-center justify-center gap-3 text-[11px] tracking-[0.12em] uppercase text-stone-500">
         <span class="h-px w-8 bg-stone-200 hidden sm:block"></span>
         <span>Akhir katalog</span>
         <span class="w-1 h-1 rounded-full bg-stone-300"></span>

@@ -6,8 +6,8 @@
       <div class="container mx-auto px-4 max-w-4xl py-12">
       <!-- Loading State -->
       <div v-if="loading" class="flex flex-col items-center justify-center py-20">
-        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand mb-4"></div>
-        <p class="text-body-md text-muted">Memuat koleksi yang dibagikan...</p>
+        <div class="motion-safe:animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand mb-4"></div>
+        <p class="text-body-md text-stone-500">Memuat koleksi yang dibagikan…</p>
       </div>
 
       <!-- Error State — hanya saat benar-benar tidak ada bundle (audit #4) -->
@@ -15,9 +15,9 @@
         <div class="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
           <AlertCircle class="w-10 h-10" />
         </div>
-        <h1 class="text-heading-lg text-brand mb-2">Koleksi Tidak Ditemukan</h1>
-        <p class="text-body-md text-muted mb-8">Maaf, link share ini mungkin sudah tidak valid atau sudah kedaluwarsa.</p>
-        <router-link :to="{ name: 'amalan-list' }" class="btn-primary">Kembali ke Beranda</router-link>
+        <h1 class="text-heading-lg text-emerald-800 mb-2">Koleksi Tidak Ditemukan</h1>
+        <p class="text-body-md text-stone-500 mb-8">Maaf, link share ini mungkin sudah tidak valid atau sudah kedaluwarsa.</p>
+        <BaseButton as="router-link" :to="{ name: 'amalan-list' }" variant="primary" pill>Kembali ke Beranda</BaseButton>
       </div>
 
       <!-- Bundle Content -->
@@ -27,31 +27,27 @@
             <div>
               <span class="inline-block px-3 py-1 bg-brand text-white text-xs font-bold rounded-full mb-3 uppercase tracking-wider">Koleksi Dibagikan</span>
               <span v-if="bundle.is_local || bundle._local" class="inline-block ml-2 px-3 py-1 bg-amber-100 text-amber-800 border border-amber-200 text-xs font-bold rounded-full mb-3 uppercase tracking-wider">Lokal — hanya di perangkat ini</span>
-              <h1 class="text-heading-xl text-brand mb-3">{{ bundle.title }}</h1>
-              <p v-if="bundle.description" class="text-body-md text-muted">{{ bundle.description }}</p>
+              <h1 class="text-heading-xl text-emerald-800 mb-3">{{ bundle.title }}</h1>
+              <p v-if="bundle.description" class="text-body-md text-stone-500">{{ bundle.description }}</p>
             </div>
-            <button 
-              @click="importBundle" 
-              class="btn-primary flex items-center gap-2 px-8 py-4 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all"
-              :disabled="importing"
-            >
+            <BaseButton variant="primary" pill size="lg" :disabled="importing" @click="importBundle">
               <Download class="w-6 h-6" />
               <span>{{ importLabel }}</span>
-            </button>
+            </BaseButton>
           </div>
-          <div class="mt-6 flex items-center gap-6 text-body-sm text-muted">
+          <div class="mt-6 flex items-center gap-6 text-body-sm text-stone-500">
             <div class="flex items-center gap-2">
-              <BookOpen class="w-4 h-4 text-brand" />
+              <BookOpen class="w-4 h-4 text-emerald-800" />
               <span>{{ bundle.share_bundle_items.length }} Amalan</span>
             </div>
             <div class="flex items-center gap-2">
-              <Calendar class="w-4 h-4 text-brand" />
+              <Calendar class="w-4 h-4 text-emerald-800" />
               <span>Dibuat {{ new Date(bundle.created_at).toLocaleDateString() }}</span>
             </div>
           </div>
         </div>
 
-        <h2 class="text-heading-md text-brand mb-6">Isi Koleksi</h2>
+        <h2 class="text-heading-md text-emerald-800 mb-6">Isi Koleksi</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div 
             v-for="item in bundle.share_bundle_items" 
@@ -63,9 +59,9 @@
                 <FileText class="w-6 h-6" />
               </div>
               <div>
-                <h3 class="text-heading-sm text-brand mb-1">{{ item.amalan.judul }}</h3>
-                <p class="text-body-sm text-muted line-clamp-2 mb-3">{{ item.amalan.ringkasan }}</p>
-                <div v-if="item.folder_path" class="flex items-center gap-1.5 text-xs text-brand/70 bg-brand/5 px-2 py-1 rounded-md w-fit">
+                <h3 class="text-heading-sm text-emerald-800 mb-1">{{ item.amalan.judul }}</h3>
+                <p class="text-body-sm text-stone-500 line-clamp-2 mb-3">{{ item.amalan.ringkasan }}</p>
+                <div v-if="item.folder_path" class="flex items-center gap-1.5 text-xs text-emerald-800/70 bg-brand/5 px-2 py-1 rounded-md w-fit">
                   <Folder class="w-3 h-3" />
                   <span>Folder: {{ item.folder_path }}</span>
                 </div>
@@ -83,6 +79,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppHeader from '@/components/layout/AppHeader.vue'
+import BaseButton from '@/components/ui/BaseButton.vue'
 import { getShareBundle, getLocalBundle, isLocalFallbackError, type RawShareBundle } from '@/services/shareService'
 import { downloadMarkdown, getById, type Amalan } from '@/services/amalanService'
 import { db, type LocalFolder, type LocalSavedAmalan, ensureDbReady, isIndexedDBAvailable } from '@/utils/localDb'
@@ -132,7 +129,7 @@ const importedCount = ref(0)
 const importTotal = ref(0)
 
 const importLabel = computed(() =>
-  importing.value ? `Mengimpor... (${importedCount.value}/${importTotal.value})` : 'Impor Koleksi'
+  importing.value ? `Mengimpor… (${importedCount.value}/${importTotal.value})` : 'Impor Koleksi'
 )
 
 function normalizeBundle(raw: RawShareBundle | null | undefined): ShareBundleView | null {

@@ -174,7 +174,7 @@ const rowStyle = computed(() => {
   line-height: 1.65;
   font-style: italic;
   font-weight: 400;
-  color: #6e7d71;
+  color: #5f6d62;
   letter-spacing: 0.006em;
   margin-top: 2px;
   transition:

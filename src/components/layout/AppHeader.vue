@@ -19,9 +19,9 @@
             />
           </div>
           <div class="hidden sm:block">
-            <h1 class="text-heading-lg text-brand">
+            <p class="text-heading-lg text-brand font-semibold">
               {{ pondokData.shortName.split(' ')[0] }}
-            </h1>
+            </p>
             <p class="text-caption text-brand -mt-1">
               {{ pondokData.shortName.split(' ').slice(1).join(' ') }}
             </p>
@@ -35,7 +35,7 @@
             :key="item.id"
             :href="item.href"
             @click.prevent="handleNavigation(item)"
-            class="text-body-md text-muted hover:text-brand font-medium transition-all duration-200 relative group"
+            class="text-body-md text-muted hover:text-brand font-medium transition-colors duration-200 relative group"
           >
             {{ item.name }}
             <span
@@ -58,12 +58,14 @@
         <!-- Mobile Menu Button -->
         <button
           @click="toggleMobileMenu"
-          class="lg:hidden relative p-3 rounded-xl hover:bg-green-50 active:bg-green-100 transition-all duration-200 transform active:scale-95"
+          class="lg:hidden relative p-3 rounded-xl hover:bg-green-50 active:bg-green-100 transition-colors duration-200 transform active:scale-95"
           :class="{
             'bg-green-50 shadow-sm': isMobileMenuOpen,
             'hover:shadow-md': !isMobileMenuOpen,
           }"
-          aria-label="Toggle mobile menu"
+          :aria-expanded="isMobileMenuOpen"
+          aria-controls="mobile-menu"
+          aria-label="Buka menu navigasi"
         >
           <div class="relative w-6 h-6 flex items-center justify-center">
             <!-- Hamburger Icon with Animation -->
@@ -95,6 +97,7 @@
       <!-- Mobile Menu -->
       <div
         v-show="isMobileMenuOpen"
+        id="mobile-menu"
         class="lg:hidden border-t border-green-100 bg-white/95 backdrop-blur-sm shadow-lg"
       >
         <div class="px-4 py-6 space-y-1">
@@ -103,7 +106,7 @@
             :key="item.id"
             :href="item.href"
             @click.prevent="(handleNavigation(item), closeMobileMenu())"
-            class="flex items-center py-3 px-4 text-body-md text-muted hover:text-brand hover:bg-green-50 font-medium transition-all duration-200 rounded-lg group"
+            class="flex items-center py-3 px-4 text-body-md text-muted hover:text-brand hover:bg-green-50 font-medium transition-colors duration-200 rounded-lg group"
           >
             <span class="relative">
               {{ item.name }}

@@ -53,7 +53,7 @@
         </template>
 
         <template #stats-right>
-          <div class="text-[11px] tracking-[0.16em] uppercase font-semibold text-stone-400 mb-2">
+          <div class="text-[11px] tracking-[0.16em] uppercase font-semibold text-stone-500 mb-2">
             Koleksi tersimpan
           </div>
           <div
@@ -84,7 +84,7 @@
             <ArrowLeft class="w-3.5 h-3.5" /> Koleksi
           </BaseButton>
           <template v-for="(crumb, idx) in breadcrumbPath" :key="crumb.id">
-            <ChevronRight class="w-4 h-4 text-stone-400 shrink-0" />
+            <ChevronRight class="w-4 h-4 text-stone-500 shrink-0" />
             <BaseButton
               v-if="idx < breadcrumbPath.length - 1"
               variant="secondary"
@@ -112,7 +112,7 @@
           <SearchInput v-model="q" placeholder="Cari judul atau ringkasan amalan…" />
         </div>
         <div class="flex flex-wrap items-center gap-2 shrink-0">
-          <span class="text-[12.5px] text-stone-500">
+          <span class="text-[12.5px] text-stone-500" role="status" aria-live="polite">
             <template v-if="isSearching">
               Menampilkan <span class="font-semibold text-stone-700">{{ filteredAmalan.length }}</span> amalan untuk
               “{{ qDebounced }}”
@@ -139,29 +139,30 @@
           <h2 class="text-[11px] tracking-[0.16em] font-semibold uppercase text-stone-500">
             {{ currentFolderId === null ? 'Folder Anda' : `Subfolder di ${currentFolder?.name ?? ''}` }}
           </h2>
-          <span class="text-[12px] text-stone-400">{{ displayFolders.length }} folder</span>
+          <span class="text-[12px] text-stone-500">{{ displayFolders.length }} folder</span>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
           <div
             v-for="folder in displayFolders"
             :key="folder.id"
-            class="group relative p-5 md:p-6 rounded-[18px] border border-[#e8e6de] bg-white hover:border-emerald-200 hover:shadow-[0_12px_28px_rgba(16,40,22,0.08)] hover:-translate-y-0.5 transition-all duration-300 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30"
-            role="button"
-            tabindex="0"
-            @click="openFolder(folder)"
-            @keydown.enter.prevent="openFolder(folder)"
-            @keydown.space.prevent="openFolder(folder)"
+            class="group relative p-5 md:p-6 rounded-[18px] border border-[#e8e6de] bg-white hover:border-emerald-200 hover:shadow-[0_12px_28px_rgba(16,40,22,0.08)] hover:-translate-y-0.5 transition-[border-color,box-shadow,transform] duration-300"
           >
             <div class="absolute top-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-emerald-200/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
             <div class="flex items-center gap-4">
-              <div class="w-11 h-11 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 inline-flex items-center justify-center group-hover:bg-emerald-700 group-hover:text-white group-hover:border-emerald-700 transition-colors">
-                <Folder class="w-5 h-5" />
-              </div>
-              <div class="flex-1 min-w-0">
-                <h3 class="font-serif text-[16px] font-semibold leading-[1.35] text-[#12291a] py-0.5 truncate" style="font-family: 'Fraunces', Georgia, serif">{{ folder.name }}</h3>
-                <p class="text-[12px] text-stone-500">Folder koleksi</p>
-              </div>
-              <div class="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+              <button
+                type="button"
+                class="flex items-center gap-4 flex-1 min-w-0 text-left rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30"
+                @click="openFolder(folder)"
+              >
+                <div class="w-11 h-11 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 inline-flex items-center justify-center group-hover:bg-emerald-700 group-hover:text-white group-hover:border-emerald-700 transition-colors">
+                  <Folder class="w-5 h-5" />
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h3 class="font-serif text-[16px] font-semibold leading-[1.35] text-[#12291a] py-0.5 truncate" style="font-family: 'Fraunces', Georgia, serif">{{ folder.name }}</h3>
+                  <p class="text-[12px] text-stone-500">Folder koleksi</p>
+                </div>
+              </button>
+              <div class="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 transition-opacity">
                 <BaseButton
                   variant="ghost"
                   pill
@@ -210,7 +211,7 @@
       <!-- Saved amalan heading -->
       <div v-if="savedAmalan.length > 0 && !isSearching" class="flex items-center justify-between mb-4">
         <h2 class="text-[11px] tracking-[0.16em] font-semibold uppercase text-stone-500">
-          Amalan tersimpan <span class="normal-case tracking-normal font-medium text-stone-400">· {{ savedAmalan.length }}</span>
+          Amalan tersimpan <span class="normal-case tracking-normal font-medium text-stone-500">· {{ savedAmalan.length }}</span>
         </h2>
         <div class="h-px flex-1 mx-4 bg-[#ece9e0] hidden sm:block"></div>
       </div>
@@ -306,7 +307,7 @@
           name="folder-name"
           autocomplete="off"
           placeholder="Contoh: Wirid Harian"
-          class="w-full px-4 py-3 rounded-xl border border-[#d7ddd7] bg-white text-[14px] text-[#12291a] placeholder:text-stone-400 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-300 transition-all"
+          class="w-full px-4 py-3 rounded-xl border border-[#d7ddd7] bg-white text-[16px] sm:text-[14px] text-[#12291a] placeholder:text-stone-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-300 transition-all"
           @keyup.enter="saveFolder"
         />
       </div>
@@ -335,6 +336,7 @@
     <ConfirmDialog
       v-model="isConfirmingDelete"
       title="Hapus Folder?"
+      confirm-label="Hapus folder"
       :message="`Apakah Anda yakin ingin menghapus folder '${folderToDelete?.name}'? Item di dalamnya tidak akan terhapus, hanya akan dikeluarkan dari folder.`"
       @confirm="deleteFolder"
       @cancel="isConfirmingDelete = false"
@@ -361,11 +363,11 @@
         <div v-if="!shareResult" class="space-y-4">
           <div>
             <label class="block text-[12px] font-semibold tracking-[0.08em] uppercase text-stone-600 mb-2">Judul Koleksi</label>
-            <input v-model="shareForm.title" type="text" name="share-title" autocomplete="off" class="w-full px-4 py-3 rounded-xl border border-[#d7ddd7] bg-white text-[14px] focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-300 placeholder:text-stone-400" placeholder="Koleksi Wirid Saya" />
+            <input v-model="shareForm.title" type="text" name="share-title" autocomplete="off" class="w-full px-4 py-3 rounded-xl border border-[#d7ddd7] bg-white text-[16px] sm:text-[14px] focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-300 placeholder:text-stone-500" placeholder="Koleksi Wirid Saya" />
           </div>
           <div>
             <label class="block text-[12px] font-semibold tracking-[0.08em] uppercase text-stone-600 mb-2">Deskripsi (Opsional)</label>
-            <textarea v-model="shareForm.description" name="share-description" autocomplete="off" class="w-full px-4 py-3 rounded-xl border border-[#d7ddd7] bg-white text-[14px] focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-300 placeholder:text-stone-400" rows="3" placeholder="Kumpulan doa dan wirid pilihan…"></textarea>
+            <textarea v-model="shareForm.description" name="share-description" autocomplete="off" class="w-full px-4 py-3 rounded-xl border border-[#d7ddd7] bg-white text-[16px] sm:text-[14px] focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-300 placeholder:text-stone-500" rows="3" placeholder="Kumpulan doa dan wirid pilihan…"></textarea>
           </div>
         </div>
         <div v-else class="text-center">
@@ -389,7 +391,7 @@
           <BaseButton variant="ghost" pill @click="sharingData = null">Batal</BaseButton>
           <BaseButton variant="primary" pill :disabled="!shareForm.title.trim() || generatingShare" @click="generateShare">
             <Share2 v-if="!generatingShare" class="w-4 h-4" />
-            <span v-else class="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"></span>
+            <span v-else class="w-4 h-4 rounded-full border-2 border-white/30 border-t-white motion-safe:animate-spin"></span>
             <span>{{ generatingShare ? 'Memproses…' : 'Buat Link Share' }}</span>
           </BaseButton>
         </div>

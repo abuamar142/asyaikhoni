@@ -20,7 +20,7 @@
           Root
         </BaseButton>
         <template v-for="crumb in breadcrumb" :key="crumb.id">
-          <ChevronRight class="w-4 h-4 text-stone-400 shrink-0" />
+          <ChevronRight class="w-4 h-4 text-stone-500 shrink-0" />
           <BaseButton
             :variant="crumb.id === navId ? 'primary' : 'secondary'"
             pill
@@ -45,7 +45,7 @@
         >
           <ArrowLeft class="w-3.5 h-3.5" /> Kembali
         </BaseButton>
-        <span class="text-[12px] text-stone-400 truncate">
+        <span class="text-[12px] text-stone-500 truncate">
           Di dalam “{{ currentNavFolder?.name ?? '' }}”
         </span>
       </div>
@@ -53,9 +53,11 @@
       <!-- List -->
       <div class="space-y-2">
         <!-- Root row -->
-        <div
-          class="flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors"
-          :class="isDisabled(0) ? 'opacity-60 cursor-not-allowed bg-amber-50/40 border-amber-200' : selectedId === 0 ? 'bg-emerald-50 border-emerald-200 ring-2 ring-emerald-500' : 'bg-white border-[#e8e6de] hover:border-stone-300'"
+        <button
+          type="button"
+          :disabled="isDisabled(0)"
+          class="w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40 disabled:cursor-not-allowed"
+          :class="isDisabled(0) ? 'opacity-60 bg-amber-50/40 border-amber-200' : selectedId === 0 ? 'bg-emerald-50 border-emerald-200 ring-2 ring-emerald-500' : 'bg-white border-[#e8e6de] hover:border-stone-300'"
           @click="emit('update:selectedId', 0)"
         >
           <div
@@ -72,7 +74,7 @@
             <span class="block text-[11px] text-stone-500">Root — tanpa folder</span>
           </span>
           <span v-if="isDisabled(0)" class="inline-flex items-center gap-1 text-[11px] font-medium text-amber-700 shrink-0"><AlertCircle class="w-3 h-3" /> Sudah ada</span>
-        </div>
+        </button>
 
         <!-- Empty state for subfolders -->
         <div
@@ -86,33 +88,39 @@
         <div
           v-for="folder in displayFolders"
           :key="folder.id"
-          class="flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors"
+          class="flex items-center gap-3 p-3 rounded-xl border transition-colors"
           :class="[
-            isDisabled(folder.id!) ? 'opacity-60 cursor-not-allowed bg-amber-50/40 border-amber-200' : '',
+            isDisabled(folder.id!) ? 'opacity-60 bg-amber-50/40 border-amber-200' : '',
             !isDisabled(folder.id!) && selectedId === folder.id ? 'bg-emerald-50 border-emerald-200 ring-2 ring-emerald-500' : '',
             !isDisabled(folder.id!) && selectedId !== folder.id ? 'bg-white border-[#e8e6de] hover:border-stone-300' : ''
           ]"
-          @click="emit('update:selectedId', folder.id!)"
         >
-          <!-- radio -->
-          <div
-            class="w-5 h-5 rounded-full border-2 inline-flex items-center justify-center shrink-0 transition-colors"
-            :class="selectedId === folder.id ? 'border-emerald-600 bg-emerald-600' : 'border-stone-300 bg-white'"
+          <button
+            type="button"
+            class="flex items-center gap-3 flex-1 min-w-0 text-left rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40 disabled:cursor-not-allowed"
+            :disabled="isDisabled(folder.id!)"
+            @click="emit('update:selectedId', folder.id!)"
           >
-            <div v-if="selectedId === folder.id" class="w-2 h-2 rounded-full bg-white"></div>
-          </div>
+            <!-- radio -->
+            <div
+              class="w-5 h-5 rounded-full border-2 inline-flex items-center justify-center shrink-0 transition-colors"
+              :class="selectedId === folder.id ? 'border-emerald-600 bg-emerald-600' : 'border-stone-300 bg-white'"
+            >
+              <div v-if="selectedId === folder.id" class="w-2 h-2 rounded-full bg-white"></div>
+            </div>
 
-          <!-- folder icon -->
-          <span class="w-8 h-8 rounded-lg border inline-flex items-center justify-center shrink-0 transition-colors" :class="isDisabled(folder.id!) ? 'bg-amber-100 border-amber-200 text-amber-700' : 'bg-emerald-50 border-emerald-100 text-emerald-700'">
-            <Folder class="w-4 h-4" />
-          </span>
+            <!-- folder icon -->
+            <span class="w-8 h-8 rounded-lg border inline-flex items-center justify-center shrink-0 transition-colors" :class="isDisabled(folder.id!) ? 'bg-amber-100 border-amber-200 text-amber-700' : 'bg-emerald-50 border-emerald-100 text-emerald-700'">
+              <Folder class="w-4 h-4" />
+            </span>
 
-          <!-- name + path -->
-          <span class="flex-1 min-w-0">
-            <span class="block text-[13px] font-medium truncate" :class="isDisabled(folder.id!) ? 'text-amber-900' : 'text-[#0f2318]'">{{ folder.name }}</span>
-            <span v-if="folder.id != null && getFolderDepth(folder.id, folders) > 0" class="block text-[11px] text-stone-500 truncate">{{ getFolderPath(folder, folders) }}</span>
-            <span v-else class="block text-[11px] text-stone-500">Folder</span>
-          </span>
+            <!-- name + path -->
+            <span class="flex-1 min-w-0">
+              <span class="block text-[13px] font-medium truncate" :class="isDisabled(folder.id!) ? 'text-amber-900' : 'text-[#0f2318]'">{{ folder.name }}</span>
+              <span v-if="folder.id != null && getFolderDepth(folder.id, folders) > 0" class="block text-[11px] text-stone-500 truncate">{{ getFolderPath(folder, folders) }}</span>
+              <span v-else class="block text-[11px] text-stone-500">Folder</span>
+            </span>
+          </button>
 
           <!-- disabled label or drill -->
           <span v-if="isDisabled(folder.id!)" class="inline-flex items-center gap-1 text-[11px] font-medium text-amber-700 shrink-0"><AlertCircle class="w-3 h-3" /> Sudah ada</span>
@@ -133,7 +141,7 @@
     <template #footer>
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <span class="text-[12px] text-stone-500 truncate">
-          Target: <span class="font-semibold" :class="isConfirmDisabled ? 'text-stone-400' : 'text-stone-700'">{{ selectedName }}</span>
+          Target: <span class="font-semibold" :class="isConfirmDisabled ? 'text-stone-500' : 'text-stone-700'">{{ selectedName }}</span>
           <span v-if="selectedId !== null && isDisabled(selectedId)" class="ml-1 text-amber-600 font-medium">(sudah di sini)</span>
         </span>
         <div class="flex flex-col items-end gap-2 shrink-0 self-end sm:self-auto">
