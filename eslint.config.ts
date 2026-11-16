@@ -37,13 +37,10 @@ export default defineConfigWithVueTs(
   skipFormatting,
 
   {
-    // 156 pre-existing `any`s live on the offline/share data boundaries
-    // (Dexie rows, share payloads) where the shapes cross IndexedDB and REST.
-    // They were never enforced because lint had not run since db/ appeared;
-    // keep them visible as warnings so new code does not add more, and the
-    // gate can actually be used. Promote back to error once they are typed.
+    // Rule diaktifkan penuh — semua boundary data (Dexie rows, share payload,
+    // API response) sudah typed; any baru akan gagal lint.
     rules: {
-      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-explicit-any': 'error',
     },
   },
 )

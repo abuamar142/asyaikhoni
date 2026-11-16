@@ -84,7 +84,7 @@ const props = withDefaults(
     titleId: undefined,
     closeOnOverlay: true,
     closeOnEsc: true,
-    trapFocus: false,
+    trapFocus: true,
     maxWidthClass: 'max-w-md',
   },
 )
@@ -94,6 +94,7 @@ const emit = defineEmits<{
   confirm: []
 }>()
 
+const lastActive = ref<HTMLElement | null>(null)
 const cardRef = ref<HTMLElement | null>(null)
 
 const computedTitleId = computed(() => {
@@ -120,6 +121,7 @@ watch(
   (open) => {
     if (typeof document === 'undefined') return
     if (open) {
+      lastActive.value = (document.activeElement as HTMLElement) || null
       document.addEventListener('keydown', handleEsc)
       nextTick(() => {
         const el = cardRef.value
@@ -132,6 +134,7 @@ watch(
       })
     } else {
       document.removeEventListener('keydown', handleEsc)
+      lastActive.value?.focus?.()
     }
   },
   { immediate: true },

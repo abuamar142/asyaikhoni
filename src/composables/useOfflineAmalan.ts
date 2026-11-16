@@ -1,10 +1,24 @@
 import { ref } from 'vue'
 import type { Ref } from 'vue'
 import { db, ensureDbReady, isIndexedDBAvailable, type LocalSavedAmalan, type LocalFolder } from '@/utils/localDb'
-import { toPlainLyrics, toSavedAmalanPayload } from '@/utils/lyric'
+import { toPlainLyrics, toSavedAmalanPayload, type SavedAmalanSource } from '@/utils/lyric'
 import { useToast } from '@/composables/useToast'
 
-export function useOfflineAmalan(amalan: Ref<any | null>, slug: Ref<string>) {
+// Bentuk amalan yang dibaca composable ini — `Amalan` online (amalanService)
+// maupun objek fallback lokal (effectiveAmalan di AmalanDetail).
+export type OfflineAmalanSource = SavedAmalanSource & {
+  lyrics?: readonly unknown[]
+}
+
+export interface OfflineAmalanOpts {
+  amalan?: OfflineAmalanSource | null
+  lyrics?: readonly unknown[]
+}
+
+export function useOfflineAmalan(
+  amalan: Ref<OfflineAmalanSource | null | undefined>,
+  slug: Ref<string>,
+) {
   const isSaved = ref(false)
   const localData = ref<LocalSavedAmalan | null>(null)
   const hasUpdate = ref(false)
@@ -27,7 +41,7 @@ export function useOfflineAmalan(amalan: Ref<any | null>, slug: Ref<string>) {
     }
     try {
       return await fn()
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('[offline] DB operation failed', err)
       return null
     }
@@ -86,7 +100,7 @@ export function useOfflineAmalan(amalan: Ref<any | null>, slug: Ref<string>) {
 
     let local: LocalSavedAmalan | undefined
 
-    const rawId = (amalan.value as any)?.id ?? (localData.value as any)?.amalan_id ?? null
+    const rawId = amalan.value?.id ?? localData.value?.amalan_id ?? null
     const id = rawId != null ? String(rawId) : null
 
     // Try by id compound, then fallback amalan_id
@@ -117,7 +131,7 @@ export function useOfflineAmalan(amalan: Ref<any | null>, slug: Ref<string>) {
     if (local) {
       isSaved.value = true
       localData.value = local
-      const serverVer = (amalan.value as any)?.content_version ?? local.content_version ?? 1
+      const serverVer = amalan.value?.content_version ?? local.content_version ?? 1
       hasUpdate.value = (local.content_version ?? 1) < (serverVer ?? 1)
       return
     }
@@ -127,22 +141,22 @@ export function useOfflineAmalan(amalan: Ref<any | null>, slug: Ref<string>) {
     hasUpdate.value = false
   }
 
-  async function toggleRoot(opts?: { amalan?: any; lyrics?: any[] }): Promise<boolean> {
+  async function toggleRoot(opts?: OfflineAmalanOpts): Promise<boolean> {
     if (isSaving.value) return false
 
-    const src = opts?.amalan ?? (amalan.value as any) ?? (localData.value ? {
-      id: (localData.value as any).amalan_id,
-      judul: (localData.value as any).judul,
-      slug: (localData.value as any).slug,
-      ringkasan: (localData.value as any).ringkasan,
-      content_version: (localData.value as any).content_version,
-      updated_at: (localData.value as any).server_updated_at,
+    const src: OfflineAmalanSource | null = opts?.amalan ?? amalan.value ?? (localData.value ? {
+      id: localData.value.amalan_id,
+      judul: localData.value.judul,
+      slug: localData.value.slug,
+      ringkasan: localData.value.ringkasan,
+      content_version: localData.value.content_version,
+      updated_at: localData.value.server_updated_at,
     } : null)
 
     // lyrics resolution: prefer explicit opts.lyrics, then amalan.value?.lyrics, then localData fallback parsed
-    let lyricsToSave: any[] | undefined = opts?.lyrics
+    let lyricsToSave: readonly unknown[] | undefined = opts?.lyrics
     if (!lyricsToSave) {
-      const online = (amalan.value as any)?.lyrics
+      const online = amalan.value?.lyrics
       if (online && Array.isArray(online) && online.length > 0) lyricsToSave = online
       else if (localData.value?.lyrics && Array.isArray(localData.value.lyrics) && localData.value.lyrics.length > 0) lyricsToSave = localData.value.lyrics
       else if (localData.value?.content) {
@@ -172,7 +186,7 @@ export function useOfflineAmalan(amalan: Ref<any | null>, slug: Ref<string>) {
       }
 
       if (isSaved.value) {
-        const amalanIdStr = String(src.id ?? (src as any).amalan_id ?? (localData.value as any)?.amalan_id ?? '')
+        const amalanIdStr = String(src.id ?? src.amalan_id ?? localData.value?.amalan_id ?? '')
         if (amalanIdStr) {
           try {
             await db.saved_amalan.where('[amalan_id+folder_id]').equals([amalanIdStr, 0]).delete()
@@ -187,9 +201,9 @@ export function useOfflineAmalan(amalan: Ref<any | null>, slug: Ref<string>) {
             await db.saved_amalan.where('slug').equals(String(src.slug)).delete().catch(() => {})
           }
           const stillExists = await db.saved_amalan.where('[amalan_id+folder_id]').equals([amalanIdStr, 0]).first().catch(() => null)
-          if (stillExists && (stillExists as any).id != null) {
+          if (stillExists && stillExists.id != null) {
             try {
-              await db.saved_amalan.delete((stillExists as any).id)
+              await db.saved_amalan.delete(stillExists.id)
             } catch {}
           }
         } else if (src.slug) {
@@ -206,7 +220,7 @@ export function useOfflineAmalan(amalan: Ref<any | null>, slug: Ref<string>) {
       // not saved -> add root copy, check duplicate first
       let existing: LocalSavedAmalan | undefined
       try {
-        const checkId = String(src.id ?? (src as any).amalan_id ?? '')
+        const checkId = String(src.id ?? src.amalan_id ?? '')
         if (checkId) {
           existing = await db.saved_amalan.where('[amalan_id+folder_id]').equals([checkId, 0]).first()
         }
@@ -220,17 +234,18 @@ export function useOfflineAmalan(amalan: Ref<any | null>, slug: Ref<string>) {
         return true
       }
 
-      const plainLyrics: LocalSavedAmalan['lyrics'] = toPlainLyrics(lyricsToSave as any)
-      const plainPayload: LocalSavedAmalan = toSavedAmalanPayload(src, plainLyrics, 0) as LocalSavedAmalan
+      const plainLyrics: LocalSavedAmalan['lyrics'] = toPlainLyrics(lyricsToSave)
+      const plainPayload: LocalSavedAmalan = toSavedAmalanPayload(src, plainLyrics, 0)
       await db.saved_amalan.add(plainPayload)
       isSaved.value = true
       toast.success('Berhasil disimpan offline.')
       await checkStatus()
       return true
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('[offline] toggleRoot failed', err)
-      const name = err?.name || ''
-      const msg = err?.message || ''
+      const e = err as { name?: string; message?: string } | null | undefined
+      const name = e?.name || ''
+      const msg = e?.message || ''
       if (/VersionError|SchemaError|UpgradeError/i.test(name + ' ' + msg)) {
         try {
           toast.warning('Memperbaiki penyimpanan offline, coba lagi…')
@@ -259,20 +274,20 @@ export function useOfflineAmalan(amalan: Ref<any | null>, slug: Ref<string>) {
     }
   }
 
-  async function saveToFolder(folderId: number, opts?: { amalan?: any; lyrics?: any[] }): Promise<boolean> {
+  async function saveToFolder(folderId: number, opts?: OfflineAmalanOpts): Promise<boolean> {
     if (isSavingToFolder.value) return false
-    const src = opts?.amalan ?? (amalan.value as any) ?? (localData.value ? {
-      id: (localData.value as any).amalan_id,
-      judul: (localData.value as any).judul,
-      slug: (localData.value as any).slug,
-      ringkasan: (localData.value as any).ringkasan,
-      content_version: (localData.value as any).content_version,
-      updated_at: (localData.value as any).server_updated_at,
+    const src: OfflineAmalanSource | null = opts?.amalan ?? amalan.value ?? (localData.value ? {
+      id: localData.value.amalan_id,
+      judul: localData.value.judul,
+      slug: localData.value.slug,
+      ringkasan: localData.value.ringkasan,
+      content_version: localData.value.content_version,
+      updated_at: localData.value.server_updated_at,
     } : null)
 
-    let lyricsToSave: any[] | undefined = opts?.lyrics
+    let lyricsToSave: readonly unknown[] | undefined = opts?.lyrics
     if (!lyricsToSave) {
-      const online = (amalan.value as any)?.lyrics
+      const online = amalan.value?.lyrics
       if (online && Array.isArray(online) && online.length > 0) lyricsToSave = online
       else if (localData.value?.lyrics && Array.isArray(localData.value.lyrics) && localData.value.lyrics.length > 0) lyricsToSave = localData.value.lyrics
       else if (localData.value?.content) {
@@ -296,7 +311,7 @@ export function useOfflineAmalan(amalan: Ref<any | null>, slug: Ref<string>) {
       return false
     }
 
-    const idStr = String(src.id ?? (src as any).amalan_id ?? (localData.value as any)?.amalan_id ?? '')
+    const idStr = String(src.id ?? src.amalan_id ?? localData.value?.amalan_id ?? '')
     if (!idStr) {
       toast.error('Data amalan tidak valid.')
       return false
@@ -319,18 +334,19 @@ export function useOfflineAmalan(amalan: Ref<any | null>, slug: Ref<string>) {
         return false
       }
 
-      const plainLyrics: LocalSavedAmalan['lyrics'] = toPlainLyrics(lyricsToSave as any)
+      const plainLyrics: LocalSavedAmalan['lyrics'] = toPlainLyrics(lyricsToSave)
       const plainPayload: LocalSavedAmalan = toSavedAmalanPayload(
         { ...src, id: idStr, slug: String(src.slug ?? slug.value ?? '') },
         plainLyrics,
         folderId,
-      ) as LocalSavedAmalan
+      )
       await db.saved_amalan.add(plainPayload)
       toast.success(folderId === 0 ? 'Berhasil disimpan di Koleksi Utama.' : 'Berhasil disimpan ke folder.')
       return true
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('[offline] saveToFolder failed', err)
-      const msg = err?.message || ''
+      const e = err as { message?: string } | null | undefined
+      const msg = e?.message || ''
       if (/ConstraintError|already exists|unique/i.test(msg)) {
         toast.error('Sudah ada di folder tersebut')
       } else {
@@ -342,9 +358,9 @@ export function useOfflineAmalan(amalan: Ref<any | null>, slug: Ref<string>) {
     }
   }
 
-  async function updateAllCopies(lyrics: any[], amalanOverride?: any): Promise<boolean> {
+  async function updateAllCopies(lyrics: readonly unknown[], amalanOverride?: OfflineAmalanSource | null): Promise<boolean> {
     if (isSaving.value) return false
-    const src = amalanOverride ?? (amalan.value as any)
+    const src = amalanOverride ?? amalan.value
     const lyricsToSave = lyrics
 
     if (!src || !lyricsToSave || !lyricsToSave.length) {
@@ -362,12 +378,12 @@ export function useOfflineAmalan(amalan: Ref<any | null>, slug: Ref<string>) {
         await ensureDbReady()
       } catch {}
 
-      const plainLyricsUpd: LocalSavedAmalan['lyrics'] = toPlainLyrics(lyricsToSave as any)
-      const plainModify = {
+      const plainLyricsUpd: LocalSavedAmalan['lyrics'] = toPlainLyrics(lyricsToSave)
+      const plainModify: Partial<LocalSavedAmalan> = {
         content: JSON.stringify(plainLyricsUpd),
         lyrics: plainLyricsUpd,
         content_version: Number(src.content_version ?? 1),
-        server_updated_at: String(src.updated_at ?? (src as any).updatedAt ?? new Date().toISOString()),
+        server_updated_at: String(src.updated_at ?? src.updatedAt ?? new Date().toISOString()),
         last_synced_at: Date.now(),
         has_update_available: false,
       }
@@ -390,9 +406,10 @@ export function useOfflineAmalan(amalan: Ref<any | null>, slug: Ref<string>) {
       await checkStatus()
       toast.success('Konten offline diperbarui.')
       return true
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('[offline] updateAllCopies failed', err)
-      toast.error(err?.message || 'Gagal memperbarui offline.')
+      const e = err as { message?: string } | null | undefined
+      toast.error(e?.message || 'Gagal memperbarui offline.')
       return false
     } finally {
       isSaving.value = false

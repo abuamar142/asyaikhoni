@@ -78,9 +78,10 @@ export default defineConfig(({ mode }) => {
               },
             },
             {
-              // API GET caching (default base: https://asyaikhoni-service.abuamar.online, see src/utils/httpClient.ts)
+              // API GET caching — pattern derived from apiBase so the dev
+              // build (asyaikhoni-service-dev) caches its own API too.
               // POST/PUT/DELETE requests are never cached — this route only matches GET.
-              urlPattern: /^https:\/\/asyaikhoni-service\.abuamar\.online\/api\/.*/i,
+              urlPattern: new RegExp(`^${apiBase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/api/.*`, 'i'),
               handler: 'StaleWhileRevalidate',
               method: 'GET',
               options: {

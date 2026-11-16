@@ -50,22 +50,23 @@ class HttpClient {
       json = null
     }
 
-    const isJsonSuccess = json !== null && typeof (json as any).success === 'boolean'
-    if (!res.ok || (isJsonSuccess && !(json as ApiResponse<T>).success)) {
+    const isJsonSuccess = json !== null && typeof json.success === 'boolean'
+    // isJsonSuccess false saat json null — json?.success aman dan ekivalen
+    if (!res.ok || (isJsonSuccess && !json?.success)) {
       const msg =
-        (json as any)?.message ||
-        (json as any)?.errors?.join(', ') ||
+        json?.message ||
+        json?.errors?.join(', ') ||
         (text ? text.slice(0, 500) : '') ||
         `Request gagal: ${res.status}`
-      const err: any = new Error(msg)
+      const err = new Error(msg) as Error & { status: number; statusCode: number; code: number }
       err.status = res.status
       err.statusCode = res.status
       err.code = res.status
       throw err
     }
 
-    if (json !== null && (json as any).data !== undefined) {
-      return (json as any).data as T
+    if (json !== null && json.data !== undefined) {
+      return json.data
     }
     // Fallback: some endpoints may return raw shape without data wrapper
     if (json !== null) {

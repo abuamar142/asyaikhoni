@@ -4,7 +4,7 @@
     :type="as === 'button' ? type : undefined"
     :disabled="disabled"
     :class="[
-      'inline-flex items-center justify-center gap-2 font-semibold leading-none whitespace-nowrap shrink-0 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 border [&_svg]:shrink-0',
+      'inline-flex items-center justify-center gap-2 font-semibold leading-none whitespace-nowrap shrink-0 transition-[color,background-color,border-color,box-shadow,transform] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 border [&_svg]:shrink-0',
       roundedClass,
       sizeClasses,
       block ? 'w-full' : '',

@@ -1,6 +1,6 @@
 <template>
   <article
-    class="group relative flex flex-col rounded-[18px] border bg-white p-6 md:p-7 transition-[border-color,box-shadow,transform,background-color] duration-300 hover:-translate-y-1 will-change-transform"
+    class="group relative flex flex-col rounded-[18px] border bg-white p-6 md:p-7 transition-[border-color,box-shadow,transform,background-color] duration-300 hover:-translate-y-1"
     :class="[
       isHighlighted
         ? 'border-emerald-100 shadow-[0_1px_2px_rgba(16,40,22,0.06)] hover:shadow-[0_16px_40px_-16px_rgba(16,40,22,0.16)]'
@@ -92,8 +92,8 @@
     >
       {{ item.ringkasan }}
     </p>
-    <p v-else-if="mode === 'list'" class="mt-2.5 text-[13px] leading-[1.6] text-stone-400 italic">Ringkasan belum tersedia.</p>
-    <p v-else-if="mode === 'offline'" class="mt-1.5 text-[13px] leading-[1.6] text-stone-400 italic">Ringkasan belum tersedia.</p>
+    <p v-else-if="mode === 'list'" class="mt-2.5 text-[13px] leading-[1.6] text-stone-500 italic">Ringkasan belum tersedia.</p>
+    <p v-else-if="mode === 'offline'" class="mt-1.5 text-[13px] leading-[1.6] text-stone-500 italic">Ringkasan belum tersedia.</p>
 
     <!-- offline extra slot content (e.g. custom actions row) inserted before footer if provided -->
     <slot />
@@ -116,12 +116,12 @@
               <ArrowRight class="w-3.5 h-3.5 transition-transform duration-200 group-hover/link:translate-x-0.5" />
             </span>
           </span>
-          <span class="text-[11px] tracking-[0.08em] uppercase font-medium text-stone-400 group-hover/link:text-stone-600 transition-colors"
+          <span class="text-[11px] tracking-[0.08em] uppercase font-medium text-stone-500 group-hover/link:text-stone-600 transition-colors"
             >Lihat detail</span
           >
         </RouterLink>
         <div v-else class="mt-4 flex items-center justify-between">
-          <span class="text-[13px] font-semibold text-stone-400">Tanpa tautan</span>
+          <span class="text-[13px] font-semibold text-stone-500">Tanpa tautan</span>
         </div>
       </template>
 
@@ -135,7 +135,7 @@
           >
             <Calendar class="w-3 h-3" /> {{ savedAtFormatted }}
           </span>
-          <span v-else class="inline-flex items-center gap-1.5 text-[11px] text-stone-400">
+          <span v-else class="inline-flex items-center gap-1.5 text-[11px] text-stone-500">
             <Bookmark class="w-3 h-3" /> Offline
           </span>
 
@@ -145,7 +145,7 @@
           >
             <RefreshCw class="w-3 h-3" /> Update tersedia
           </span>
-          <span v-else class="text-[11px] tracking-[0.08em] uppercase font-medium text-stone-400">Tersimpan</span>
+          <span v-else class="text-[11px] tracking-[0.08em] uppercase font-medium text-stone-500">Tersimpan</span>
         </div>
         <!-- actions footer slot for offline extra buttons (move/delete) if not in top row -->
         <div v-if="$slots.footer" class="mt-3">

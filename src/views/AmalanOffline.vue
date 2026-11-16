@@ -53,7 +53,7 @@
         </template>
 
         <template #stats-right>
-          <div class="text-[11px] tracking-[0.16em] uppercase font-semibold text-stone-400 mb-2">
+          <div class="text-[11px] tracking-[0.16em] uppercase font-semibold text-stone-500 mb-2">
             Koleksi tersimpan
           </div>
           <div
@@ -65,7 +65,7 @@
           <div class="text-sm text-stone-500 mt-1.5">{{ allFolders.length }} folder · offline</div>
           <div class="mt-5 h-px w-24 bg-gradient-to-r from-transparent to-emerald-200"></div>
           <div class="mt-3 text-[11px] leading-[1.5] text-stone-500 max-w-[18rem] text-pretty">
-            Tersimpan di perangkat. Atur dalam folder dan bagikan sebagai koleksi.
+            Khusus di perangkat ini.
           </div>
         </template>
       </PageHero>
@@ -84,7 +84,7 @@
             <ArrowLeft class="w-3.5 h-3.5" /> Koleksi
           </BaseButton>
           <template v-for="(crumb, idx) in breadcrumbPath" :key="crumb.id">
-            <ChevronRight class="w-4 h-4 text-stone-400 shrink-0" />
+            <ChevronRight class="w-4 h-4 text-stone-500 shrink-0" />
             <BaseButton
               v-if="idx < breadcrumbPath.length - 1"
               variant="secondary"
@@ -105,13 +105,14 @@
       </div>
 
     <div class="relative container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10">
-      <!-- Search toolbar — filter saved amalan client-side (judul/ringkasan) -->
-      <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-8">
+      <!-- Search toolbar — filter saved amalan client-side (judul/ringkasan).
+           Hidden while the collection is empty: nothing to search/count there. -->
+      <div v-if="!isCollectionEmpty" class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-8">
         <div class="flex-1 min-w-0">
           <SearchInput v-model="q" placeholder="Cari judul atau ringkasan amalan…" />
         </div>
         <div class="flex flex-wrap items-center gap-2 shrink-0">
-          <span class="text-[12.5px] text-stone-500">
+          <span class="text-[12.5px] text-stone-500" role="status" aria-live="polite">
             <template v-if="isSearching">
               Menampilkan <span class="font-semibold text-stone-700">{{ filteredAmalan.length }}</span> amalan untuk
               “{{ qDebounced }}”
@@ -138,29 +139,30 @@
           <h2 class="text-[11px] tracking-[0.16em] font-semibold uppercase text-stone-500">
             {{ currentFolderId === null ? 'Folder Anda' : `Subfolder di ${currentFolder?.name ?? ''}` }}
           </h2>
-          <span class="text-[12px] text-stone-400">{{ displayFolders.length }} folder</span>
+          <span class="text-[12px] text-stone-500">{{ displayFolders.length }} folder</span>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
           <div
             v-for="folder in displayFolders"
             :key="folder.id"
-            class="group relative p-5 md:p-6 rounded-[18px] border border-[#e8e6de] bg-white hover:border-emerald-200 hover:shadow-[0_12px_28px_rgba(16,40,22,0.08)] hover:-translate-y-0.5 transition-all duration-300 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30"
-            role="button"
-            tabindex="0"
-            @click="openFolder(folder)"
-            @keydown.enter.prevent="openFolder(folder)"
-            @keydown.space.prevent="openFolder(folder)"
+            class="group relative p-5 md:p-6 rounded-[18px] border border-[#e8e6de] bg-white hover:border-emerald-200 hover:shadow-[0_12px_28px_rgba(16,40,22,0.08)] hover:-translate-y-0.5 transition-[border-color,box-shadow,transform] duration-300"
           >
             <div class="absolute top-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-emerald-200/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
             <div class="flex items-center gap-4">
-              <div class="w-11 h-11 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 inline-flex items-center justify-center group-hover:bg-emerald-700 group-hover:text-white group-hover:border-emerald-700 transition-colors">
-                <Folder class="w-5 h-5" />
-              </div>
-              <div class="flex-1 min-w-0">
-                <h3 class="font-serif text-[16px] font-semibold leading-[1.35] text-[#12291a] py-0.5 truncate" style="font-family: 'Fraunces', Georgia, serif">{{ folder.name }}</h3>
-                <p class="text-[12px] text-stone-500">Folder koleksi</p>
-              </div>
-              <div class="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+              <button
+                type="button"
+                class="flex items-center gap-4 flex-1 min-w-0 text-left rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30"
+                @click="openFolder(folder)"
+              >
+                <div class="w-11 h-11 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 inline-flex items-center justify-center group-hover:bg-emerald-700 group-hover:text-white group-hover:border-emerald-700 transition-colors">
+                  <Folder class="w-5 h-5" />
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h3 class="font-serif text-[16px] font-semibold leading-[1.35] text-[#12291a] py-0.5 truncate" style="font-family: 'Fraunces', Georgia, serif">{{ folder.name }}</h3>
+                  <p class="text-[12px] text-stone-500">Folder koleksi</p>
+                </div>
+              </button>
+              <div class="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 transition-opacity">
                 <BaseButton
                   variant="ghost"
                   pill
@@ -209,7 +211,7 @@
       <!-- Saved amalan heading -->
       <div v-if="savedAmalan.length > 0 && !isSearching" class="flex items-center justify-between mb-4">
         <h2 class="text-[11px] tracking-[0.16em] font-semibold uppercase text-stone-500">
-          Amalan tersimpan <span class="normal-case tracking-normal font-medium text-stone-400">· {{ savedAmalan.length }}</span>
+          Amalan tersimpan <span class="normal-case tracking-normal font-medium text-stone-500">· {{ savedAmalan.length }}</span>
         </h2>
         <div class="h-px flex-1 mx-4 bg-[#ece9e0] hidden sm:block"></div>
       </div>
@@ -240,7 +242,7 @@
 
       <!-- Search no-results -->
       <div
-        v-else-if="isSearching && !(allFolders.length === 0 && savedAmalan.length === 0)"
+        v-else-if="isSearching && !isCollectionEmpty"
         class="flex flex-col items-center justify-center py-16 md:py-20"
       >
         <EmptyState
@@ -263,7 +265,7 @@
       </div>
 
       <!-- Empty state -->
-      <div v-else-if="allFolders.length === 0 && savedAmalan.length === 0" class="flex flex-col items-center justify-center py-16 md:py-20">
+      <div v-else-if="isCollectionEmpty" class="flex flex-col items-center justify-center py-16 md:py-20">
         <EmptyState
           title="Belum ada amalan tersimpan"
           description="Jelajahi katalog dan ketuk “Simpan offline” pada halaman detail amalan untuk membacanya kapan saja tanpa koneksi."
@@ -305,7 +307,7 @@
           name="folder-name"
           autocomplete="off"
           placeholder="Contoh: Wirid Harian"
-          class="w-full px-4 py-3 rounded-xl border border-[#d7ddd7] bg-white text-[14px] text-[#12291a] placeholder:text-stone-400 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-300 transition-all"
+          class="w-full px-4 py-3 rounded-xl border border-[#d7ddd7] bg-white text-[16px] sm:text-[14px] text-[#12291a] placeholder:text-stone-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-300 transition-all"
           @keyup.enter="saveFolder"
         />
       </div>
@@ -334,6 +336,7 @@
     <ConfirmDialog
       v-model="isConfirmingDelete"
       title="Hapus Folder?"
+      confirm-label="Hapus folder"
       :message="`Apakah Anda yakin ingin menghapus folder '${folderToDelete?.name}'? Item di dalamnya tidak akan terhapus, hanya akan dikeluarkan dari folder.`"
       @confirm="deleteFolder"
       @cancel="isConfirmingDelete = false"
@@ -360,11 +363,11 @@
         <div v-if="!shareResult" class="space-y-4">
           <div>
             <label class="block text-[12px] font-semibold tracking-[0.08em] uppercase text-stone-600 mb-2">Judul Koleksi</label>
-            <input v-model="shareForm.title" type="text" name="share-title" autocomplete="off" class="w-full px-4 py-3 rounded-xl border border-[#d7ddd7] bg-white text-[14px] focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-300 placeholder:text-stone-400" placeholder="Koleksi Wirid Saya" />
+            <input v-model="shareForm.title" type="text" name="share-title" autocomplete="off" class="w-full px-4 py-3 rounded-xl border border-[#d7ddd7] bg-white text-[16px] sm:text-[14px] focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-300 placeholder:text-stone-500" placeholder="Koleksi Wirid Saya" />
           </div>
           <div>
             <label class="block text-[12px] font-semibold tracking-[0.08em] uppercase text-stone-600 mb-2">Deskripsi (Opsional)</label>
-            <textarea v-model="shareForm.description" name="share-description" autocomplete="off" class="w-full px-4 py-3 rounded-xl border border-[#d7ddd7] bg-white text-[14px] focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-300 placeholder:text-stone-400" rows="3" placeholder="Kumpulan doa dan wirid pilihan…"></textarea>
+            <textarea v-model="shareForm.description" name="share-description" autocomplete="off" class="w-full px-4 py-3 rounded-xl border border-[#d7ddd7] bg-white text-[16px] sm:text-[14px] focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-300 placeholder:text-stone-500" rows="3" placeholder="Kumpulan doa dan wirid pilihan…"></textarea>
           </div>
         </div>
         <div v-else class="text-center">
@@ -388,7 +391,7 @@
           <BaseButton variant="ghost" pill @click="sharingData = null">Batal</BaseButton>
           <BaseButton variant="primary" pill :disabled="!shareForm.title.trim() || generatingShare" @click="generateShare">
             <Share2 v-if="!generatingShare" class="w-4 h-4" />
-            <span v-else class="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"></span>
+            <span v-else class="w-4 h-4 rounded-full border-2 border-white/30 border-t-white motion-safe:animate-spin"></span>
             <span>{{ generatingShare ? 'Memproses…' : 'Buat Link Share' }}</span>
           </BaseButton>
         </div>
@@ -435,7 +438,7 @@ import EmptyState from '@/components/ui/EmptyState.vue'
 import AmalanCard from '@/components/AmalanCard.vue'
 import BaseModal from '@/components/ui/BaseModal.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
-import { createShareBundle } from '@/services/shareService'
+import { createShareBundle, type ShareBundlePayload } from '@/services/shareService'
 import { toPlainLyrics } from '@/utils/lyric'
 import { buildBreadcrumb, collectDescendants, type Folder as TreeFolder } from '@/utils/folderTree'
 
@@ -473,6 +476,10 @@ const filteredAmalan = computed(() => {
 function resetSearch() {
   q.value = ''
 }
+
+// Empty when no folders AND no saved amalan — search toolbar is hidden in this
+// state (audit #1: the "0 amalan" row above the empty state was redundant).
+const isCollectionEmpty = computed(() => allFolders.value.length === 0 && savedAmalan.value.length === 0)
 
 async function loadData() {
   try {
@@ -610,7 +617,7 @@ const moveAmalan = ref<LocalSavedAmalan | null>(null)
 const moveNavId = ref<number | null>(null)
 const moveSelectedId = ref<number | null>(null)
 
-const moveSourceFolderId = computed(() => (moveAmalan.value as any)?.folder_id ?? 0)
+const moveSourceFolderId = computed(() => moveAmalan.value?.folder_id ?? 0)
 const disabledMoveIds = computed(() => new Set<number>([moveSourceFolderId.value]))
 
 function openMoveModal(item: LocalSavedAmalan) {
@@ -647,7 +654,7 @@ async function confirmMove() {
 async function moveToFolder(folderId: number) {
   if (!movingItem.value) return
 
-  const amalanId = String((movingItem.value as any).amalan_id ?? '')
+  const amalanId = String(movingItem.value?.amalan_id ?? '')
   if (!amalanId) {
     toast.error('Data amalan tidak valid.')
     return
@@ -665,15 +672,16 @@ async function moveToFolder(folderId: number) {
 
   try {
     await ensureDbReady()
-    const currentFolder = (movingItem.value as any).folder_id ?? 0
-    if ((movingItem.value as any).id != null) {
+    const currentFolder = movingItem.value.folder_id ?? 0
+    if (movingItem.value.id != null) {
       try {
-        await db.saved_amalan.update((movingItem.value as any).id!, { folder_id: folderId })
-      } catch (err: any) {
+        await db.saved_amalan.update(movingItem.value.id, { folder_id: folderId })
+      } catch (err: unknown) {
         // fallback for compound primary without ++id: delete old compound and add new
-        const msg = err?.name || err?.message || ''
+        const e = err as { name?: string; message?: string } | null | undefined
+        const msg = e?.name || e?.message || ''
         if (/ConstraintError|DataError|InvalidState/i.test(msg)) {
-          const oldData: any = { ...movingItem.value, folder_id: folderId }
+          const oldData: LocalSavedAmalan = { ...movingItem.value, folder_id: folderId }
           delete oldData.id
           const plain = JSON.parse(JSON.stringify(oldData))
           await db.saved_amalan.where('[amalan_id+folder_id]').equals([amalanId, currentFolder]).delete()
@@ -684,7 +692,7 @@ async function moveToFolder(folderId: number) {
       }
     } else {
       // no numeric id — use compound delete+add
-      const oldData: any = { ...movingItem.value, folder_id: folderId }
+      const oldData: LocalSavedAmalan = { ...movingItem.value, folder_id: folderId }
       const plain = JSON.parse(JSON.stringify(oldData))
       delete plain.id
       await db.saved_amalan.where('[amalan_id+folder_id]').equals([amalanId, currentFolder]).delete()
@@ -696,9 +704,10 @@ async function moveToFolder(folderId: number) {
     moveAmalan.value = null
     showMoveModal.value = false
     loadData()
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[offline] moveToFolder failed', err)
-    const msg = err?.message || ''
+    const e = err as { message?: string } | null | undefined
+    const msg = e?.message || ''
     if (/ConstraintError|already exists|unique/i.test(msg)) {
       toast.error('Sudah ada di folder tersebut')
     } else {
@@ -712,15 +721,15 @@ async function moveToFolder(folderId: number) {
 async function removeFromOffline(item: LocalSavedAmalan) {
   try {
     await ensureDbReady()
-    if ((item as any).id != null) {
+    if (item.id != null) {
       try {
-        await db.saved_amalan.delete((item as any).id)
+        await db.saved_amalan.delete(item.id)
       } catch {
         // fallback compound delete if primary is compound
-        await db.saved_amalan.where('[amalan_id+folder_id]').equals([String((item as any).amalan_id), (item as any).folder_id ?? 0]).delete()
+        await db.saved_amalan.where('[amalan_id+folder_id]').equals([String(item.amalan_id), item.folder_id ?? 0]).delete()
       }
     } else {
-      await db.saved_amalan.where('[amalan_id+folder_id]').equals([String((item as any).amalan_id), (item as any).folder_id ?? 0]).delete()
+      await db.saved_amalan.where('[amalan_id+folder_id]').equals([String(item.amalan_id), item.folder_id ?? 0]).delete()
     }
     toast.success('Dihapus dari koleksi offline.')
     loadData()
@@ -767,12 +776,12 @@ async function generateShare() {
     // Build plain sanitized items with lyrics + slug fallback
     const folderName = sharingData.value.folder ? sharingData.value.folder.name : null
 
-    const payload = {
+    const payload: ShareBundlePayload = {
       title: shareForm.value.title,
       description: shareForm.value.description,
       items: itemsToShare.map((item, idx) => {
         // Resolve lyrics: prefer item.lyrics, fallback to parsed content JSON (backwards compat)
-        let rawLyrics: any[] | null = null
+        let rawLyrics: LocalSavedAmalan['lyrics'] | null = null
         if (item.lyrics && Array.isArray(item.lyrics) && item.lyrics.length > 0) {
           rawLyrics = item.lyrics
         } else if (item.content) {
@@ -783,7 +792,7 @@ async function generateShare() {
             // ignore parse error, fallback to empty
           }
         }
-        const plainLyrics = rawLyrics ? toPlainLyrics(rawLyrics as any) : []
+        const plainLyrics = rawLyrics ? toPlainLyrics(rawLyrics) : []
 
         return {
           amalan_id: String(item.amalan_id ?? ''),
@@ -798,9 +807,9 @@ async function generateShare() {
     }
 
     // Ensure plain clone for DataCloneError safety (Vue proxies / Dexie)
-    const plainPayload = JSON.parse(JSON.stringify(payload))
+    const plainPayload = JSON.parse(JSON.stringify(payload)) as ShareBundlePayload
 
-    const result: any = await createShareBundle(plainPayload as any)
+    const result = await createShareBundle(plainPayload)
     shareResult.value = result
     // Offline-first fallback: if server 404/network, shareService returns is_local=true
     if (result?.is_local) {
@@ -815,9 +824,10 @@ async function generateShare() {
         await navigator.clipboard.writeText(result.share_url)
       } catch {}
     }
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Error generating share bundle:', err)
-    const message = err?.message || ''
+    const e = err as { message?: string } | null | undefined
+    const message = e?.message || ''
     // Show specific error from shareService, not generic offline message
     if (message === 'Anda sedang offline') toast.error('Anda sedang offline')
     else if (message === 'Periksa koneksi internet') toast.error('Periksa koneksi internet')

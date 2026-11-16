@@ -49,11 +49,11 @@ function showToast(options: ToastOptions) {
     title: options.title,
     message: options.message,
     type: options.type || 'info',
-    duration: options.duration ?? DEFAULT_DURATION,
+    duration: options.duration ?? (options.type === 'error' ? 0 : DEFAULT_DURATION),
   }
   removeToast(id)
   toasts.value.push(toast)
-  scheduleRemoval(id, toast.duration)
+  if (toast.duration > 0) scheduleRemoval(id, toast.duration)
   return id
 }
 
