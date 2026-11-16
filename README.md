@@ -47,13 +47,16 @@ Vue 3 + Vite 7 + TS + Tailwind v4 · Vue Router · TanStack Query (persist) · D
 
 Produksi jalan di VPS, bukan Vercel:
 
-1. Push ke `main` (prod) atau `development` (dev) di GitHub.
-2. GitHub Actions (`.github/workflows/deploy.yml`) SSH ke VPS dan menjalankan `/opt/ops/bin/deploy-asyaikhoni.sh <branch>` — pull, `bun install`, `bun run build`, swap atomik ke `/var/www/`, reload nginx, health check, notifikasi Telegram.
+1. Push ke `main` di GitHub.
+2. Timer `pull-deploy.timer` di VPS menarik ref tiap 5 menit dan menjalankan `/opt/ops/bin/deploy-asyaikhoni.sh main` — pull, `bun install`, `bun run build`, swap atomik ke `/var/www/`, reload nginx, health check, notifikasi Telegram.
+
+> GitHub Actions **tidak** dipakai: akun terkunci billing. Timer pull-based adalah penggantinya (lihat `/opt/ops/docs/README.md` di VPS). Deploy manual: `ssh vps-abuamar '/opt/ops/bin/deploy-asyaikhoni.sh main'`.
 
 | Branch | Domain | Web root |
 |---|---|---|
 | `main` | [asyaikhoni.abuamar.online](https://asyaikhoni.abuamar.online) | `/var/www/asyaikhoni` |
-| `development` | [asyaikhoni-dev.abuamar.online](https://asyaikhoni-dev.abuamar.online) | `/var/www/dev-asyaikhoni` |
+
+Environment dev (`asyaikhoni-dev.abuamar.online`) sudah dihapus 2026-11-16 — vhost, cert, DNS, dan `/var/www/dev-asyaikhoni` tidak ada lagi.
 
 API publik (`asyaikhoni-service.abuamar.online`) dilayani container `asyaikhoni-service` (Go + Postgres). CMS panel: [cms.abuamar.online](https://cms.abuamar.online). Manual: `bun run build` lalu upload `dist/`.
 
